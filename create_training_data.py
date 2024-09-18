@@ -199,7 +199,7 @@ def parse_files():
         ValueError: If the post type in the data file name is not one of 'texts', 'answers', 'links', 'conversations', or 'quotes', or otherwise only malformed files exist.
     """
     if not os.path.exists('data'):
-        raise FileNotFoundError("The 'data' directory does not exist. Please create a directory named 'data' and place your data files in it.")
+        os.makedirs('data')
     
     # Check if any files exist in the 'data' directory
     files = os.listdir('data')

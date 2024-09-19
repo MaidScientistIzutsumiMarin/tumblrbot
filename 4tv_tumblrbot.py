@@ -1,5 +1,5 @@
 import openai
-if openai.__version__ == "0.28.0":
+if openai.__version__ != "0.28.0":
     print("THIS PROGRAM REQUIRES THE USE OF OPENAI API 0.28.0")
     print("To install the correct version, run the following command:")
     print("pip install openai==0.28.0")

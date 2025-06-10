@@ -1,154 +1,111 @@
-import openai
-if openai.__version__ != "0.28.0":
-    print("THIS PROGRAM REQUIRES THE USE OF OPENAI API 0.28.0")
-    print("To install the correct version, run the following command:")
-    print("pip install openai==0.28.0")
-    print("or use the included .venv")
-    raise Exception("OpenAI API version must be 0.28.0")
-
-import configparser
-import pytumblr as tumblr
-import argparse
 import random
-from halo import Halo
+from collections.abc import Iterable
 
-# Load configuration from config.ini
-config = configparser.ConfigParser()
-config.read('config.ini')
+from openai import OpenAI
+from pytumblr import TumblrRestClient
+from requests import Response
+from rich import print as rich_print
+from rich.live import Live
+from rich.panel import Panel
+from rich.progress import MofNCompleteColumn, Progress
+from rich.table import Table
+from rich.traceback import install
 
-# Set up Tumblr client
-client = tumblr.TumblrRestClient(
-    config['API_KEYS']['TUMBLR_CONSUMER_KEY'],
-    config['API_KEYS']['TUMBLR_CONSUMER_SECRET'],
-    config['TOKENS']['TUMBLR_OAUTH_TOKEN'],
-    config['TOKENS']['TUMBLR_OAUTH_TOKEN_SECRET']
-)
+from settings import Settings, start
 
-# Read OpenAI prompt and model
-SYSTEM = config['OPENAI']['SYSTEM']
-PROMPT = config['OPENAI']['PROMPT']
-MODEL = config['OPENAI']['MODEL']
 
-# Set OpenAI API key
-openai.api_key = config['API_KEYS']['OPENAI_API_KEY']
+def generate_tags(post_content: str, openai: OpenAI, settings: Settings) -> list[str]:
+    if random.random() > settings.generation.tags_chance:  # noqa: S311
+        return []
 
-# Tumblr URL
-TUMBLR_URL = config['TUMBLR']['TUMBLR_URL']
-
-def generate_tags(post_content, tags_chance=0.1):
-    """This function generates tags for a Tumblr post based on the content of the post.
-
-    Arguments:
-        post_content -- The content of the post for which tags are to be generated.
-
-    Keyword Arguments:
-        tags_chance -- The percent chance that tags are generated for this post (default: {0.1})
-
-    Returns:
-        list -- A list of generated tags.
-        None -- If no tags are generated.
-    """
-    dice_roll = random.uniform(0, 1)
-    if dice_roll > tags_chance:
-        return None
-    
-    
-    response = openai.ChatCompletion.create(
-        model="gpt-4o-mini-2024-07-18",  # Use the specified model
-        messages=[
-            {"role": "system", "content": "You are an advanced text summarization tool. You return the requested data to the user as a list of comma separated strings."},
-            {"role": "user", "content": f"Extract the most important subjects from the following text:\n\n{post_content}"}
-        ],
-        max_tokens=50,
-        n=1,
-        stop=None,
-        temperature=0.5
+    response = openai.responses.create(
+        input="You are an advanced text summarization tool. You return the requested data to the user as a list of comma separated strings.",
+        model=settings.model_name,
+        instructions=f"Extract the most important subjects from the following text:\n\n{post_content}",
+        max_output_tokens=50,
+        temperature=0.5,
     )
 
-    # Extracting the text from the model's response
-    extracted_subjects = response['choices'][0]['message']['content'].strip()
+    # Extracting the text from the model's response.
+    extracted_subjects = response.output_text
 
-    # Splitting into a list of strings
+    # Splitting into a list of strings.
     subjects_list = extracted_subjects.split(", ")
-    random.shuffle(subjects_list)
-    # Limiting the number of subjects to 3
-    subjects_list = subjects_list[:3]
-    
+
+    # Limiting the number of subjects to the specified limit.
+    if len(subjects_list) > settings.generation.max_num_tags:
+        return random.sample(subjects_list, settings.generation.max_num_tags)
     return subjects_list
 
-def generate_text(prompt, model):
-    """This function generates the actual text for a Tumblr post based on a prompt. You want to use the config model and prompt for this.
 
-    Arguments:
-        prompt -- The prompt for the model to generate text from.
-        model -- The model to use for text generation.
-
-    Returns:
-        str -- The generated text.
-    """
-    response = openai.ChatCompletion.create(
-        model=model,
-        messages=[{"role": "system", "content": SYSTEM},
-                  {"role": "user", "content": prompt}],
-        max_tokens=4096 - len(prompt.split())  # Adjusting for token length
+def generate_text(openai: OpenAI, settings: Settings) -> str:
+    response = openai.responses.create(
+        input=settings.system_message,
+        model=settings.env.openai_model,
+        instructions=settings.user_message,
+        max_output_tokens=4096 - len(settings.user_message.split()),
     )
-    return response.choices[0].message['content'].strip()
-
-@Halo(text='Clearing drafts...', spinner='dots12')
-def clear_drafts():
-    """This function clears all drafts from a Tumblr blog.
-    """
-    # lambda draft: [client.delete_post(TUMBLR_URL, id=draft['id']) for draft in client.drafts(TUMBLR_URL)['posts']]
-    # Tried a forbidden list comprehension, didn't work. Using a while loop instead.
-    while len(client.drafts(TUMBLR_URL)['posts']) > 0:
-        for draft in client.drafts(TUMBLR_URL)['posts']:
-            client.delete_post(TUMBLR_URL, id=draft['id'])
-
-@Halo(text='Creating drafts...', spinner='dots12')
-def create_drafts(count=150, tags_chance=0.1):
-    """This function creates a specified number of drafts on a Tumblr blog.
-
-    Keyword Arguments:
-        count -- The amount of posts to create (default: {150})
-        tags_chance -- The rate at which those posts should be tagged (default: {0.1})
-    """
-    for _ in range(count):
-        post_content = generate_text(PROMPT, MODEL)
-        generated_tags = generate_tags(post_content, tags_chance)
-        if generated_tags:
-            client.create_text(TUMBLR_URL, state="draft", body=post_content, tags=generated_tags)
-        else:
-            client.create_text(TUMBLR_URL, state="draft", body=post_content)
+    return response.output_text
 
 
-def main(skip_deleting_drafts, skip_creating_drafts, draft_count, tags_chance):
-    """This function is the main entry point for the script.
+def create_text(body: str, tags: list[str], tumblr: TumblrRestClient, settings: Settings) -> None:
+    response = tumblr.create_text(  # type: ignore[reportUnknownMemberType]
+        settings.env.blogname,
+        state="draft",
+        body=body,
+        tags=tags or [""],
+    )
 
-    Arguments:
-        skip_deleting_drafts -- A command line argument to skip the deletion of drafts.
-        skip_creating_drafts -- A command line argument to skip the creation of drafts.
-        draft_count -- A command line argument to specify the number of drafts to create.
-        tags_chance -- A command line argument to specify the chance of generating tags for a post.
-    """
-    if not skip_deleting_drafts:
-        clear_drafts()
-    if not skip_creating_drafts:
-        create_drafts(draft_count, tags_chance)
-    
-    print("Done.")
+    if "meta" in response and response["meta"]["status"] != 200:  # noqa: PLR2004
+        host = tumblr.request.host  # type: ignore[reportUnknownMemberType]
+        response_obj = Response()
+        response_obj.status_code = response["meta"]["status"]
+        response_obj.reason = response["meta"]["msg"]
+        response_obj.url = f"{host}/v2/blog/{settings.env.blogname}/post"
+        response_obj.raise_for_status()
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Process command line arguments.")
-    
-    parser.add_argument('--skip-deleting-drafts', action='store_true', 
-                        help="Skip the deletion of drafts.")
-    parser.add_argument('--skip-creating-drafts', action='store_true', 
-                        help="Skip the creation of drafts.")
-    parser.add_argument('--draft-count', type=int, default=150, 
-                        help="Number of drafts to process.")
-    parser.add_argument('--tags-chance', type=float, default=0.1,
-                        help="Chance of generating tags for a post.")
-    
-    args = parser.parse_args()
-    
-    main(args.skip_deleting_drafts, args.skip_creating_drafts, args.draft_count, args.tags_chance)
+
+def create_draft(openai: OpenAI, tumblr: TumblrRestClient, settings: Settings) -> tuple[str, list[str]]:
+    body = generate_text(openai, settings)
+    tags = generate_tags(body, openai, settings)
+    create_text(body, tags, tumblr, settings)
+
+    return body, tags
+
+
+def create_table(progress: Progress, body: str, tags: Iterable[str]) -> Table:
+    tags_string = " ".join(f"#{tag}" for tag in tags)
+
+    table = Table.grid()
+    table.add_row(progress)
+    table.add_row(Panel.fit(body, title="Preview", subtitle=tags_string, subtitle_align="left"))
+    return table
+
+
+def main(settings: Settings) -> None:
+    install()
+
+    draft_url_text = f"Check them out at: https://tumblr.com/blog/{settings.env.blogname}/drafts"
+
+    openai = OpenAI(api_key=settings.env.openai_api_key)
+    tumblr = TumblrRestClient(
+        settings.env.tumblr_consumer_key,
+        settings.env.tumblr_consumer_secret,
+        settings.env.tumblr_oauth_token,
+        settings.env.tumblr_oauth_secret,
+    )
+
+    progress = Progress(*Progress.get_default_columns(), MofNCompleteColumn(), auto_refresh=False)
+    with Live("", auto_refresh=False) as live:
+        for i in progress.track(range(settings.generation.draft_count), description="Generating drafts..."):
+            try:
+                draft = create_draft(openai, tumblr, settings)
+                live.update(create_table(progress, *draft), refresh=True)
+            except BaseException as exc:
+                msg = f"📉 An error occurred! Generated {i} drafts. {draft_url_text}"
+                raise RuntimeError(msg) from exc
+
+    rich_print(f":chart_increasing: [bold green]Successfully generated drafts![/] {draft_url_text}")
+
+
+start(__name__, main)

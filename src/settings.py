@@ -2,22 +2,22 @@ from pathlib import Path
 from typing import Annotated, override
 
 from openai import BaseModel
-from pydantic import NonNegativeFloat, NonNegativeInt, PositiveInt, SecretStr, StringConstraints
+from pydantic import NonNegativeFloat, NonNegativeInt, PositiveInt, Secret, StringConstraints
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, PyprojectTomlConfigSettingsSource
 
 NonEmptyString = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
 
 class Env(BaseSettings, env_file=".env"):
-    tumblr_consumer_key: SecretStr
-    tumblr_consumer_secret: SecretStr
-    tumblr_oauth_token: SecretStr
-    tumblr_oauth_secret: SecretStr
+    tumblr_consumer_key: Secret[NonEmptyString]
+    tumblr_consumer_secret: Secret[NonEmptyString]
+    tumblr_oauth_token: Secret[NonEmptyString]
+    tumblr_oauth_secret: Secret[NonEmptyString]
 
-    openai_api_key: SecretStr
-    openai_model: SecretStr
+    openai_api_key: Secret[NonEmptyString]
+    openai_model: Secret[NonEmptyString]
 
-    blogname: str
+    blogname: NonEmptyString
 
     def __init__(self) -> None:
         super().__init__()

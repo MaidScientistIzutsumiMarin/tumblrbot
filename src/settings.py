@@ -30,6 +30,7 @@ class Settings(BaseSettings, pyproject_toml_table_header=("tool", "tumblrbot")):
         max_num_tags: PositiveInt
 
     class Training(BaseModel):
+        data_directory: Path
         output_file: Path
         expected_epochs: PositiveInt
         token_price: NonNegativeFloat

@@ -62,7 +62,6 @@ def get_text(post: IncomingMarkup) -> str:
 
 def write_training_data(posts: Iterable[IncomingMarkup]) -> int:
     tokens = 0
-    SETTINGS.training.output_file.parent.mkdir(parents=True, exist_ok=True)
     with SETTINGS.training.output_file.open("w", encoding="utf-8") as fp:
         for post in posts:
             if content := get_text(post):
@@ -93,13 +92,19 @@ def get_posts() -> Generator[str]:
     pattern = re_compile(dedent(text))
 
     with Progress() as progress:
-        for file in Path("data").iterdir():
+        for file in Path(SETTINGS.training.data_directory).iterdir():
             text = file.read_text("utf-8")
             num_posts = text.count("Post id: ")
             yield from progress.track(pattern.findall(text), description=f"{file} [yellow]({num_posts} Posts)")
 
 
+def create_directories() -> None:
+    SETTINGS.training.data_directory.mkdir(parents=True, exist_ok=True)
+    SETTINGS.training.output_file.parent.mkdir(parents=True, exist_ok=True)
+
+
 def main() -> None:
+    create_directories()
     posts = get_posts()
     tokens = write_training_data(posts)
 

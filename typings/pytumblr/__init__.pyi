@@ -17,7 +17,7 @@ class TumblrRestClient:
         tags: Collection[str] = [],
         tweet: object = None,
         date: object = None,
-        format: object = "html",
+        format: Literal["html", "markdown"] = "html",
         slug: object = None,
         title: object,
         body: object,
@@ -31,7 +31,7 @@ class TumblrRestClient:
         tags: Collection[str] = [],
         tweet: object = None,
         date: object = None,
-        format: object = "html",
+        format: Literal["html", "markdown"] = "html",
         slug: object = None,
         title: object,
     ) -> Response: ...
@@ -44,7 +44,7 @@ class TumblrRestClient:
         tags: Collection[str] = [],
         tweet: object = None,
         date: object = None,
-        format: object = "html",
+        format: Literal["html", "markdown"] = "html",
         slug: object = None,
         body: object,
     ) -> Response: ...

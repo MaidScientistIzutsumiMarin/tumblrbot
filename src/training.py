@@ -2,6 +2,7 @@ from collections.abc import Collection, Generator, Iterable, Mapping
 from json import dump
 from pathlib import Path
 from re import compile as re_compile
+from sys import exit as sys_exit
 from textwrap import dedent
 from typing import IO, Any
 
@@ -10,7 +11,7 @@ from rich import print as rich_print
 from rich.progress import Progress
 from tiktoken import encoding_for_model
 
-from settings import Settings, start
+from settings import Settings
 
 IncomingMarkup = str | bytes | IO[str] | IO[bytes]
 
@@ -95,7 +96,9 @@ def get_posts() -> Generator[str]:
             yield from progress.track(pattern.findall(text), description=f"{file} [yellow]({num_posts} Posts)")
 
 
-def main(settings: Settings) -> None:
+def main() -> None:
+    settings = Settings()
+
     posts = get_posts()
     tokens = write_training_data(posts, settings)
 
@@ -113,4 +116,5 @@ def main(settings: Settings) -> None:
     rich_print(dedent(text))
 
 
-start(__name__, main)
+if __name__ == "__main__":
+    sys_exit(main())

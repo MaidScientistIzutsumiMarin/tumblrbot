@@ -1,5 +1,6 @@
 import random
 from collections.abc import Iterable
+from sys import exit as sys_exit
 
 from openai import OpenAI
 from pytumblr import TumblrRestClient
@@ -11,7 +12,7 @@ from rich.progress import MofNCompleteColumn, Progress
 from rich.table import Table
 from rich.traceback import install
 
-from settings import Settings, start
+from settings import Settings
 
 
 def generate_tags(post_content: str, openai: OpenAI, settings: Settings) -> list[str]:
@@ -82,8 +83,10 @@ def create_table(progress: Progress, body: str, tags: Iterable[str]) -> Table:
     return table
 
 
-def main(settings: Settings) -> None:
+def main() -> None:
     install()
+
+    settings = Settings()
 
     draft_url_text = f"Check them out at: https://tumblr.com/blog/{settings.env.blogname}/drafts"
 
@@ -108,4 +111,5 @@ def main(settings: Settings) -> None:
     rich_print(f":chart_increasing: [bold green]Successfully generated drafts![/] {draft_url_text}")
 
 
-start(__name__, main)
+if __name__ == "__main__":
+    sys_exit(main())

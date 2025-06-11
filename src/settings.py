@@ -1,6 +1,4 @@
-from collections.abc import Callable
 from pathlib import Path
-from sys import exit as sys_exit
 from typing import ClassVar, override
 
 from openai import BaseModel
@@ -8,7 +6,7 @@ from pydantic import Field
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, PyprojectTomlConfigSettingsSource
 
 
-class Settings(BaseSettings, pyproject_toml_table_header=("tool", "4tv-tumblrbot")):
+class Settings(BaseSettings, pyproject_toml_table_header=("tool", "tumblrbot")):
     class Env(BaseSettings, env_file=".env"):
         tumblr_consumer_key: str
         tumblr_consumer_secret: str
@@ -48,8 +46,3 @@ class Settings(BaseSettings, pyproject_toml_table_header=("tool", "4tv-tumblrbot
     @override
     def settings_customise_sources(cls, settings_cls: type[BaseSettings], *args: object, **kwargs: object) -> tuple[PydanticBaseSettingsSource, ...]:
         return (PyprojectTomlConfigSettingsSource(settings_cls),)
-
-
-def start(name: str, main: Callable[[Settings], None]) -> None:
-    if name == "__main__":
-        sys_exit(main(Settings()))

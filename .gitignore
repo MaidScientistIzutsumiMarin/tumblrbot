@@ -1,8 +1,6 @@
 data
 images
-typings
-training.jsonl
-UpdateData.ps1
+*.jsonl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -4,13 +4,13 @@ from sys import exit as sys_exit
 
 from openai import OpenAI
 from pytumblr import TumblrRestClient
-from requests import Response
 from rich import print as rich_print
+from rich._spinners import SPINNERS
+from rich.console import Console
 from rich.live import Live
 from rich.panel import Panel
-from rich.progress import MofNCompleteColumn, Progress
+from rich.progress import MofNCompleteColumn, Progress, SpinnerColumn
 from rich.table import Table
-from rich.traceback import install
 
 from settings import Settings
 
@@ -49,27 +49,17 @@ def generate_text(openai: OpenAI, settings: Settings) -> str:
     return response.output_text
 
 
-def create_text(body: str, tags: list[str], tumblr: TumblrRestClient, settings: Settings) -> None:
-    response = tumblr.create_text(  # type: ignore[reportUnknownMemberType]
+def create_draft(openai: OpenAI, tumblr: TumblrRestClient, settings: Settings) -> tuple[str, list[str]]:
+    body = generate_text(openai, settings)
+    tags = generate_tags(body, openai, settings)
+
+    response = tumblr.create_text(
         settings.env.blogname,
         state="draft",
         body=body,
         tags=tags or [""],
     )
-
-    if "meta" in response and response["meta"]["status"] != 200:  # noqa: PLR2004
-        host = tumblr.request.host  # type: ignore[reportUnknownMemberType]
-        response_obj = Response()
-        response_obj.status_code = response["meta"]["status"]
-        response_obj.reason = response["meta"]["msg"]
-        response_obj.url = f"{host}/v2/blog/{settings.env.blogname}/post"
-        response_obj.raise_for_status()
-
-
-def create_draft(openai: OpenAI, tumblr: TumblrRestClient, settings: Settings) -> tuple[str, list[str]]:
-    body = generate_text(openai, settings)
-    tags = generate_tags(body, openai, settings)
-    create_text(body, tags, tumblr, settings)
+    response.raise_for_status()
 
     return body, tags
 
@@ -77,20 +67,36 @@ def create_draft(openai: OpenAI, tumblr: TumblrRestClient, settings: Settings) -
 def create_table(progress: Progress, body: str, tags: Iterable[str]) -> Table:
     tags_string = " ".join(f"#{tag}" for tag in tags)
 
-    table = Table.grid()
+    table = Table.grid(expand=True)
     table.add_row(progress)
-    table.add_row(Panel.fit(body, title="Preview", subtitle=tags_string, subtitle_align="left"))
+    table.add_row(Panel(body, title="Preview", subtitle=tags_string, subtitle_align="left"))
     return table
 
 
-def main() -> None:
-    install()
+def create_drafts(openai: OpenAI, tumblr: TumblrRestClient, settings: Settings) -> int:
+    spinner_name = random.choice(list(SPINNERS))  # noqa: S311
+    progress = Progress(
+        SpinnerColumn(spinner_name),
+        *Progress.get_default_columns(),
+        MofNCompleteColumn(),
+        auto_refresh=False,
+    )
 
-    settings = Settings()
+    with Live(create_table(progress, "", [])) as live:
+        for i in progress.track(range(settings.generation.draft_count), description="Generating drafts..."):
+            try:
+                draft = create_draft(openai, tumblr, settings)
+                live.update(create_table(progress, *draft))
+            except BaseException:  # noqa: BLE001
+                # Stop the live so that everything gets printed under it.
+                live.stop()
+                Console().print_exception()
+                return i
 
-    draft_url_text = f"Check them out at: https://tumblr.com/blog/{settings.env.blogname}/drafts"
+    return settings.generation.draft_count
 
-    openai = OpenAI(api_key=settings.env.openai_api_key)
+
+def get_tumblr_client(settings: Settings) -> TumblrRestClient:
     tumblr = TumblrRestClient(
         settings.env.tumblr_consumer_key,
         settings.env.tumblr_consumer_secret,
@@ -98,17 +104,19 @@ def main() -> None:
         settings.env.tumblr_oauth_secret,
     )
 
-    progress = Progress(*Progress.get_default_columns(), MofNCompleteColumn(), auto_refresh=False)
-    with Live("", auto_refresh=False) as live:
-        for i in progress.track(range(settings.generation.draft_count), description="Generating drafts..."):
-            try:
-                draft = create_draft(openai, tumblr, settings)
-                live.update(create_table(progress, *draft), refresh=True)
-            except BaseException as exc:
-                msg = f"📉 An error occurred! Generated {i} drafts. {draft_url_text}"
-                raise RuntimeError(msg) from exc
+    # Force pytumblr to return the raw Response object instead of a json.
+    tumblr.request.json_parse = lambda response: response
 
-    rich_print(f":chart_increasing: [bold green]Successfully generated drafts![/] {draft_url_text}")
+    return tumblr
+
+
+def main() -> None:
+    settings = Settings()
+    openai = OpenAI(api_key=settings.env.openai_api_key)
+    tumblr = get_tumblr_client(settings)
+
+    num_drafts = create_drafts(openai, tumblr, settings)
+    rich_print(f"[bold green]Generated {num_drafts} drafts! Check them out at:[/] https://tumblr.com/blog/{settings.env.blogname}/drafts")
 
 
 if __name__ == "__main__":

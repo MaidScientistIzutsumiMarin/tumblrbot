@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Annotated, override
 
 from openai import BaseModel
+from openai.types import ChatModel
 from pydantic import NonNegativeFloat, NonNegativeInt, PositiveInt, Secret, StringConstraints
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, PyprojectTomlConfigSettingsSource
 
@@ -41,7 +42,7 @@ class Settings(BaseSettings, pyproject_toml_table_header=("tool", "tumblrbot")):
 
     system_message: NonEmptyString
     user_message: NonEmptyString
-    model_name: NonEmptyString
+    model_name: ChatModel
 
     def __init__(self) -> None:
         super().__init__()

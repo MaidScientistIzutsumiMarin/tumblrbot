@@ -42,7 +42,7 @@ def generate_tags(post_content: str, openai: OpenAI, settings: Settings) -> list
 def generate_text(openai: OpenAI, settings: Settings) -> str:
     response = openai.responses.create(
         input=settings.system_message,
-        model=settings.env.openai_model,
+        model=settings.env.openai_model.get_secret_value(),
         instructions=settings.user_message,
         max_output_tokens=4096 - len(settings.user_message.split()),
     )
@@ -98,10 +98,10 @@ def create_drafts(openai: OpenAI, tumblr: TumblrRestClient, settings: Settings) 
 
 def get_tumblr_client(settings: Settings) -> TumblrRestClient:
     tumblr = TumblrRestClient(
-        settings.env.tumblr_consumer_key,
-        settings.env.tumblr_consumer_secret,
-        settings.env.tumblr_oauth_token,
-        settings.env.tumblr_oauth_secret,
+        settings.env.tumblr_consumer_key.get_secret_value(),
+        settings.env.tumblr_consumer_secret.get_secret_value(),
+        settings.env.tumblr_oauth_token.get_secret_value(),
+        settings.env.tumblr_oauth_secret.get_secret_value(),
     )
 
     # Force pytumblr to return the raw Response object instead of a json.
@@ -112,7 +112,7 @@ def get_tumblr_client(settings: Settings) -> TumblrRestClient:
 
 def main() -> None:
     settings = Settings()
-    openai = OpenAI(api_key=settings.env.openai_api_key)
+    openai = OpenAI(api_key=settings.env.openai_api_key.get_secret_value())
     tumblr = get_tumblr_client(settings)
 
     num_drafts = create_drafts(openai, tumblr, settings)

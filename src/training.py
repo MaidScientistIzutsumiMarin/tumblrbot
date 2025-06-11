@@ -15,11 +15,13 @@ from settings import Settings
 
 IncomingMarkup = str | bytes | IO[str] | IO[bytes]
 
+SETTINGS = Settings()
 
-def count_tokens(messages: Collection[Mapping[Any, str]], settings: Settings) -> int:
+
+def count_tokens(messages: Collection[Mapping[Any, str]]) -> int:
     # Simplified from https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
     # Check there for a detailed explanation of what's being done here.
-    encoding = encoding_for_model(settings.model_name)
+    encoding = encoding_for_model(SETTINGS.model_name)
 
     # Every reply is primed with <|start|>assistant<|message|>.
     tokens = 3 * (len(messages) + 1)
@@ -58,13 +60,13 @@ def get_text(post: IncomingMarkup) -> str:
     return soup.get_text(" ", strip=True)
 
 
-def write_training_data(posts: Iterable[IncomingMarkup], settings: Settings) -> int:
+def write_training_data(posts: Iterable[IncomingMarkup]) -> int:
     tokens = 0
-    settings.training.output_file.parent.mkdir(parents=True, exist_ok=True)
-    with settings.training.output_file.open("w", encoding="utf-8") as fp:
+    SETTINGS.training.output_file.parent.mkdir(parents=True, exist_ok=True)
+    with SETTINGS.training.output_file.open("w", encoding="utf-8") as fp:
         for post in posts:
             if content := get_text(post):
-                messages = build_messages(content, settings)
+                messages = build_messages(content, SETTINGS)
                 training_data = {"messages": messages}
 
                 # We think ensure_ascii is important here, but we don't know for sure. Having it should prevent any data loss.
@@ -73,7 +75,7 @@ def write_training_data(posts: Iterable[IncomingMarkup], settings: Settings) -> 
                 # Add a new line, since dump does not do this automatically.
                 fp.write("\n")
 
-                tokens += count_tokens(messages, settings)
+                tokens += count_tokens(messages)
 
     return tokens
 
@@ -98,21 +100,19 @@ def get_posts() -> Generator[str]:
 
 
 def main() -> None:
-    settings = Settings()
-
     posts = get_posts()
-    tokens = write_training_data(posts, settings)
+    tokens = write_training_data(posts)
 
-    total_tokens = settings.training.expected_epochs * tokens
+    total_tokens = SETTINGS.training.expected_epochs * tokens
 
     text = f"""
         Total tokens {tokens:,}:
-        Total tokens for [bold orange1]{settings.training.expected_epochs}[/] epoch(s): {total_tokens:,}
-        Expected cost when trained with [bold purple]{settings.model_name}[/]: ${3 / 1000000 * total_tokens:.2f}
+        Total tokens for [bold orange1]{SETTINGS.training.expected_epochs}[/] epoch(s): {total_tokens:,}
+        Expected cost when trained with [bold purple]{SETTINGS.model_name}[/]: ${3 / 1000000 * total_tokens:.2f}
         NOTE: Token values are approximate and may not be 100% accurate, please be aware of this when using the data.
                 [italic red]Neither Amelia nor Mutsumi are responsible for any inaccuracies in the token count or estimated price.[/]
 
-        [bold]The training data has been written to the '{settings.training.output_file}' directory.
+        [bold]The training data has been written to the '{SETTINGS.training.output_file}' directory.
     """
     rich_print(dedent(text))
 

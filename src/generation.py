@@ -12,16 +12,19 @@ from rich.panel import Panel
 from rich.progress import MofNCompleteColumn, Progress, SpinnerColumn
 from rich.table import Table
 
-from settings import Settings
+from settings import Env, Settings
+
+SETTINGS = Settings()
+ENV = Env()
 
 
-def generate_tags(post_content: str, openai: OpenAI, settings: Settings) -> list[str]:
-    if random.random() > settings.generation.tags_chance:  # noqa: S311
+def generate_tags(post_content: str, openai: OpenAI) -> list[str]:
+    if random.random() > SETTINGS.generation.tags_chance:  # noqa: S311
         return []
 
     response = openai.responses.create(
         input="You are an advanced text summarization tool. You return the requested data to the user as a list of comma separated strings.",
-        model=settings.model_name,
+        model=SETTINGS.model_name,
         instructions=f"Extract the most important subjects from the following text:\n\n{post_content}",
         max_output_tokens=50,
         temperature=0.5,
@@ -34,27 +37,27 @@ def generate_tags(post_content: str, openai: OpenAI, settings: Settings) -> list
     subjects_list = extracted_subjects.split(", ")
 
     # Limiting the number of subjects to the specified limit.
-    if len(subjects_list) > settings.generation.max_num_tags:
-        return random.sample(subjects_list, settings.generation.max_num_tags)
+    if len(subjects_list) > SETTINGS.generation.max_num_tags:
+        return random.sample(subjects_list, SETTINGS.generation.max_num_tags)
     return subjects_list
 
 
-def generate_text(openai: OpenAI, settings: Settings) -> str:
+def generate_text(openai: OpenAI) -> str:
     response = openai.responses.create(
-        input=settings.system_message,
-        model=settings.env.openai_model.get_secret_value(),
-        instructions=settings.user_message,
-        max_output_tokens=4096 - len(settings.user_message.split()),
+        input=SETTINGS.system_message,
+        model=ENV.openai_model.get_secret_value(),
+        instructions=SETTINGS.user_message,
+        max_output_tokens=4096 - len(SETTINGS.user_message.split()),
     )
     return response.output_text
 
 
-def create_draft(openai: OpenAI, tumblr: TumblrRestClient, settings: Settings) -> tuple[str, list[str]]:
-    body = generate_text(openai, settings)
-    tags = generate_tags(body, openai, settings)
+def create_draft(openai: OpenAI, tumblr: TumblrRestClient) -> tuple[str, list[str]]:
+    body = generate_text(openai)
+    tags = generate_tags(body, openai)
 
     response = tumblr.create_text(
-        settings.env.blogname,
+        ENV.blogname,
         state="draft",
         body=body,
         tags=tags or [""],
@@ -73,7 +76,7 @@ def create_table(progress: Progress, body: str, tags: Iterable[str]) -> Table:
     return table
 
 
-def create_drafts(openai: OpenAI, tumblr: TumblrRestClient, settings: Settings) -> int:
+def create_drafts(openai: OpenAI, tumblr: TumblrRestClient) -> int:
     spinner_name = random.choice(list(SPINNERS))  # noqa: S311
     progress = Progress(
         SpinnerColumn(spinner_name),
@@ -83,9 +86,9 @@ def create_drafts(openai: OpenAI, tumblr: TumblrRestClient, settings: Settings) 
     )
 
     with Live(create_table(progress, "", [])) as live:
-        for i in progress.track(range(settings.generation.draft_count), description="Generating drafts..."):
+        for i in progress.track(range(SETTINGS.generation.draft_count), description="Generating drafts..."):
             try:
-                draft = create_draft(openai, tumblr, settings)
+                draft = create_draft(openai, tumblr)
                 live.update(create_table(progress, *draft))
             except BaseException:  # noqa: BLE001
                 # Stop the live so that everything gets printed under it.
@@ -93,15 +96,15 @@ def create_drafts(openai: OpenAI, tumblr: TumblrRestClient, settings: Settings) 
                 Console().print_exception()
                 return i
 
-    return settings.generation.draft_count
+    return SETTINGS.generation.draft_count
 
 
-def get_tumblr_client(settings: Settings) -> TumblrRestClient:
+def get_tumblr_client() -> TumblrRestClient:
     tumblr = TumblrRestClient(
-        settings.env.tumblr_consumer_key.get_secret_value(),
-        settings.env.tumblr_consumer_secret.get_secret_value(),
-        settings.env.tumblr_oauth_token.get_secret_value(),
-        settings.env.tumblr_oauth_secret.get_secret_value(),
+        ENV.tumblr_consumer_key.get_secret_value(),
+        ENV.tumblr_consumer_secret.get_secret_value(),
+        ENV.tumblr_oauth_token.get_secret_value(),
+        ENV.tumblr_oauth_secret.get_secret_value(),
     )
 
     # Force pytumblr to return the raw Response object instead of a json.
@@ -111,12 +114,11 @@ def get_tumblr_client(settings: Settings) -> TumblrRestClient:
 
 
 def main() -> None:
-    settings = Settings()
-    openai = OpenAI(api_key=settings.env.openai_api_key.get_secret_value())
-    tumblr = get_tumblr_client(settings)
+    openai = OpenAI(api_key=ENV.openai_api_key.get_secret_value())
+    tumblr = get_tumblr_client()
 
-    num_drafts = create_drafts(openai, tumblr, settings)
-    rich_print(f"[bold green]Generated {num_drafts} drafts! Check them out at:[/] https://tumblr.com/blog/{settings.env.blogname}/drafts")
+    num_drafts = create_drafts(openai, tumblr)
+    rich_print(f"[bold green]Generated {num_drafts} drafts! Check them out at:[/] https://tumblr.com/blog/{ENV.blogname}/drafts")
 
 
 if __name__ == "__main__":

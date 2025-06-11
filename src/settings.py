@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Annotated, ClassVar, override
+from typing import Annotated, override
 
 from openai import BaseModel
 from pydantic import NonNegativeFloat, NonNegativeInt, PositiveInt, SecretStr, StringConstraints
@@ -34,7 +34,6 @@ class Settings(BaseSettings, pyproject_toml_table_header=("tool", "tumblrbot")):
         expected_epochs: PositiveInt
         token_price: NonNegativeFloat
 
-    env: ClassVar = Env()
     generation: Generation
     training: Training
 

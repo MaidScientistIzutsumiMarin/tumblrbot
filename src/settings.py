@@ -8,6 +8,7 @@ from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, Pyprojec
 NonEmptyString = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
 
+# Having these values validated as non-empty should make it easier for users to diagnose configuration issues.
 class Env(BaseSettings, env_file=".env"):
     tumblr_consumer_key: Secret[NonEmptyString]
     tumblr_consumer_secret: Secret[NonEmptyString]

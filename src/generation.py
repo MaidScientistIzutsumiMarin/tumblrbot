@@ -59,8 +59,9 @@ def create_draft(openai: OpenAI, tumblr: TumblrRestClient) -> tuple[str, list[st
     response = tumblr.create_text(
         ENV.blogname,
         state="draft",
-        body=body,
         tags=tags or [""],
+        format="markdown",
+        body=body,
     )
     response.raise_for_status()
 

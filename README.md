@@ -1,7 +1,86 @@
-# 4tv-tumblrbot
+[OpenAI]: https://pypi.org/project/openai
+[pip]: https://pypi.org
 
-4tv-tumblrbot was a collaborative project I embarked on with my close friend Dima, who goes by @smoqueen on Tumblr. The aim of this endeavor was straightforward yet silly: to develop a Tumblr bot powered by a machine-learning model. This bot would be specifically trained on the content from a particular Tumblr blog or a selected set of blogs, allowing it to mimic the style, tone, and thematic essence of the original posts.
+# tumblrbot
+Description of original project:
+> 4tv-tumblrbot was a collaborative project I embarked on with my close friend Dima, who goes by @smoqueen on Tumblr. The aim of this endeavor was straightforward yet silly: to develop a Tumblr bot powered by a machine-learning model. This bot would be specifically trained on the content from a particular Tumblr blog or a selected set of blogs, allowing it to mimic the style, tone, and thematic essence of the original posts.
 
+This fork is largely a rewrite of the source code while maintaining a similar structure and process. There are quite a few changes from the original, which we will attempt to enumerate here:
+- Internal changes:
+   - Updated [OpenAI] to the latest version.
+   - Updated the API used for generating posts to the [Responses API](https://platform.openai.com/docs/api-reference/responses).
+   - Added full type checking coverage.
+   - Maid the code [ruff](https://pypi.org/project/ruff)-compliant.
+   - Use [json.dump](https://docs.python.org/3/library/json.html#json.dump) to automatically escape training data.
+   - Replaced [os](https://docs.python.org/3/library/os.html) functions with [pathlib](https://docs.python.org/3/library/pathlib.html) ones.
+   - Stream most of the file data instead of loading it all into memory.
+   - Switched to [lxml](https://pypi.org/project/lxml) for [BeautifulSoup](https://pypi.org/project/BeautifulSoup).
+   - Switched to [rich](https://pypi.org/project/rich) for error-handling and output.
+   - Simplified code where possible.
+   - Removed unused packages.
+- Removed features:
+   - Removed training data exports that had HTML or reblogs.
+   - Removed the special word replacement functionality.
+   - Removed most file validation. You can put whatever you want in there now and with any name <3.
+   - Removed `max_year` from the config.
+   - Removed command-line options from the generation script.
+   - Removed the generation script clearing drafts.
+   - Removed setup and related files.
+- Changed/Added features:
+   - Training data creation:
+      - Renamed `create_training_data.py` to `training.py`.
+      - Updated output to include more information.
+      - Added progress bars for creating data.
+      - Added pretty colors to the output.
+      - Post data is now read as `UTF-8` which fixes decoding errors.
+      - Spaces are added between text blocks in the training data which should improve spacing issues.
+      - Updated token counts and estimated costs to (hopefully) be pretty accurate.
+      - Garbage data is filtered out of training data:
+         - "ALT"
+         - Text from polls, including "See Results"
+      - Config options:
+         - Added `data_directory`.
+         - Added `output_file`.
+         - Added `expected_epochs`.
+         - Added `token_price`.
+   - Draft generation:
+      - Renamed `4tv-tumblrbot.py` to `generation.py`.
+      - Updated output to include more information.
+      - Added a progress bar for generating drafts.
+      - Added a preview window that shows the most recently generated draft.
+      - Added pretty colors to the output.
+      - Added a link to the blog's draft page after generation.
+      - Posts are created as markdown instead of html by default which makes editing easier.
+      - Error checking was added for uploading drafts to [Tumblr](https://tumblr.com), so it won't silently fail.
+      - Config options:
+         - Changed `tumblr_consumer_key` to `TUMBLR_CONSUMER_KEY`.
+         - Changed `tumblr_consumer_secret` to `TUMBLR_CONSUMER_SECRET`.
+         - Changed `openai_api_key` to `OPENAI_API_KEY`.
+         - Changed `tumblr_oauth_token` to `TUMBLR_OAUTH_TOKEN`.
+         - Changed `tumblr_oauth_token_secret` to `TUMBLR_OAUTH_TOKEN_SECRET`.
+         - Changed `model` to `OPENAI_MODEL`.
+         - Changed `system` to `system_message` and had slight grammar updates.
+         - Changed `prompt` to `user_message`.
+   - Moved personal data like keys into `.env` for our safety.
+   - Moved config files into `pyproject.toml`.
+   - Moved scripts into the `src` folder in preparation for [pip] packaging.
+   - Config options:
+      - Added `model_name`.
+      - Changed `tumblr_url` to `BLOGNAME` and only requires the blog's name.
+
+And here is the current to-do list that we may or may not get to:
+- Convert the repository to a [pip] package.
+- Move config values into a separate file.
+- Create a setup script to handle everything for you because we love you.
+- Add retry logic for generating posts (if it proves to be an issue).
+- Add config options to adjust post generation behavior.
+- Add documentation to code.
+- Use [tiktoken](https://pypi.org/project/tiktoken) to more accurately adjust generated draft length.
+- Finish updating the README.
+
+**This should also function as a list of features supported by this project.**
+
+**We can re-add removed features and change things if asked. This is tuned to what we believe are the most common use-cases.**
 
 ## Preparation with TumblThree
 

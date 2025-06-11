@@ -1,7 +1,6 @@
 data
 images
 typings
-ResetPip.ps1
 training.jsonl
 UpdateData.ps1
 

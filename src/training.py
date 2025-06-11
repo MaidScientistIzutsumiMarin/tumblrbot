@@ -60,6 +60,7 @@ def get_text(post: IncomingMarkup) -> str:
 
 def write_training_data(posts: Iterable[IncomingMarkup], settings: Settings) -> int:
     tokens = 0
+    settings.training.output_file.parent.mkdir(parents=True, exist_ok=True)
     with settings.training.output_file.open("w", encoding="utf-8") as fp:
         for post in posts:
             if content := get_text(post):

@@ -7,6 +7,7 @@ Description of original project:
 
 This fork is largely a rewrite of the source code while maintaining a similar structure and process. There are quite a few changes from the original, which we will attempt to enumerate here:
 - Internal changes:
+   - Updated to [Python 3.13](https://python.org/downloads/release/python-3130)!
    - Updated [OpenAI] to the latest version.
    - Updated the API used for generating posts to the [Responses API](https://platform.openai.com/docs/api-reference/responses).
    - Added full type checking coverage.

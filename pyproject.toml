@@ -39,8 +39,14 @@ user_message = "Please write a comical Tumblr post."
 model_name = "gpt-4o-mini"
 
 [tool.tumblrbot.generation]
+# The number of drafts to process.
+# Setting to 0 will disable draft generation.
 draft_count = 150
+# The chance to generate tags for any given post.
+# Setting to 0 will disable tag generation.
+# 0.1 is a 10% chance.
 tags_chance = 0.1
+# The max number of tags to generate for a post.
 max_num_tags = 3
 
 [tool.tumblrbot.training]
@@ -53,4 +59,5 @@ expected_epochs = 3
 # This value might not be accurate in the future and should be updated as needed. Currently (2025-06-08), this is the price for the default model.
 # The current price can be found at https://platform.openai.com/docs/pricing#fine-tuning:
 # Use the value from the 'Training' column in the table under 'Fine-tuning'.
+# Setting to 0 will treat fine-tuning as free.
 token_price = 3

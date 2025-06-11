@@ -9,6 +9,7 @@ from typing import IO, Any
 from bs4 import BeautifulSoup
 from rich import print as rich_print
 from rich.progress import Progress
+from rich.traceback import install as rich_traceback_install
 from tiktoken import encoding_for_model
 
 from settings import Settings
@@ -104,6 +105,8 @@ def create_directories() -> None:
 
 
 def main() -> None:
+    rich_traceback_install()
+
     create_directories()
     posts = get_posts()
     tokens = write_training_data(posts)

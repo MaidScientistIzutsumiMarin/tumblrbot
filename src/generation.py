@@ -11,6 +11,7 @@ from rich.live import Live
 from rich.panel import Panel
 from rich.progress import MofNCompleteColumn, Progress, SpinnerColumn
 from rich.table import Table
+from rich.traceback import install as rich_traceback_install
 
 from settings import Env, Settings
 
@@ -115,6 +116,8 @@ def get_tumblr_client() -> TumblrRestClient:
 
 
 def main() -> None:
+    rich_traceback_install()
+
     openai = OpenAI(api_key=ENV.openai_api_key.get_secret_value())
     tumblr = get_tumblr_client()
 

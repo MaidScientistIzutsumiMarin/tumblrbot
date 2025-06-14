@@ -42,9 +42,8 @@ model_name = "gpt-4o-mini"
 # The number of drafts to process.
 # Setting to 0 will disable draft generation.
 draft_count = 150
-# The chance to generate tags for any given post.
-# Setting to 0 will disable tag generation.
-# 0.1 is a 10% chance.
+# The chance to generate tags for any given post. This will incur extra calls to OpenAI.
+# Setting to 0 will disable tag generation. 0.1 is a 10% chance.
 tags_chance = 0.1
 # The max number of tags to generate for a post.
 max_num_tags = 3

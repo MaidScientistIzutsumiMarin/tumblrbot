@@ -1,6 +1,7 @@
-import random
 import sys
 from collections.abc import Iterable
+from itertools import islice
+from random import choice, random
 
 import rich
 from openai import OpenAI
@@ -20,7 +21,7 @@ ENV = Env()
 
 
 def generate_tags(post_content: str, openai: OpenAI) -> list[str]:
-    if random.random() > SETTINGS.generation.tags_chance:  # noqa: S311
+    if random() > SETTINGS.generation.tags_chance:  # noqa: S311
         return []
 
     response = openai.responses.create(
@@ -31,16 +32,14 @@ def generate_tags(post_content: str, openai: OpenAI) -> list[str]:
         temperature=0.5,
     )
 
-    # Extracting the text from the model's response.
-    extracted_subjects = response.output_text
+    # Extract the text from the model's response and splitting into a list of strings.
+    iterable = set(response.output_text.split(", "))
 
-    # Splitting into a list of strings.
-    subjects_list = extracted_subjects.split(", ")
+    # Get how many to extract.
+    stop = min(len(iterable), SETTINGS.generation.max_num_tags)
 
-    # Limiting the number of subjects to the specified limit.
-    if len(subjects_list) > SETTINGS.generation.max_num_tags:
-        return random.sample(subjects_list, SETTINGS.generation.max_num_tags)
-    return subjects_list
+    # Limit the number of subjects to the specified limit.
+    return list(islice(iterable, stop))
 
 
 def generate_text(openai: OpenAI) -> str:
@@ -79,7 +78,7 @@ def create_table(progress: Progress, body: str, tags: Iterable[str]) -> Table:
 
 
 def create_drafts(openai: OpenAI, tumblr: TumblrRestClient) -> int:
-    spinner_name = random.choice(list(SPINNERS))  # noqa: S311
+    spinner_name = choice(tuple(SPINNERS))  # noqa: S311
     progress = Progress(
         SpinnerColumn(spinner_name),
         *Progress.get_default_columns(),

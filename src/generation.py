@@ -1,17 +1,17 @@
 import random
+import sys
 from collections.abc import Iterable
-from sys import exit as sys_exit
 
+import rich
 from openai import OpenAI
 from pytumblr import TumblrRestClient
-from rich import print as rich_print
 from rich._spinners import SPINNERS
 from rich.console import Console
 from rich.live import Live
 from rich.panel import Panel
 from rich.progress import MofNCompleteColumn, Progress, SpinnerColumn
 from rich.table import Table
-from rich.traceback import install as rich_traceback_install
+from rich.traceback import install
 
 from settings import Env, Settings
 
@@ -116,14 +116,14 @@ def get_tumblr_client() -> TumblrRestClient:
 
 
 def main() -> None:
-    rich_traceback_install()
+    install()
 
     openai = OpenAI(api_key=ENV.openai_api_key.get_secret_value())
     tumblr = get_tumblr_client()
 
     num_drafts = create_drafts(openai, tumblr)
-    rich_print(f"[bold green]Generated {num_drafts} drafts! Check them out at:[/] https://tumblr.com/blog/{ENV.blogname}/drafts")
+    rich.print(f"[bold green]Generated {num_drafts} drafts! Check them out at:[/] https://tumblr.com/blog/{ENV.blogname}/drafts")
 
 
 if __name__ == "__main__":
-    sys_exit(main())
+    sys.exit(main())

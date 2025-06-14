@@ -1,15 +1,15 @@
+import re
+import sys
 from collections.abc import Collection, Generator, Iterable, Mapping
 from json import dump
 from pathlib import Path
-from re import compile as re_compile
-from sys import exit as sys_exit
 from textwrap import dedent
 from typing import IO, Any
 
+import rich
 from bs4 import BeautifulSoup
-from rich import print as rich_print
 from rich.progress import Progress
-from rich.traceback import install as rich_traceback_install
+from rich.traceback import install
 from tiktoken import encoding_for_model
 
 from settings import Settings
@@ -90,7 +90,7 @@ def get_posts() -> Generator[str]:
         Body:\s([\s\S]*?)
         Tags:
     """.lstrip("\n").rstrip()
-    pattern = re_compile(dedent(text))
+    pattern = re.compile(dedent(text))
 
     with Progress() as progress:
         for file in Path(SETTINGS.training.data_directory).iterdir():
@@ -105,7 +105,7 @@ def create_directories() -> None:
 
 
 def main() -> None:
-    rich_traceback_install()
+    install()
 
     create_directories()
     posts = get_posts()
@@ -122,8 +122,8 @@ def main() -> None:
 
         [bold]The training data has been written to the '{SETTINGS.training.output_file}' directory.
     """
-    rich_print(dedent(text))
+    rich.print(dedent(text))
 
 
 if __name__ == "__main__":
-    sys_exit(main())
+    sys.exit(main())

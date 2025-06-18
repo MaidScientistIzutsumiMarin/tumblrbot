@@ -1,5 +1,7 @@
-[OpenAI]: https://pypi.org/project/openai
 [pip]: https://pypi.org
+[config.toml]: config.toml
+[generation.py]: generation.py
+[training.py]: training.py
 
 # tumblrbot
 Description of original project:
@@ -8,28 +10,46 @@ Description of original project:
 This fork is largely a rewrite of the source code while maintaining a similar structure and process. There are quite a few changes from the original, which we will attempt to enumerate here:
 - Internal changes:
    - Updated to [Python 3.13](https://python.org/downloads/release/python-3130)!
-   - Updated [OpenAI] to the latest version.
+   - Updated [OpenAI](https://pypi.org/project/openai) to the latest version.
    - Updated the API used for generating posts to the [Responses API](https://platform.openai.com/docs/api-reference/responses).
    - Added full type checking coverage.
-   - Maid the code [ruff](https://pypi.org/project/ruff)-compliant.
+   - Maid the code [Ruff](https://pypi.org/project/ruff)-compliant.
    - Use [json.dump](https://docs.python.org/3/library/json.html#json.dump) to automatically escape training data.
    - Replaced [os](https://docs.python.org/3/library/os.html) functions with [pathlib](https://docs.python.org/3/library/pathlib.html) ones.
    - Stream most of the file data instead of loading it all into memory.
-   - Switched to [lxml](https://pypi.org/project/lxml) for [BeautifulSoup](https://pypi.org/project/BeautifulSoup).
-   - Switched to [rich](https://pypi.org/project/rich) for error-handling and output.
+   - Switched to [lxml](https://pypi.org/project/lxml) for [Beautiful Soup](https://pypi.org/project/beautifulsoup4).
+   - Switched to [Rich](https://pypi.org/project/rich) for error-handling and output.
    - Simplified code where possible.
    - Removed unused packages.
 - Removed features:
    - Removed training data exports that had HTML or reblogs.
    - Removed the special word replacement functionality.
    - Removed most file validation. You can put whatever you want in there now and with any name <3.
-   - Removed `max_year` from the config.
-   - Removed command-line options from the generation script.
-   - Removed the generation script clearing drafts.
+   - Removed `max_year` from [config.toml].
+   - Removed command-line options from [generation.py].
+   - Removed [generation.py] clearing drafts behavior.
    - Removed setup and related files.
 - Changed/Added features:
-   - Training data creation:
-      - Renamed `create_training_data.py` to `training.py`.
+   - [generation.py]:
+      - Renamed `4tv-tumblrbot.py` to [generation.py].
+      - Updated output to include more information.
+      - Added a progress bar for generating drafts.
+      - Added a preview window that shows the most recently generated draft.
+      - Added pretty colors to the output.
+      - Added a link to the blog's draft page after generation.
+      - Drafts are created as markdown instead of html by default which makes editing easier.
+      - Added error checking for uploading drafts to [Tumblr](https://tumblr.com), so it won't silently fail.
+      - [config.toml]:
+         - Changed `tumblr_consumer_key` to `TUMBLR_CONSUMER_KEY`.
+         - Changed `tumblr_consumer_secret` to `TUMBLR_CONSUMER_SECRET`.
+         - Changed `openai_api_key` to `OPENAI_API_KEY`.
+         - Changed `tumblr_oauth_token` to `TUMBLR_OAUTH_TOKEN`.
+         - Changed `tumblr_oauth_token_secret` to `TUMBLR_OAUTH_TOKEN_SECRET`.
+         - Changed `model` to `OPENAI_MODEL`.
+         - Changed `system` to `system_message` and had slight grammar updates.
+         - Changed `prompt` to `user_message`.
+   - [training.py]:
+      - Renamed `create_training_data.py` to [training.py].
       - Updated output to include more information.
       - Added progress bars for creating data.
       - Added pretty colors to the output.
@@ -39,45 +59,27 @@ This fork is largely a rewrite of the source code while maintaining a similar st
       - Garbage data is filtered out of training data:
          - "ALT"
          - Text from polls, including "See Results"
-      - Config options:
+      - [config.toml]:
          - Added `data_directory`.
          - Added `output_file`.
          - Added `expected_epochs`.
          - Added `token_price`.
-   - Draft generation:
-      - Renamed `4tv-tumblrbot.py` to `generation.py`.
-      - Updated output to include more information.
-      - Added a progress bar for generating drafts.
-      - Added a preview window that shows the most recently generated draft.
-      - Added pretty colors to the output.
-      - Added a link to the blog's draft page after generation.
-      - Posts are created as markdown instead of html by default which makes editing easier.
-      - Added error checking for uploading drafts to [Tumblr](https://tumblr.com), so it won't silently fail.
-      - Config options:
-         - Changed `tumblr_consumer_key` to `TUMBLR_CONSUMER_KEY`.
-         - Changed `tumblr_consumer_secret` to `TUMBLR_CONSUMER_SECRET`.
-         - Changed `openai_api_key` to `OPENAI_API_KEY`.
-         - Changed `tumblr_oauth_token` to `TUMBLR_OAUTH_TOKEN`.
-         - Changed `tumblr_oauth_token_secret` to `TUMBLR_OAUTH_TOKEN_SECRET`.
-         - Changed `model` to `OPENAI_MODEL`.
-         - Changed `system` to `system_message` and had slight grammar updates.
-         - Changed `prompt` to `user_message`.
-   - Moved personal data like keys into `.env` for our safety.
-   - Moved config fields into [config.toml](config.toml).
-   - Maid the scripts wait for user input before closing so that they can be double-clicked to run.
-   - Config options:
+   - Moved personal data-like keys into [.env](Sample%20.env) for our safety.
+   - Moved `config.ini` fields to [config.toml].
+   - Changed [generation.py] and [training.py] to now wait for user input before closing.
+   - [config.toml] changes:
       - Added `model_name`.
       - Changed `tumblr_url` to `BLOGNAME` and only requires the blog's name.
 
 And here is the current to-do list that we may or may not get to:
 - Make this repository an installable [pip] package.
-- Find a way to detect if a script is being double-click ran and adjust error handling.
+- Find a way to detect if [generation.py] or [training.py] are being double-click ran and adjust error handling.
 - Create a setup script to handle everything for you because we love you.
-- Add retry logic for generating drafts (if it proves to be an issue).
-- Add config options to adjust draft generation behavior.
-- Add documentation to code.
+- Add retry logic to [generation.py] (if it proves to be an issue).
+- Add options to adjust draft generation behavior to [config.toml].
+- Add documentation.
 - Use [tiktoken](https://pypi.org/project/tiktoken) to more accurately adjust generated draft length.
-- Finish updating the README.
+- Finish updating [README.md](README.md).
 
 **This should also function as a list of features supported by this project.**
 

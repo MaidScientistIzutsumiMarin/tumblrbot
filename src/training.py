@@ -10,11 +10,10 @@ from bs4 import BeautifulSoup
 from rich.progress import Progress
 from tiktoken import encoding_for_model
 
-from settings import Settings
+from common import run_main
+from settings import SETTINGS
 
 IncomingMarkup = str | bytes | IO[str] | IO[bytes]
-
-SETTINGS = Settings()
 
 
 def count_tokens(messages: Collection[Mapping[Any, str]]) -> int:
@@ -30,15 +29,15 @@ def count_tokens(messages: Collection[Mapping[Any, str]]) -> int:
     return tokens
 
 
-def build_messages(content: str, settings: Settings) -> list[dict[str, str]]:
+def build_messages(content: str) -> list[dict[str, str]]:
     return [
         {
             "role": "system",
-            "content": settings.system_message,
+            "content": SETTINGS.system_message,
         },
         {
             "role": "user",
-            "content": settings.user_message,
+            "content": SETTINGS.user_message,
         },
         {
             "role": "assistant",
@@ -64,7 +63,7 @@ def write_training_data(posts: Iterable[IncomingMarkup]) -> int:
     with SETTINGS.training.output_file.open("w", encoding="utf-8") as fp:
         for post in posts:
             if content := get_text(post):
-                messages = build_messages(content, SETTINGS)
+                messages = build_messages(content)
                 training_data = {"messages": messages}
 
                 # We think ensure_ascii is important here, but we don't know for sure. Having it should prevent any data loss.

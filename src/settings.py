@@ -1,3 +1,4 @@
+from functools import cache
 from pathlib import Path
 from typing import Annotated, override
 
@@ -51,3 +52,11 @@ class Settings(BaseSettings, pyproject_toml_table_header=("tool", "tumblrbot")):
     @override
     def settings_customise_sources(cls, settings_cls: type[BaseSettings], *args: object, **kwargs: object) -> tuple[PydanticBaseSettingsSource, ...]:
         return (PyprojectTomlConfigSettingsSource(settings_cls),)
+
+
+SETTINGS = Settings()
+
+
+@cache
+def get_env() -> Env:
+    return Env()

@@ -1,4 +1,3 @@
-import sys
 from collections.abc import Iterable
 from itertools import islice
 from random import choice, random
@@ -14,11 +13,7 @@ from rich.progress import MofNCompleteColumn, Progress, SpinnerColumn
 from rich.table import Table
 
 from common import run_main
-
-from settings import Env, Settings
-
-SETTINGS = Settings()
-ENV = Env()
+from settings import SETTINGS, get_env
 
 
 def generate_tags(post_content: str, openai: OpenAI) -> list[str]:
@@ -46,7 +41,7 @@ def generate_tags(post_content: str, openai: OpenAI) -> list[str]:
 def generate_text(openai: OpenAI) -> str:
     response = openai.responses.create(
         input=SETTINGS.system_message,
-        model=ENV.openai_model.get_secret_value(),
+        model=get_env().openai_model.get_secret_value(),
         instructions=SETTINGS.user_message,
         max_output_tokens=4096 - len(SETTINGS.user_message.split()),
     )
@@ -58,7 +53,7 @@ def create_draft(openai: OpenAI, tumblr: TumblrRestClient) -> tuple[str, list[st
     tags = generate_tags(body, openai)
 
     response = tumblr.create_text(
-        ENV.blogname,
+        get_env().blogname,
         state="draft",
         tags=tags or [""],
         format="markdown",
@@ -102,11 +97,12 @@ def create_drafts(openai: OpenAI, tumblr: TumblrRestClient) -> int:
 
 
 def get_tumblr_client() -> TumblrRestClient:
+    env = get_env()
     tumblr = TumblrRestClient(
-        ENV.tumblr_consumer_key.get_secret_value(),
-        ENV.tumblr_consumer_secret.get_secret_value(),
-        ENV.tumblr_oauth_token.get_secret_value(),
-        ENV.tumblr_oauth_secret.get_secret_value(),
+        env.tumblr_consumer_key.get_secret_value(),
+        env.tumblr_consumer_secret.get_secret_value(),
+        env.tumblr_oauth_token.get_secret_value(),
+        env.tumblr_oauth_secret.get_secret_value(),
     )
 
     # Force pytumblr to return the raw Response object instead of a json.
@@ -120,7 +116,7 @@ def main() -> None:
     tumblr = get_tumblr_client()
 
     num_drafts = create_drafts(openai, tumblr)
-    rich.print(f"[bold green]Generated {num_drafts} drafts! Check them out at:[/] https://tumblr.com/blog/{ENV.blogname}/drafts")
+    rich.print(f"[bold green]Generated {num_drafts} drafts! Check them out at:[/] https://tumblr.com/blog/{get_env().blogname}/drafts")
 
 
 run_main(__name__, main)

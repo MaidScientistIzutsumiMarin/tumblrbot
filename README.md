@@ -52,7 +52,7 @@ This fork is largely a rewrite of the source code while maintaining a similar st
       - Added pretty colors to the output.
       - Added a link to the blog's draft page after generation.
       - Posts are created as markdown instead of html by default which makes editing easier.
-      - Error checking was added for uploading drafts to [Tumblr](https://tumblr.com), so it won't silently fail.
+      - Added error checking for uploading drafts to [Tumblr](https://tumblr.com), so it won't silently fail.
       - Config options:
          - Changed `tumblr_consumer_key` to `TUMBLR_CONSUMER_KEY`.
          - Changed `tumblr_consumer_secret` to `TUMBLR_CONSUMER_SECRET`.
@@ -63,18 +63,18 @@ This fork is largely a rewrite of the source code while maintaining a similar st
          - Changed `system` to `system_message` and had slight grammar updates.
          - Changed `prompt` to `user_message`.
    - Moved personal data like keys into `.env` for our safety.
-   - Moved config files into `pyproject.toml`.
-   - Moved scripts into the `src` folder in preparation for [pip] packaging.
+   - Moved config fields into `pyproject.toml`.
+   - Maid the scripts wait for user input before closing so that they can be double-clicked to run.
    - Config options:
       - Added `model_name`.
       - Changed `tumblr_url` to `BLOGNAME` and only requires the blog's name.
 
 And here is the current to-do list that we may or may not get to:
-- Convert the repository to a [pip] package.
+- Make this repository an installable [pip] package.
 - Move config values into a separate file.
 - Create a setup script to handle everything for you because we love you.
-- Add retry logic for generating posts (if it proves to be an issue).
-- Add config options to adjust post generation behavior.
+- Add retry logic for generating drafts (if it proves to be an issue).
+- Add config options to adjust draft generation behavior.
 - Add documentation to code.
 - Use [tiktoken](https://pypi.org/project/tiktoken) to more accurately adjust generated draft length.
 - Finish updating the README.

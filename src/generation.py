@@ -98,12 +98,11 @@ def create_drafts(openai: OpenAI, tumblr: TumblrRestClient) -> None:
 
 
 def get_tumblr_client() -> TumblrRestClient:
-    env = get_env()
     tumblr = TumblrRestClient(
-        env.tumblr_consumer_key.get_secret_value(),
-        env.tumblr_consumer_secret.get_secret_value(),
-        env.tumblr_oauth_token.get_secret_value(),
-        env.tumblr_oauth_secret.get_secret_value(),
+        get_env().tumblr_consumer_key.get_secret_value(),
+        get_env().tumblr_consumer_secret.get_secret_value(),
+        get_env().tumblr_oauth_token.get_secret_value(),
+        get_env().tumblr_oauth_secret.get_secret_value(),
     )
 
     # Force pytumblr to return the raw Response object instead of a json.

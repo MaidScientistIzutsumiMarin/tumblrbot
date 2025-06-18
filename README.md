@@ -66,14 +66,13 @@ This fork is largely a rewrite of the source code while maintaining a similar st
          - Added `token_price`.
    - Moved personal data-like keys into [.env](Sample%20.env) for our safety.
    - Moved `config.ini` fields to [config.toml].
-   - Changed [generation.py] and [training.py] to now wait for user input before closing.
+   - Changed [generation.py] and [training.py] to now wait for user input before closing if ran directly.
    - [config.toml] changes:
       - Added `model_name`.
       - Changed `tumblr_url` to `BLOGNAME` and only requires the blog's name.
 
 And here is the current to-do list that we may or may not get to:
 - Make this repository an installable [pip] package.
-- Find a way to detect if [generation.py] or [training.py] are being double-click ran and adjust error handling.
 - Create a setup script to handle everything for you because we love you.
 - Add retry logic to [generation.py] (if it proves to be an issue).
 - Add options to adjust draft generation behavior to [config.toml].

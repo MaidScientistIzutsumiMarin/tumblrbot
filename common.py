@@ -15,5 +15,6 @@ def run_main(name: str, main: Callable[[], str | int | None]) -> None:
             raise
         except BaseException:
             Console(stderr=True, style="logging.level.error").print_exception()
-            Prompt.ask("Press Enter to close")
             raise
+        finally:
+            Prompt.ask("Press Enter to close")

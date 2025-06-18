@@ -1,0 +1,34 @@
+# System message to use for the OpenAI API. This is the system message that will be used to generate the text.
+system_message = "You are a Tumblr post bot. Please generate a Tumblr post in accordance with the user's request."
+# User message for the OpenAI API. This is the prompt that will be sent to the API to generate the text. It will be used both in the training and generation of the model.
+user_message = "Please write a comical Tumblr post."
+# The name of the model that will be fine-tuned by the generated training data. This is only used for estimating the number of tokens and cost.
+# The list of possible model names can be found at https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb:
+# Use the value from the 'OpenAI models' column in the table under 'Encodings'.
+model_name = "gpt-4o-mini"
+
+[generation]
+# The number of drafts to process.
+# Setting to 0 will disable draft generation.
+draft_count = 150
+# The chance to generate tags for any given post. This will incur extra calls to OpenAI.
+# Setting to 0 will disable tag generation. 0.1 is a 10% chance.
+tags_chance = 0.1
+# The max number of tags to generate for a post.
+max_num_tags = 3
+
+[training]
+# Where to read post data from.
+# Every file in this directory will be parsed.
+data_directory = "data"
+# Where to output the training data that will be used to fine-tune the model. You can include directories in the name.
+output_file = "training.jsonl"
+# The expected number of epochs that will be used during fine-tuning. This is only used for estimating the number of tokens and cost.
+# This value might not be accurate in the future and should be updated as needed. Currently (2025-06-08), this is the default for the default model.
+expected_epochs = 3
+# The expected price in USD per million tokens during fine-tuning. This is only used for estimating the cost. Decimals are allowed.
+# This value might not be accurate in the future and should be updated as needed. Currently (2025-06-08), this is the price for the default model.
+# The current price can be found at https://platform.openai.com/docs/pricing#fine-tuning:
+# Use the value from the 'Training' column in the table under 'Fine-tuning'.
+# Setting to 0 will treat fine-tuning as free.
+token_price = 3

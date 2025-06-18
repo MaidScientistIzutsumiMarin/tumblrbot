@@ -5,7 +5,7 @@ from typing import Annotated, override
 from openai import BaseModel
 from openai.types import ChatModel
 from pydantic import NonNegativeFloat, NonNegativeInt, PositiveInt, Secret, StringConstraints
-from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, PyprojectTomlConfigSettingsSource
+from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, TomlConfigSettingsSource
 
 NonEmptyString = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
@@ -26,7 +26,7 @@ class Env(BaseSettings, env_file=".env"):
         super().__init__()
 
 
-class Settings(BaseSettings, pyproject_toml_table_header=("tool", "tumblrbot")):
+class Settings(BaseSettings, toml_file="config.toml"):
     class Generation(BaseModel):
         draft_count: NonNegativeInt
         tags_chance: NonNegativeFloat
@@ -51,7 +51,7 @@ class Settings(BaseSettings, pyproject_toml_table_header=("tool", "tumblrbot")):
     @classmethod
     @override
     def settings_customise_sources(cls, settings_cls: type[BaseSettings], *args: object, **kwargs: object) -> tuple[PydanticBaseSettingsSource, ...]:
-        return (PyprojectTomlConfigSettingsSource(settings_cls),)
+        return (TomlConfigSettingsSource(settings_cls),)
 
 
 SETTINGS = Settings()

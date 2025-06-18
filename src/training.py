@@ -1,5 +1,4 @@
 import re
-import sys
 from collections.abc import Collection, Generator, Iterable, Mapping
 from json import dump
 from pathlib import Path
@@ -9,7 +8,6 @@ from typing import IO, Any
 import rich
 from bs4 import BeautifulSoup
 from rich.progress import Progress
-from rich.traceback import install
 from tiktoken import encoding_for_model
 
 from settings import Settings
@@ -105,8 +103,6 @@ def create_directories() -> None:
 
 
 def main() -> None:
-    install()
-
     create_directories()
     posts = get_posts()
     tokens = write_training_data(posts)
@@ -125,5 +121,4 @@ def main() -> None:
     rich.print(dedent(text))
 
 
-if __name__ == "__main__":
-    sys.exit(main())
+run_main(__name__, main)

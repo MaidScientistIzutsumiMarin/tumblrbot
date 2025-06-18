@@ -12,7 +12,8 @@ from rich.live import Live
 from rich.panel import Panel
 from rich.progress import MofNCompleteColumn, Progress, SpinnerColumn
 from rich.table import Table
-from rich.traceback import install
+
+from common import run_main
 
 from settings import Env, Settings
 
@@ -115,14 +116,11 @@ def get_tumblr_client() -> TumblrRestClient:
 
 
 def main() -> None:
-    install()
-
-    openai = OpenAI(api_key=ENV.openai_api_key.get_secret_value())
+    openai = OpenAI(api_key=get_env().openai_api_key.get_secret_value())
     tumblr = get_tumblr_client()
 
     num_drafts = create_drafts(openai, tumblr)
     rich.print(f"[bold green]Generated {num_drafts} drafts! Check them out at:[/] https://tumblr.com/blog/{ENV.blogname}/drafts")
 
 
-if __name__ == "__main__":
-    sys.exit(main())
+run_main(__name__, main)

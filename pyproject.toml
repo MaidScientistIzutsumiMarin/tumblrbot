@@ -1,7 +1,7 @@
 [project]
 name = "tumblrbot"
 version = "0.1.0"
-description = "A bot that posts to tumblr, based on your very own blog!"
+description = "An updated bot that posts to Tumblr, based on your very own blog!"
 readme = "README.md"
 requires-python = ">= 3.13"
 license = "Unlicense"

@@ -8,7 +8,7 @@ from pytumblr import TumblrRestClient
 from rich._spinners import SPINNERS
 from rich.live import Live
 from rich.panel import Panel
-from rich.progress import MofNCompleteColumn, Progress, SpinnerColumn
+from rich.progress import MofNCompleteColumn, Progress, SpinnerColumn, TimeElapsedColumn
 from rich.table import Table
 
 from common import run_main
@@ -66,20 +66,24 @@ def create_draft(openai: OpenAI, tumblr: TumblrRestClient) -> tuple[str, list[st
 def create_table(progress: Progress, body: str, tags: Iterable[str]) -> Table:
     tags_string = " ".join(f"#{tag}" for tag in tags)
 
-    table = Table.grid(expand=True)
+    table = Table.grid()
     table.add_row(progress)
-    table.add_row(Panel(body, title="Preview", subtitle=tags_string, subtitle_align="left"))
+    if body:
+        table.add_row(Panel(body, title="Preview", subtitle=tags_string, subtitle_align="left"))
     return table
 
 
-def create_drafts(openai: OpenAI, tumblr: TumblrRestClient) -> int:
+def create_drafts(openai: OpenAI, tumblr: TumblrRestClient) -> None:
     spinner_name = choice(tuple(SPINNERS))  # noqa: S311
     progress = Progress(
-        SpinnerColumn(spinner_name),
         *Progress.get_default_columns(),
+        TimeElapsedColumn(),
         MofNCompleteColumn(),
+        SpinnerColumn(spinner_name),
         auto_refresh=False,
     )
+
+    message = f"View drafts here: https://tumblr.com/blog/{get_env().blogname}/drafts"
 
     with Live(create_table(progress, "", [])) as live:
         for i in progress.track(range(SETTINGS.generation.draft_count), description="Generating drafts..."):

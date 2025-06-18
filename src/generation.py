@@ -6,7 +6,6 @@ import rich
 from openai import OpenAI
 from pytumblr import TumblrRestClient
 from rich._spinners import SPINNERS
-from rich.console import Console
 from rich.live import Live
 from rich.panel import Panel
 from rich.progress import MofNCompleteColumn, Progress, SpinnerColumn
@@ -87,13 +86,11 @@ def create_drafts(openai: OpenAI, tumblr: TumblrRestClient) -> int:
             try:
                 draft = create_draft(openai, tumblr)
                 live.update(create_table(progress, *draft))
-            except BaseException:  # noqa: BLE001
-                # Stop the live so that everything gets printed under it.
-                live.stop()
-                Console().print_exception()
-                return i
+            except BaseException as exc:
+                exc.add_note(f"📉 An error occurred! Generated {i} draft(s) before failing. {message}")
+                raise
 
-    return SETTINGS.generation.draft_count
+    rich.print(f":chart_increasing: [bold green]Generated {SETTINGS.generation.draft_count} draft(s).[/] {message}")
 
 
 def get_tumblr_client() -> TumblrRestClient:
@@ -115,8 +112,7 @@ def main() -> None:
     openai = OpenAI(api_key=get_env().openai_api_key.get_secret_value())
     tumblr = get_tumblr_client()
 
-    num_drafts = create_drafts(openai, tumblr)
-    rich.print(f"[bold green]Generated {num_drafts} drafts! Check them out at:[/] https://tumblr.com/blog/{get_env().blogname}/drafts")
+    create_drafts(openai, tumblr)
 
 
 run_main(__name__, main)

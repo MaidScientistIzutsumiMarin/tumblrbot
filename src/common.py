@@ -11,8 +11,9 @@ def run_main(name: str, main: Callable[[], str | int | None]) -> None:
         try:
             install(show_locals=True)
             sys.exit(main())
-        except Exception:
-            Console(stderr=True, style="logging.level.error").print_exception(show_locals=True)
+        except SystemExit:
             raise
-        finally:
-            Prompt.ask("Press Enter to continue")
+        except BaseException:
+            Console(stderr=True, style="logging.level.error").print_exception()
+            Prompt.ask("Press Enter to close")
+            raise

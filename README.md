@@ -63,7 +63,7 @@ This fork is largely a rewrite of the source code while maintaining a similar st
          - Changed `system` to `system_message` and had slight grammar updates.
          - Changed `prompt` to `user_message`.
    - Moved personal data like keys into `.env` for our safety.
-   - Moved config fields into `pyproject.toml`.
+   - Moved config fields into [config.toml](config.toml).
    - Maid the scripts wait for user input before closing so that they can be double-clicked to run.
    - Config options:
       - Added `model_name`.
@@ -71,7 +71,7 @@ This fork is largely a rewrite of the source code while maintaining a similar st
 
 And here is the current to-do list that we may or may not get to:
 - Make this repository an installable [pip] package.
-- Move config values into a separate file.
+- Find a way to detect if a script is being double-click ran and adjust error handling.
 - Create a setup script to handle everything for you because we love you.
 - Add retry logic for generating drafts (if it proves to be an issue).
 - Add config options to adjust draft generation behavior.

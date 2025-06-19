@@ -74,10 +74,8 @@ This fork is largely a rewrite of the source code while maintaining a similar st
 And here is the current to-do list that we may or may not get to:
 - Make this repository an installable [pip] package.
 - Create a setup script to handle everything for you because we love you.
-- Add retry logic to [generation.py] (if it proves to be an issue).
-- Add options to adjust draft generation behavior to [config.toml].
+- Figure out if the [max_output_tokens](https://platform.openai.com/docs/api-reference/responses/create#responses-create-max_output_tokens) and [temperature](https://platform.openai.com/docs/api-reference/responses/create#responses-create-temperature) are necessary in [generation.py].
 - Add documentation.
-- Use [tiktoken](https://pypi.org/project/tiktoken) to more accurately adjust generated draft length.
 - Finish updating [README.md](README.md).
 
 **This should also function as a list of features supported by this project.**

@@ -23,8 +23,6 @@ def generate_tags(post_content: str, openai: OpenAI) -> list[str]:
         input="You are an advanced text summarization tool. You return the requested data to the user as a list of comma separated strings.",
         model=SETTINGS.model_name,
         instructions=f"Extract the most important subjects from the following text:\n\n{post_content}",
-        max_output_tokens=50,
-        temperature=0.5,
     )
 
     # Extract the text from the model's response and splitting into a list of strings.
@@ -42,7 +40,6 @@ def generate_text(openai: OpenAI) -> str:
         input=SETTINGS.system_message,
         model=get_env().openai_model.get_secret_value(),
         instructions=SETTINGS.user_message,
-        max_output_tokens=4096 - len(SETTINGS.user_message.split()),
     )
     return response.output_text
 

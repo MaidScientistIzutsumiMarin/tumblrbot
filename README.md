@@ -39,6 +39,7 @@ This fork is largely a rewrite of the source code while maintaining a similar st
       - Added a link to the blog's draft page after generation.
       - Drafts are created as markdown instead of html by default which makes editing easier.
       - Added error checking for uploading drafts to [Tumblr](https://tumblr.com), so it won't silently fail.
+      - Remove specified [max_output_tokens](https://platform.openai.com/docs/api-reference/responses/create#responses-create-max_output_tokens) and [temperature](https://platform.openai.com/docs/api-reference/responses/create#responses-create-temperature) for now.
       - [config.toml]:
          - Changed `tumblr_consumer_key` to `TUMBLR_CONSUMER_KEY`.
          - Changed `tumblr_consumer_secret` to `TUMBLR_CONSUMER_SECRET`.
@@ -74,7 +75,6 @@ This fork is largely a rewrite of the source code while maintaining a similar st
 And here is the current to-do list that we may or may not get to:
 - Make this repository an installable [pip] package.
 - Create a setup script to handle everything for you because we love you.
-- Figure out if the [max_output_tokens](https://platform.openai.com/docs/api-reference/responses/create#responses-create-max_output_tokens) and [temperature](https://platform.openai.com/docs/api-reference/responses/create#responses-create-temperature) are necessary in [generation.py].
 - Add documentation.
 - Finish updating [README.md](README.md).
 

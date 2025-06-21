@@ -7,10 +7,10 @@ from openai.types import ChatModel
 from pydantic import NonNegativeFloat, NonNegativeInt, PositiveInt, Secret, StringConstraints
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, TomlConfigSettingsSource
 
+# Having values validated as non-empty should make it easier for users to diagnose configuration issues.
 NonEmptyString = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
 
-# Having these values validated as non-empty should make it easier for users to diagnose configuration issues.
 class Env(BaseSettings, env_file=".env"):
     tumblr_consumer_key: Secret[NonEmptyString]
     tumblr_consumer_secret: Secret[NonEmptyString]
@@ -21,9 +21,6 @@ class Env(BaseSettings, env_file=".env"):
     openai_model: Secret[NonEmptyString]
 
     blogname: NonEmptyString
-
-    def __init__(self) -> None:
-        super().__init__()
 
 
 class Settings(BaseSettings, toml_file="config.toml"):
@@ -45,18 +42,15 @@ class Settings(BaseSettings, toml_file="config.toml"):
     user_message: NonEmptyString
     model_name: ChatModel
 
-    def __init__(self) -> None:
-        super().__init__()
-
     @classmethod
     @override
     def settings_customise_sources(cls, settings_cls: type[BaseSettings], *args: object, **kwargs: object) -> tuple[PydanticBaseSettingsSource, ...]:
         return (TomlConfigSettingsSource(settings_cls),)
 
 
-SETTINGS = Settings()
+SETTINGS = Settings()  # pyright: ignore[reportCallIssue]
 
 
 @cache
 def get_env() -> Env:
-    return Env()
+    return Env()  # pyright: ignore[reportCallIssue]

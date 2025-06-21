@@ -1,7 +1,0 @@
-beautifulsoup4
-lxml
-openai
-pydantic_settings
-pytumblr
-rich
-tiktoken

@@ -3,7 +3,7 @@ from collections.abc import Collection, Generator, Iterable, Mapping
 from json import dump
 from pathlib import Path
 from textwrap import dedent
-from typing import IO, Any
+from typing import IO
 
 import rich
 from bs4 import BeautifulSoup
@@ -16,7 +16,7 @@ from settings import SETTINGS
 IncomingMarkup = str | bytes | IO[str] | IO[bytes]
 
 
-def count_tokens(messages: Collection[Mapping[Any, str]]) -> int:
+def count_tokens(messages: Collection[Mapping[str, str]]) -> int:
     # Simplified from https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
     # Check there for a detailed explanation of what's being done here.
     encoding = encoding_for_model(SETTINGS.model_name)

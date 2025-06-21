@@ -76,6 +76,8 @@ And here is the current to-do list that we may or may not get to:
 - Make this repository an installable [pip] package.
 - Create a setup script to handle everything for you because we love you.
 - Add documentation.
+- Use classes to store settings data instead of global variables.
+- Generate [.env](Sample%20.env) and [config.toml] if not present.
 - Finish updating [README.md](README.md).
 
 **This should also function as a list of features supported by this project.**

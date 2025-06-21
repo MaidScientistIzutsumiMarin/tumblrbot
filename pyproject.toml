@@ -7,10 +7,10 @@ requires-python = ">= 3.13"
 license = "Unlicense"
 license-files = ["UNLICENSE"]
 dependencies = [
-  "beautifulsoup4",
-  "lxml",
+  "beautifulsoup4[lxml]",
   "openai",
-  "pydantic_settings",
+  "pydantic",
+  "pydantic_settings[dotenv]",
   "pytumblr",
   "rich",
   "tiktoken",

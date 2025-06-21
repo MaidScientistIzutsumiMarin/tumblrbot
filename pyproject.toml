@@ -10,7 +10,7 @@ dependencies = [
   "beautifulsoup4[lxml]",
   "openai",
   "pydantic",
-  "pydantic_settings[dotenv]",
+  "pydantic_settings",
   "pytumblr",
   "rich",
   "tiktoken",

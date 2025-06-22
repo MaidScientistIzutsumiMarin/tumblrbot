@@ -1,3 +1,4 @@
+[OpenAI]: https://pypi.org/project/openai
 [pip]: https://pypi.org
 [config.toml]: config.toml
 [generation.py]: generation.py
@@ -10,7 +11,7 @@ Description of original project:
 This fork is largely a rewrite of the source code while maintaining a similar structure and process. There are quite a few changes from the original, which we will attempt to enumerate here:
 - Internal changes:
    - Updated to [Python 3.13](https://python.org/downloads/release/python-3130)!
-   - Updated [OpenAI](https://pypi.org/project/openai) to the latest version.
+   - Updated [OpenAI] to the latest version.
    - Updated the API used for generating posts to the [Responses API](https://platform.openai.com/docs/api-reference/responses).
    - Added full type checking coverage.
    - Maid the code [Ruff](https://pypi.org/project/ruff)-compliant.
@@ -73,7 +74,7 @@ This fork is largely a rewrite of the source code while maintaining a similar st
    - Changed [generation.py] and [training.py] to now wait for user input before closing if ran directly.
    - [config.toml] changes:
       - Added `model_name`.
-      - Changed `tumblr_url` to `BLOGNAME` and only requires the blog's name.
+      - Changed `tumblr_url` to `BLOGNAME` and only require the blog's name.
 
 And here is the current to-do list that we may or may not get to:
 - Make this repository an installable [pip] package.
@@ -81,6 +82,12 @@ And here is the current to-do list that we may or may not get to:
 - Add documentation.
 - Use classes to store settings data instead of global variables.
 - Generate [.env](Sample%20.env) and [config.toml] if not present.
+- Create single script that handles everything, including fine-tuning.
+- Create simple Tumblr API wrapper (maybe).
+- Add OpenAI model pricing (and other values) scraper (maybe).
+- Add token cost estimate for [generation.py].
+- Add information about current [OpenAI] budget.
+- Try out the streaming API for [generation.py].
 - Finish updating [README.md](README.md).
 
 **This should also function as a list of features supported by this project.**

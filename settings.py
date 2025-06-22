@@ -32,7 +32,7 @@ class Settings(BaseSettings, toml_file="config.toml"):
     class Training(BaseModel):
         data_directory: Path
         output_file: Path
-        expected_epochs: PositiveInt
+        max_output_tokens: PositiveInt
         token_price: NonNegativeFloat
 
     generation: Generation

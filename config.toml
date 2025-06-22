@@ -23,12 +23,13 @@ max_num_tags = 3
 data_directory = "data"
 # Where to output the training data that will be used to fine-tune the model. You can include directories in the name.
 output_file = "training.jsonl"
-# The expected number of epochs that will be used during fine-tuning. This is only used for estimating the number of tokens and cost.
-# This value might not be accurate in the future and should be updated as needed. Currently (2025-06-08), this is the default for the default model.
-expected_epochs = 3
+# Max allowed output tokens for the current model. This is used in estimating the cost of fine-tuning.
+# This value might not be accurate in the future and should be updated as needed. Currently (2025-06-22), this is the price for the default model.
+# The current value for GPT-4.1 nano can be found at https://platform.openai.com/docs/models/gpt-4.1-nano near the top.
+max_output_tokens = 32768
 # The expected price in USD per million tokens during fine-tuning. This is only used for estimating the cost. Decimals are allowed.
-# This value might not be accurate in the future and should be updated as needed. Currently (2025-06-08), this is the price for the default model.
+# This value might not be accurate in the future and should be updated as needed. Currently (2025-06-22), this is the price for the default model.
 # The current price can be found at https://platform.openai.com/docs/pricing#fine-tuning:
 # Use the value from the 'Training' column in the table under 'Fine-tuning'.
 # Setting to 0 will treat fine-tuning as free.
-token_price = 3
+token_price = 1.50

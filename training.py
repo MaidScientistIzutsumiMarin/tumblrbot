@@ -1,5 +1,5 @@
 import re
-from collections.abc import Collection, Generator, Iterable, Mapping
+from collections.abc import Collection, Generator, Iterable, Mapping, Sized
 from json import dump
 from pathlib import Path
 from textwrap import dedent
@@ -7,8 +7,9 @@ from typing import IO
 
 import rich
 from bs4 import BeautifulSoup
+from rich.console import Console
 from rich.progress import Progress
-from tiktoken import encoding_for_model
+from tiktoken import encoding_for_model, get_encoding
 
 from common import run_main
 from settings import SETTINGS
@@ -16,17 +17,39 @@ from settings import SETTINGS
 IncomingMarkup = str | bytes | IO[str] | IO[bytes]
 
 
-def count_tokens(messages: Collection[Mapping[str, str]]) -> int:
-    # Simplified from https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
-    # Check there for a detailed explanation of what's being done here.
-    encoding = encoding_for_model(SETTINGS.model_name)
+def count_epochs(messages: Sized) -> int:
+    # Based on https://cookbook.openai.com/examples/chat_finetuning_data_prep
 
-    # Every reply is primed with <|start|>assistant<|message|>.
-    tokens = 3 * (len(messages) + 1)
-    for message in messages:
-        for value in message.values():
-            tokens += len(encoding.encode(value))
-    return tokens
+    min_target_examples = 100
+    max_target_examples = 25000
+
+    target_epochs = 3
+    n_train_examples = len(messages)
+    if n_train_examples * target_epochs < min_target_examples:
+        return min(25, min_target_examples // n_train_examples)
+    if n_train_examples * target_epochs > max_target_examples:
+        return max(1, max_target_examples // n_train_examples)
+    return target_epochs
+
+
+def count_tokens(dataset: Iterable[Collection[Mapping[str, str]]]) -> int:
+    # Based on https://cookbook.openai.com/examples/how_to_count_tokens_with_tiktoken
+    # and https://cookbook.openai.com/examples/chat_finetuning_data_prep
+
+    try:
+        encoding = encoding_for_model(SETTINGS.model_name)
+    except KeyError as exc:
+        encoding = get_encoding("o200k_base")
+        Console(stderr=True, style="logging.level.warning").print(f"[Warning] Using encoding '{encoding.name}': {exc.args[0]}")
+
+    total_tokens = 0
+    for messages in dataset:
+        messages_tokens = 3 * (len(messages) + 1)  # every reply is primed with <|start|>assistant<|message|>
+        for message in messages:
+            for value in message.values():
+                messages_tokens += len(encoding.encode(value))
+        total_tokens += min(SETTINGS.training.max_output_tokens, messages_tokens)
+    return total_tokens
 
 
 def build_messages(content: str) -> list[dict[str, str]]:
@@ -58,8 +81,7 @@ def get_text(post: IncomingMarkup) -> str:
     return soup.get_text(" ", strip=True)
 
 
-def write_training_data(posts: Iterable[IncomingMarkup]) -> int:
-    tokens = 0
+def write_training_data(posts: Iterable[IncomingMarkup]) -> Generator[list[dict[str, str]]]:
     with SETTINGS.training.output_file.open("w", encoding="utf-8") as fp:
         for post in posts:
             if content := get_text(post):
@@ -72,9 +94,7 @@ def write_training_data(posts: Iterable[IncomingMarkup]) -> int:
                 # Add a new line, since dump does not do this automatically.
                 fp.write("\n")
 
-                tokens += count_tokens(messages)
-
-    return tokens
+                yield messages
 
 
 def get_posts() -> Generator[str]:
@@ -104,14 +124,16 @@ def create_directories() -> None:
 def main() -> None:
     create_directories()
     posts = get_posts()
-    tokens = write_training_data(posts)
+    training_data = tuple(write_training_data(posts))
 
-    total_tokens = SETTINGS.training.expected_epochs * tokens
+    epochs = count_epochs(training_data)
+    tokens = count_tokens(training_data)
+    total_tokens = epochs * tokens
 
     text = f"""
         Total tokens {tokens:,}:
-        Total tokens for [bold orange1]{SETTINGS.training.expected_epochs}[/] epoch(s): {total_tokens:,}
-        Expected cost when trained with [bold purple]{SETTINGS.model_name}[/]: ${3 / 1000000 * total_tokens:.2f}
+        Total tokens for [bold orange1]{epochs}[/] epoch(s): {total_tokens:,}
+        Expected cost when trained with [bold purple]{SETTINGS.model_name}[/]: ${SETTINGS.training.token_price / 1000000 * total_tokens:.2f}
         NOTE: Token values are approximate and may not be 100% accurate, please be aware of this when using the data.
                 [italic red]Neither Amelia nor Mutsumi are responsible for any inaccuracies in the token count or estimated price.[/]
 

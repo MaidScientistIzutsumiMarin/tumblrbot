@@ -102,7 +102,7 @@ def download_posts() -> Generator[Path]:
         raise
 
     for blogname in SETTINGS.training.blognames:
-        output_directory = SETTINGS.training.data_directory.joinpath(blogname)
+        output_directory = SETTINGS.training.data_directory / blogname
 
         if should_download:
             try:
@@ -125,7 +125,7 @@ def download_posts() -> Generator[Path]:
                 if error.returncode != 5:  # noqa: PLR2004
                     raise
 
-        yield from output_directory.joinpath("json").iterdir()
+        yield from (output_directory / "json").iterdir()
 
 
 def main() -> None:

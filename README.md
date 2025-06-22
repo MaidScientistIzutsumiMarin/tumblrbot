@@ -19,6 +19,7 @@ This fork is largely a rewrite of the source code while maintaining a similar st
    - Stream most of the file data instead of loading it all into memory.
    - Switched to [lxml](https://pypi.org/project/lxml) for [Beautiful Soup](https://pypi.org/project/beautifulsoup4).
    - Switched to [Rich](https://pypi.org/project/rich) for error-handling and output.
+   - Changed to use developer instead of system messages.
    - Simplified code where possible.
    - Removed unused packages.
 - Removed features:
@@ -29,6 +30,7 @@ This fork is largely a rewrite of the source code while maintaining a similar st
    - Removed command-line options from [generation.py].
    - Removed [generation.py] clearing drafts behavior.
    - Removed setup and related files.
+   - Removed token limits on draft generation.
 - Changed/Added features:
    - [generation.py]:
       - Renamed `4tv-tumblrbot.py` to [generation.py].
@@ -47,7 +49,7 @@ This fork is largely a rewrite of the source code while maintaining a similar st
          - Changed `tumblr_oauth_token` to `TUMBLR_OAUTH_TOKEN`.
          - Changed `tumblr_oauth_token_secret` to `TUMBLR_OAUTH_TOKEN_SECRET`.
          - Changed `model` to `OPENAI_MODEL`.
-         - Changed `system` to `system_message` and had slight grammar updates.
+         - Changed `system` to `developer_message` and had slight grammar updates.
          - Changed `prompt` to `user_message`.
    - [training.py]:
       - Renamed `create_training_data.py` to [training.py].
@@ -63,8 +65,9 @@ This fork is largely a rewrite of the source code while maintaining a similar st
       - [config.toml]:
          - Added `data_directory`.
          - Added `output_file`.
-         - Added `expected_epochs`.
+         - Added `max_output_tokens`.
          - Added `token_price`.
+   - Updated [model version][config.toml] to [gpt-4.1-nano](https://platform.openai.com/docs/models/gpt-4.1-nano).
    - Moved personal data-like keys into [.env](Sample%20.env) for our safety.
    - Moved `config.ini` fields to [config.toml].
    - Changed [generation.py] and [training.py] to now wait for user input before closing if ran directly.

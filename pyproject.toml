@@ -10,10 +10,11 @@ dependencies = [
   "beautifulsoup4[lxml]",
   "openai",
   "pydantic",
-  "pydantic_settings",
+  "pydantic-settings",
   "pytumblr",
   "rich",
   "tiktoken",
+  "tumblr-backup",
 ]
 
 [project.urls]

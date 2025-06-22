@@ -1,4 +1,3 @@
-from functools import cache
 from pathlib import Path
 from typing import Annotated, override
 
@@ -20,18 +19,19 @@ class Env(BaseSettings, env_file=".env"):
     openai_api_key: Secret[NonEmptyString]
     openai_model: Secret[NonEmptyString]
 
-    blogname: NonEmptyString
-
 
 class Settings(BaseSettings, toml_file="config.toml"):
     class Generation(BaseModel):
+        blogname: NonEmptyString
         draft_count: NonNegativeInt
         tags_chance: NonNegativeFloat
         max_num_tags: PositiveInt
 
     class Training(BaseModel):
+        blognames: tuple[NonEmptyString, ...]
         data_directory: Path
         output_file: Path
+        target_epochs: PositiveInt
         max_output_tokens: PositiveInt
         token_price: NonNegativeFloat
 
@@ -48,9 +48,5 @@ class Settings(BaseSettings, toml_file="config.toml"):
         return (TomlConfigSettingsSource(settings_cls),)
 
 
+ENV = Env()  # pyright: ignore[reportCallIssue]
 SETTINGS = Settings()  # pyright: ignore[reportCallIssue]
-
-
-@cache
-def get_env() -> Env:
-    return Env()  # pyright: ignore[reportCallIssue]

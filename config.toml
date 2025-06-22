@@ -9,6 +9,7 @@ user_message = "Please write a comical Tumblr post."
 model_name = "gpt-4.1-nano"
 
 [generation]
+blogname = ""
 # The number of drafts to process.
 # Setting to 0 will disable draft generation.
 draft_count = 150
@@ -19,11 +20,13 @@ tags_chance = 0.1
 max_num_tags = 3
 
 [training]
+blognames = []
 # Where to read post data from.
 # Every file in this directory will be parsed.
 data_directory = "data"
 # Where to output the training data that will be used to fine-tune the model. You can include directories in the name.
 output_file = "training.jsonl"
+target_epochs = 3
 # Max allowed output tokens for the current model. This is used in estimating the cost of fine-tuning.
 # This value might not be accurate in the future and should be updated as needed. Currently (2025-06-22), this is the price for the default model.
 # The current value for GPT-4.1 nano can be found at https://platform.openai.com/docs/models/gpt-4.1-nano near the top.

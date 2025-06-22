@@ -1,10 +1,48 @@
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from pathlib import Path
+from random import choice
+from typing import Self, override
 
-from rich.console import Console
+from rich._spinners import SPINNERS
+from rich.console import Console, RenderableType
+from rich.live import Live
+from rich.panel import Panel
+from rich.progress import MofNCompleteColumn, Progress, SpinnerColumn, TimeElapsedColumn
 from rich.prompt import Prompt
+from rich.table import Table
 from rich.traceback import install
+
+
+class CustomLive(Live):
+    def __init__(self) -> None:
+        super().__init__()
+
+        spinner_name = choice(tuple(SPINNERS))  # noqa: S311
+        self.progress = Progress(
+            *Progress.get_default_columns(),
+            TimeElapsedColumn(),
+            MofNCompleteColumn(),
+            SpinnerColumn(spinner_name),
+            auto_refresh=False,
+        )
+
+        self.custom_update("")
+
+    @override
+    def __enter__(self) -> Self:
+        super().__enter__()
+        return self
+
+    def custom_update(self, body: RenderableType, tags: Iterable[str] = ()) -> None:
+        tags_string = " ".join(f"#{tag}" for tag in tags)
+
+        table = Table.grid()
+        table.add_row(self.progress)
+        if body:
+            table.add_row(Panel(body, title="Preview", subtitle=tags_string, subtitle_align="left"))
+
+        return self.update(table)
 
 
 def run_main(name: str, main: Callable[[], str | int | None]) -> None:

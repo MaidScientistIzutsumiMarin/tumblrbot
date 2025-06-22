@@ -37,7 +37,7 @@ def generate_tags(post_content: str, openai: OpenAI) -> list[str]:
 
 def generate_text(openai: OpenAI) -> str:
     response = openai.responses.create(
-        input=SETTINGS.system_message,
+        input=SETTINGS.developer_message,
         model=get_env().openai_model.get_secret_value(),
         instructions=SETTINGS.user_message,
     )

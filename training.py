@@ -55,8 +55,8 @@ def count_tokens(dataset: Iterable[Collection[Mapping[str, str]]]) -> int:
 def build_messages(content: str) -> list[dict[str, str]]:
     return [
         {
-            "role": "system",
-            "content": SETTINGS.system_message,
+            "role": "developer",
+            "content": SETTINGS.developer_message,
         },
         {
             "role": "user",

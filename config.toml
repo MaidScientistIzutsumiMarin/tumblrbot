@@ -1,11 +1,12 @@
-# System message to use for the OpenAI API. This is the system message that will be used to generate the text.
-system_message = "You are a Tumblr post bot. Please generate a Tumblr post in accordance with the user's request."
+# Developer message to use for the OpenAI API. This is the developer message that will be used to generate the text.
+developer_message = "You are a Tumblr post bot. Please generate a Tumblr post in accordance with the user's request."
 # User message for the OpenAI API. This is the prompt that will be sent to the API to generate the text. It will be used both in the training and generation of the model.
 user_message = "Please write a comical Tumblr post."
-# The name of the model that will be fine-tuned by the generated training data. This is only used for estimating the number of tokens and cost.
+# The name of the model that will be fine-tuned by the generated training data.
+# This is used for estimating the number of tokens and cost and generating tags for drafts.
 # The list of possible model names can be found at https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb:
 # Use the value from the 'OpenAI models' column in the table under 'Encodings'.
-model_name = "gpt-4o-mini"
+model_name = "gpt-4.1-nano"
 
 [generation]
 # The number of drafts to process.

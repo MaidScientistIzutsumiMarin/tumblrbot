@@ -38,8 +38,8 @@ class Settings(BaseSettings, toml_file="config.toml"):
     generation: Generation
     training: Training
 
-    system_message: NonEmptyString
-    user_message: NonEmptyString
+    developer_message: str
+    user_message: str
     model_name: ChatModel
 
     @classmethod

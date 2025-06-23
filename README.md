@@ -69,6 +69,7 @@ Probable To-Dos:
 - Try out the streaming API for [generation.py].
 - Add command line arguments for [config.toml] values.
 - Finish updating [README.md](README.md).
+
 Possible To-Dos:
 - Make this repository an installable [pip] package.
 - Create simple Tumblr API wrapper.

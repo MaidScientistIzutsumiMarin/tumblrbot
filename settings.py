@@ -10,7 +10,14 @@ from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, TomlConf
 NonEmptyString = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
 
-class Env(BaseSettings, env_file=".env"):
+class TOMLSettings(BaseSettings):
+    @classmethod
+    @override
+    def settings_customise_sources(cls, settings_cls: type[BaseSettings], *args: object, **kwargs: object) -> tuple[PydanticBaseSettingsSource, ...]:
+        return (TomlConfigSettingsSource(settings_cls),)
+
+
+class Env(TOMLSettings, toml_file=".env.toml"):
     tumblr_consumer_key: Secret[NonEmptyString]
     tumblr_consumer_secret: Secret[NonEmptyString]
     tumblr_oauth_token: Secret[NonEmptyString]
@@ -20,7 +27,7 @@ class Env(BaseSettings, env_file=".env"):
     openai_model: Secret[NonEmptyString]
 
 
-class Settings(BaseSettings, toml_file="config.toml"):
+class Settings(TOMLSettings, toml_file="config.toml"):
     class Generation(BaseModel):
         blogname: NonEmptyString
         draft_count: NonNegativeInt
@@ -41,11 +48,6 @@ class Settings(BaseSettings, toml_file="config.toml"):
     developer_message: str
     user_message: str
     model_name: ChatModel
-
-    @classmethod
-    @override
-    def settings_customise_sources(cls, settings_cls: type[BaseSettings], *args: object, **kwargs: object) -> tuple[PydanticBaseSettingsSource, ...]:
-        return (TomlConfigSettingsSource(settings_cls),)
 
 
 ENV = Env()  # pyright: ignore[reportCallIssue]

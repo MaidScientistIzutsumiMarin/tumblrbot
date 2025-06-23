@@ -1,6 +1,6 @@
 [OpenAI]: https://pypi.org/project/openai
 [pip]: https://pypi.org
-[.env]: Sample%20.env
+[.env.toml]: Sample%20.env.toml
 [config.toml]: config.toml
 [generation.py]: generation.py
 [training.py]: training.py
@@ -56,7 +56,7 @@ This fork is largely a rewrite of the source code while maintaining a similar st
          - "ALT"
          - Text from polls, including "See Results"
    - Updated [model version][config.toml] to [gpt-4.1-nano](https://platform.openai.com/docs/models/gpt-4.1-nano).
-   - Moved secret keys into [.env] for our safety.
+   - Moved secret keys into [.env.toml] for our safety.
    - Moved `config.ini` fields to [config.toml].
    - Changed [generation.py] and [training.py] to now wait for user input before closing if ran directly.
 
@@ -64,7 +64,7 @@ Probable To-Dos:
 - Add documentation.
 - Make [\_\_main__.py](__main__.py) which will be an entry point for everything, including fine-tuning and downloading posts.
    - Separate downloading, writing training data, and generating drafts into separate files that this is the entry point for.
-- Interactively ask for user tokens to be stored in a (probably) separate config file instead of [.env].
+- Interactively ask for user tokens to be stored in a (probably) separate config file instead of [.env.toml].
 - Add token cost estimate for [generation.py].
 - Try out the streaming API for [generation.py].
 - Add command line arguments for [config.toml] values.

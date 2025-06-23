@@ -64,7 +64,6 @@ Probable To-Dos:
 - Add documentation.
 - Make [\_\_main__.py](__main__.py) which will be an entry point for everything, including fine-tuning and downloading posts.
    - Separate downloading, writing training data, and generating drafts into separate files that this is the entry point for.
-- Interactively ask for user tokens to be stored in a (probably) separate config file instead of [.env.toml].
 - Add token cost estimate for [generation.py].
 - Try out the streaming API for [generation.py].
 - Add command line arguments for [config.toml] values.
@@ -77,6 +76,7 @@ Possible To-Dos:
 - Add OpenAI model pricing (and other values) scraper.
 - Add information about current [OpenAI] budget.
 - Generate [config.toml] if not present (seems complicated and possibly more work than it's worth).
+- Interactively ask for user tokens to be stored in a (probably) separate config file instead of [.env.toml].
 
 
 **This should also function as a list of features supported by this project.**

@@ -1,5 +1,5 @@
 import re
-from collections.abc import Collection, Generator, Iterable, Mapping, Sized
+from collections.abc import Collection, Generator, Iterable, Mapping
 from json import dump
 from pathlib import Path
 from textwrap import dedent
@@ -15,21 +15,6 @@ from common import run_main
 from settings import SETTINGS
 
 IncomingMarkup = str | bytes | IO[str] | IO[bytes]
-
-
-def count_epochs(messages: Sized) -> int:
-    # Based on https://cookbook.openai.com/examples/chat_finetuning_data_prep
-
-    min_target_examples = 100
-    max_target_examples = 25000
-
-    target_epochs = 3
-    n_train_examples = len(messages)
-    if n_train_examples * target_epochs < min_target_examples:
-        return min(25, min_target_examples // n_train_examples)
-    if n_train_examples * target_epochs > max_target_examples:
-        return max(1, max_target_examples // n_train_examples)
-    return target_epochs
 
 
 def count_tokens(dataset: Iterable[Collection[Mapping[str, str]]]) -> int:
@@ -75,7 +60,7 @@ def get_text(post: IncomingMarkup) -> str:
     # Remove the classes specified which only contain garbage data that would be picked up as text.
     # It would be possible to use an inverted regex or lambda to instead iterate through all classes besides these,
     # but that would be a fair bit more complicated and harder to read.
-    for element in soup.find_all(class_=("tmblr-alt-text-helper", "poll-question", "poll-row", "poll-see-results")):
+    for element in soup(class_=["tmblr-alt-text-helper", "poll-question", "poll-row", "poll-see-results"]):
         element.decompose()
 
     return soup.get_text(" ", strip=True)
@@ -126,13 +111,12 @@ def main() -> None:
     posts = get_posts()
     training_data = tuple(write_training_data(posts))
 
-    epochs = count_epochs(training_data)
     tokens = count_tokens(training_data)
-    total_tokens = epochs * tokens
+    total_tokens = SETTINGS.training.target_epochs * tokens
 
     text = f"""
         Total tokens {tokens:,}:
-        Total tokens for [bold orange1]{epochs}[/] epoch(s): {total_tokens:,}
+        Total tokens for [bold orange1]{SETTINGS.training.target_epochs}[/] epoch(s): {total_tokens:,}
         Expected cost when trained with [bold purple]{SETTINGS.model_name}[/]: ${SETTINGS.training.token_price / 1000000 * total_tokens:.2f}
         NOTE: Token values are approximate and may not be 100% accurate, please be aware of this when using the data.
                 [italic red]Neither Amelia nor Mutsumi are responsible for any inaccuracies in the token count or estimated price.[/]

@@ -59,9 +59,7 @@ def get_content(post_path: Path) -> str:
     soup = BeautifulSoup(post["body"], "lxml")
 
     # Remove the classes specified which only contain garbage data that would be picked up as text.
-    # It would be possible to use an inverted regex or lambda to instead iterate through all classes besides these,
-    # but that would be a fair bit more complicated and harder to read.
-    for element in soup.find_all(class_=("tmblr-alt-text-helper", "poll-question", "poll-row", "poll-see-results")):
+    for element in soup.find_all(class_="tmblr-alt-text-helper"):
         element.decompose()
 
     return soup.get_text(" ", strip=True)

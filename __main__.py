@@ -60,7 +60,7 @@ def get_content(post_path: Path) -> str:
     soup = BeautifulSoup(post["body"], "lxml")
 
     # Remove the classes specified which only contain garbage data that would be picked up as text.
-    for element in soup.find_all(class_="tmblr-alt-text-helper"):
+    for element in soup(class_="tmblr-alt-text-helper"):
         element.decompose()
 
     return soup.get_text(" ", strip=True)
@@ -84,7 +84,7 @@ def write_training_data(post_paths: Iterable[Path]) -> Generator[list[dict[str, 
             yield messages
 
 
-def download_posts() -> Generator[Path]:
+def download_posts() -> list[Path]:
     yes_option = "y"
     should_download = Prompt.ask("Download latest posts?", choices=[yes_option, "n"], case_sensitive=False, default=yes_option) == yes_option
 
@@ -93,20 +93,21 @@ def download_posts() -> Generator[Path]:
 
     try:
         run(  # noqa: S603
-            (tumblr_backup_path, "--set-api-key", ENV.tumblr_consumer_key.get_secret_value()),
+            [tumblr_backup_path, "--set-api-key", ENV.tumblr_consumer_key.get_secret_value()],
             check=True,
         )
     except FileNotFoundError as error:
         error.filename = tumblr_backup_filename
         raise
 
+    post_paths: list[Path] = []
     for blogname in SETTINGS.training.blognames:
         output_directory = SETTINGS.training.data_directory / blogname
 
         if should_download:
             try:
                 run(  # noqa: S603
-                    (
+                    [
                         tumblr_backup_path,
                         blogname,
                         "--outdir",
@@ -117,20 +118,21 @@ def download_posts() -> Generator[Path]:
                         "--type",
                         "text",
                         "--no-reblog",
-                    ),
+                    ],
                     check=True,
                 )
             except CalledProcessError as error:
                 if error.returncode != EXIT_NOPOSTS:
                     raise
 
-        yield from (output_directory / "json").iterdir()
+        post_paths += (output_directory / "json").iterdir()
+    return post_paths
 
 
 def main() -> None:
     SETTINGS.training.output_file.parent.mkdir(parents=True, exist_ok=True)
 
-    post_paths = tuple(download_posts())
+    post_paths = list(download_posts())
     training_data = write_training_data(post_paths)
 
     tokens = count_tokens(training_data)

@@ -35,7 +35,7 @@ class Settings(TOMLSettings, toml_file="config.toml"):
         max_num_tags: PositiveInt
 
     class Training(BaseModel):
-        blognames: tuple[NonEmptyString, ...]
+        blognames: list[NonEmptyString]
         data_directory: Path
         output_file: Path
         target_epochs: PositiveInt

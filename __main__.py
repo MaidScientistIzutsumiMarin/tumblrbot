@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 from rich.console import Console
 from rich.prompt import Prompt
 from tiktoken import encoding_for_model, get_encoding
+from tumblr_backup.main import EXIT_NOPOSTS
 
 from common import CustomLive, run_main
 from settings import ENV, SETTINGS
@@ -120,7 +121,7 @@ def download_posts() -> Generator[Path]:
                     check=True,
                 )
             except CalledProcessError as error:
-                if error.returncode != 5:  # noqa: PLR2004
+                if error.returncode != EXIT_NOPOSTS:
                     raise
 
         yield from (output_directory / "json").iterdir()

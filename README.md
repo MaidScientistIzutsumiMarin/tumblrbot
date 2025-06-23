@@ -43,15 +43,6 @@ This fork is largely a rewrite of the source code while maintaining a similar st
       - Drafts are created as markdown instead of html by default which makes editing easier.
       - Added error checking for uploading drafts to [Tumblr](https://tumblr.com), so it won't silently fail.
       - Remove specified [max_output_tokens](https://platform.openai.com/docs/api-reference/responses/create#responses-create-max_output_tokens) and [temperature](https://platform.openai.com/docs/api-reference/responses/create#responses-create-temperature) for now.
-      - [config.toml]:
-         - Changed `tumblr_consumer_key` to `TUMBLR_CONSUMER_KEY`.
-         - Changed `tumblr_consumer_secret` to `TUMBLR_CONSUMER_SECRET`.
-         - Changed `openai_api_key` to `OPENAI_API_KEY`.
-         - Changed `tumblr_oauth_token` to `TUMBLR_OAUTH_TOKEN`.
-         - Changed `tumblr_oauth_token_secret` to `TUMBLR_OAUTH_TOKEN_SECRET`.
-         - Changed `model` to `OPENAI_MODEL`.
-         - Changed `system` to `developer_message` and had slight grammar updates.
-         - Changed `prompt` to `user_message`.
    - [training.py]:
       - Renamed `create_training_data.py` to [training.py].
       - Updated output to include more information.
@@ -63,32 +54,28 @@ This fork is largely a rewrite of the source code while maintaining a similar st
       - Garbage data is filtered out of training data:
          - "ALT"
          - Text from polls, including "See Results"
-      - [config.toml]:
-         - Added `data_directory`.
-         - Added `output_file`.
-         - Added `max_output_tokens`.
-         - Added `token_price`.
    - Updated [model version][config.toml] to [gpt-4.1-nano](https://platform.openai.com/docs/models/gpt-4.1-nano).
-   - Moved personal data-like keys into [.env](Sample%20.env) for our safety.
+   - Moved secret keys into [.env](Sample%20.env) for our safety.
    - Moved `config.ini` fields to [config.toml].
    - Changed [generation.py] and [training.py] to now wait for user input before closing if ran directly.
-   - [config.toml] changes:
-      - Added `model_name`.
-      - Changed `tumblr_url` to `BLOGNAME` and only require the blog's name.
 
-And here is the current to-do list that we may or may not get to:
-- Make this repository an installable [pip] package.
-- Create a setup script to handle everything for you because we love you.
+Probable To-Dos:
 - Add documentation.
 - Use classes to store settings data instead of global variables.
-- Generate [.env](Sample%20.env) and [config.toml] if not present.
-- Create single script that handles everything, including fine-tuning.
-- Create simple Tumblr API wrapper (maybe).
-- Add OpenAI model pricing (and other values) scraper (maybe).
+- Make [\_\_main__.py](__main__.py) which will be an entry point for everything, including fine-tuning and downloading posts.
+   - Separate downloading, writing training data, and generating drafts into separate files that this is the entry point for.
+- Interactively ask for user tokens to be stored in a (probably) separate config file instead of [.env](Sample .env).
 - Add token cost estimate for [generation.py].
-- Add information about current [OpenAI] budget.
 - Try out the streaming API for [generation.py].
+- Add command line arguments for [config.toml] values.
 - Finish updating [README.md](README.md).
+Possible To-Dos:
+- Make this repository an installable [pip] package.
+- Create simple Tumblr API wrapper.
+- Add OpenAI model pricing (and other values) scraper.
+- Add information about current [OpenAI] budget.
+- Generate [config.toml] if not present (seems complicated and possibly more work than it's worth).
+
 
 **This should also function as a list of features supported by this project.**
 

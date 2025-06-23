@@ -33,6 +33,7 @@ This fork is largely a rewrite of the source code while maintaining a similar st
    - Removed [generation.py] clearing drafts behavior.
    - Removed setup and related files.
    - Removed token limits on draft generation.
+   - Removed tag limit on draft generation.
 - Changed/Added features:
    - [generation.py]:
       - Renamed `4tv-tumblrbot.py` to [generation.py].

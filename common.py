@@ -35,7 +35,7 @@ class CustomLive(Live):
         return self
 
     def custom_update(self, body: RenderableType, tags: Iterable[str] = ()) -> None:
-        tags_string = " ".join(f"#{tag}" for tag in tags)
+        tags_string = " ".join(f"#{tag.strip()}" for tag in tags)
 
         table = Table.grid()
         table.add_row(self.progress)

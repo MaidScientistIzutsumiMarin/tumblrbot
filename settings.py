@@ -32,7 +32,6 @@ class Settings(TOMLSettings, toml_file="config.toml"):
         blogname: NonEmptyString
         draft_count: NonNegativeInt
         tags_chance: NonNegativeFloat
-        max_num_tags: PositiveInt
 
     class Training(BaseModel):
         blognames: list[NonEmptyString]

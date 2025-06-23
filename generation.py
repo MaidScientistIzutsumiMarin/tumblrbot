@@ -1,4 +1,3 @@
-from itertools import islice
 from random import random
 
 import rich
@@ -20,13 +19,9 @@ def generate_tags(post_content: str, openai: OpenAI) -> list[str]:
     )
 
     # Extract the text from the model's response and splitting into a list of strings.
-    iterable = set(response.output_text.split(", "))
-
-    # Get how many to extract.
-    stop = min(len(iterable), SETTINGS.generation.max_num_tags)
-
-    # Limit the number of subjects to the specified limit.
-    return list(islice(iterable, stop))
+    # It's not technically necessary to split here since Tumblr will handle it for us,
+    # but it makes previewing the tags much simpler.
+    return response.output_text.split(",")
 
 
 def generate_text(openai: OpenAI) -> str:

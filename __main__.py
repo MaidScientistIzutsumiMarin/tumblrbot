@@ -89,10 +89,10 @@ def download_posts() -> list[Path]:
     should_download = Prompt.ask("Download latest posts?", choices=[yes_option, "n"], case_sensitive=False, default=yes_option) == yes_option
 
     tumblr_backup_filename = "tumblr-backup"
-    tumblr_backup_path = which(tumblr_backup_filename) or tumblr_backup_filename
+    tumblr_backup_path = which(tumblr_backup_filename) or ""
 
     try:
-        run(  # noqa: S603
+        run(
             [tumblr_backup_path, "--set-api-key", ENV.tumblr_consumer_key.get_secret_value()],
             check=True,
         )
@@ -106,19 +106,8 @@ def download_posts() -> list[Path]:
 
         if should_download:
             try:
-                run(  # noqa: S603
-                    [
-                        tumblr_backup_path,
-                        blogname,
-                        "--outdir",
-                        output_directory,
-                        "--incremental",
-                        "--skip-images",
-                        "--json",
-                        "--type",
-                        "text",
-                        "--no-reblog",
-                    ],
+                run(
+                    [tumblr_backup_path, blogname, "--outdir", output_directory, "--incremental", "--skip-images", "--json", "--type", "text", "--no-reblog"],
                     check=True,
                 )
             except CalledProcessError as error:

@@ -69,19 +69,19 @@ def get_content(post_path: Path) -> str:
 def write_training_data(post_paths: Iterable[Path]) -> Generator[list[dict[str, str]]]:
     with SETTINGS.training.output_file.open("w", encoding="utf-8") as fp, CustomLive() as live:
         for post_path in live.progress.track(post_paths, description="Writing training data..."):
-            content = get_content(post_path)
-            live.custom_update(content)
+            if content := get_content(post_path):
+                live.custom_update(content)
 
-            messages = build_messages(content)
-            training_data = {"messages": messages}
+                messages = build_messages(content)
+                training_data = {"messages": messages}
 
-            # We think ensure_ascii is important here, but we don't know for sure. Having it should prevent any data loss.
-            dump(training_data, fp, ensure_ascii=False)
+                # We think ensure_ascii is important here, but we don't know for sure. Having it should prevent any data loss.
+                dump(training_data, fp, ensure_ascii=False)
 
-            # Add a new line, since dump does not do this automatically.
-            fp.write("\n")
+                # Add a new line, since dump does not do this automatically.
+                fp.write("\n")
 
-            yield messages
+                yield messages
 
 
 def download_posts() -> list[Path]:
@@ -121,7 +121,7 @@ def download_posts() -> list[Path]:
 def main() -> None:
     SETTINGS.training.output_file.parent.mkdir(parents=True, exist_ok=True)
 
-    post_paths = list(download_posts())
+    post_paths = download_posts()
     training_data = write_training_data(post_paths)
 
     tokens = count_tokens(training_data)

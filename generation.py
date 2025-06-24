@@ -13,9 +13,9 @@ def generate_tags(post_content: str, openai: OpenAI) -> set[str]:
         return {""}
 
     response = openai.responses.create(
-        input="You are an advanced text summarization tool. You return the requested data to the user as a list of comma separated strings.",
+        input=f"Extract the most important subjects from the following text:\n\n{post_content}",
         model=SETTINGS.model_name,
-        instructions=f"Extract the most important subjects from the following text:\n\n{post_content}",
+        instructions="You are an advanced text summarization tool. You return the requested data to the user as a list of comma separated strings.",
     )
 
     # Extracting the text from the model's response and splitting into a list of strings.
@@ -27,9 +27,9 @@ def generate_tags(post_content: str, openai: OpenAI) -> set[str]:
 
 def generate_text(openai: OpenAI) -> str:
     response = openai.responses.create(
-        input=SETTINGS.developer_message,
+        input=SETTINGS.user_message,
         model=ENV.openai_model.get_secret_value(),
-        instructions=SETTINGS.user_message,
+        instructions=SETTINGS.developer_message,
     )
     return response.output_text
 

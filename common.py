@@ -1,9 +1,10 @@
 import sys
-from collections.abc import Callable, Iterable
+from collections.abc import Callable
 from pathlib import Path
 from random import choice
 from typing import Self, override
 
+from pydantic import BaseModel
 from rich._spinners import SPINNERS
 from rich.console import Console, RenderableType
 from rich.live import Live
@@ -12,6 +13,14 @@ from rich.progress import MofNCompleteColumn, Progress, SpinnerColumn, TimeElaps
 from rich.prompt import Prompt
 from rich.table import Table
 from rich.traceback import install
+
+
+class Tags(BaseModel):
+    tags: list[str]
+
+    @override
+    def __str__(self) -> str:
+        return " ".join(f"#{tag}" for tag in self.tags)
 
 
 class CustomLive(Live):
@@ -34,12 +43,11 @@ class CustomLive(Live):
         super().__enter__()
         return self
 
-    def custom_update(self, body: RenderableType, tags: Iterable[str] = []) -> None:
+    def custom_update(self, body: RenderableType, tags: Tags | None = None) -> None:
         table = Table.grid()
         table.add_row(self.progress)
         if body:
-            tags_string = " ".join(f"#{tag}" for tag in tags if tag)
-            table.add_row(Panel(body, title="Preview", subtitle=tags_string, subtitle_align="left"))
+            table.add_row(Panel(body, title="Preview", subtitle=str(tags or ""), subtitle_align="left"))
 
         return self.update(table)
 

@@ -4,25 +4,22 @@ import rich
 from openai import OpenAI
 from pytumblr import TumblrRestClient
 
-from common import CustomLive, run_main
+from common import CustomLive, Tags, run_main
 from settings import ENV, SETTINGS
 
 
-def generate_tags(post_content: str, openai: OpenAI) -> set[str]:
-    if random() > SETTINGS.generation.tags_chance:  # noqa: S311
-        return {""}
+def generate_tags(post_content: str, openai: OpenAI) -> Tags | None:
+    if random() < SETTINGS.generation.tags_chance:  # noqa: S311
+        response = openai.responses.parse(
+            input=post_content,
+            model=SETTINGS.model_name,
+            text_format=Tags,
+            instructions="Extract a very short list of the most important subjects from the provided text.",
+        )
 
-    response = openai.responses.create(
-        input=f"Extract the most important subjects from the following text:\n\n{post_content}",
-        model=SETTINGS.model_name,
-        instructions="You are an advanced text summarization tool. You return the requested data to the user as a list of comma separated strings.",
-    )
+        return response.output_parsed
 
-    # Extracting the text from the model's response and splitting into a list of strings.
-    # It's not technically necessary to split here since Tumblr will handle it for us,
-    # but it makes previewing the tags much simpler and consistent.
-    tags = response.output_text.split(",")
-    return set(map(str.strip, tags))
+    return None
 
 
 def generate_text(openai: OpenAI) -> str:
@@ -34,14 +31,14 @@ def generate_text(openai: OpenAI) -> str:
     return response.output_text
 
 
-def create_draft(openai: OpenAI, tumblr: TumblrRestClient) -> tuple[str, set[str]]:
+def create_draft(openai: OpenAI, tumblr: TumblrRestClient) -> tuple[str, Tags | None]:
     body = generate_text(openai)
     tags = generate_tags(body, openai)
 
     response = tumblr.create_text(
         SETTINGS.generation.blogname,
         state="draft",
-        tags=tags,
+        tags=tags.tags if tags else [""],
         format="markdown",
         body=body,
     )

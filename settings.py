@@ -18,13 +18,13 @@ class TOMLSettings(BaseSettings):
 
 
 class Env(TOMLSettings, toml_file=".env.toml"):
-    tumblr_consumer_key: Secret[NonEmptyString]
+    tumblr_consumer_key: NonEmptyString
     tumblr_consumer_secret: Secret[NonEmptyString]
-    tumblr_oauth_token: Secret[NonEmptyString]
+    tumblr_oauth_token: NonEmptyString
     tumblr_oauth_secret: Secret[NonEmptyString]
 
     openai_api_key: Secret[NonEmptyString]
-    openai_model: Secret[NonEmptyString]
+    openai_model: NonEmptyString
 
 
 class Settings(TOMLSettings, toml_file="config.toml"):
@@ -44,7 +44,6 @@ class Settings(TOMLSettings, toml_file="config.toml"):
     generation: Generation
     training: Training
 
-    developer_message: str
     user_message: str
     model_name: ChatModel
 

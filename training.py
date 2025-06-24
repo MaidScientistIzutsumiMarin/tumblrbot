@@ -89,7 +89,7 @@ def download_posts() -> list[Path]:
 
     try:
         run(
-            [tumblr_backup_path, "--set-api-key", ENV.tumblr_consumer_key.get_secret_value()],
+            [tumblr_backup_path, "--set-api-key", ENV.tumblr_consumer_key],
             check=True,
         )
     except FileNotFoundError as error:

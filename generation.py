@@ -25,8 +25,7 @@ def generate_tags(post_content: str, openai: OpenAI) -> Tags | None:
 def generate_text(openai: OpenAI) -> str:
     response = openai.responses.create(
         input=SETTINGS.user_message,
-        model=ENV.openai_model.get_secret_value(),
-        instructions=SETTINGS.developer_message,
+        model=ENV.openai_model,
     )
     return response.output_text
 
@@ -63,9 +62,9 @@ def create_drafts(openai: OpenAI, tumblr: TumblrRestClient) -> None:
 
 def get_tumblr_client() -> TumblrRestClient:
     tumblr = TumblrRestClient(
-        ENV.tumblr_consumer_key.get_secret_value(),
+        ENV.tumblr_consumer_key,
         ENV.tumblr_consumer_secret.get_secret_value(),
-        ENV.tumblr_oauth_token.get_secret_value(),
+        ENV.tumblr_oauth_token,
         ENV.tumblr_oauth_secret.get_secret_value(),
     )
 

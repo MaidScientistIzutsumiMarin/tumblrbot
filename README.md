@@ -12,7 +12,7 @@
 [max output tokens]: https://platform.openai.com/docs/api-reference/responses/create#responses-create-max_output_tokens
 [temperature]: https://platform.openai.com/docs/api-reference/responses/create#responses-create-temperature
 
-[.env.toml]: Sample%20.env.toml
+[Env]: Sample%20.env.toml
 [Config]: config.toml
 [Generation]: generation.py
 [README.md]: README.md
@@ -60,6 +60,7 @@ This fork is largely a rewrite of the source code with similarities in its struc
    - Renamed several [Config] options.
    - Changed the value of several [Config] options.
    - Added command-line options to override [Config] options.
+   - Added behavior to regenerate default [Config] and [Env] if missing.
 
 Probable To-Dos:
 - Add documentation.
@@ -74,8 +75,7 @@ Possible To-Dos:
 - Make this an installable [pip] package.
 - Add an OpenAI model pricing and max output tokens scraper.
 - Add information about the current [OpenAI] budget.
-- Generate [Config] if not present.
-- Ask for and store user tokens instead of using [.env.toml].
+- Ask for and store user tokens instead of using [Env].
 
 
 **Please submit an issue or contact us for features you want to added/reimplemented.**

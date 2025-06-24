@@ -12,8 +12,8 @@
 [max output tokens]: https://platform.openai.com/docs/api-reference/responses/create#responses-create-max_output_tokens
 [temperature]: https://platform.openai.com/docs/api-reference/responses/create#responses-create-temperature
 
-[Env]: Sample%20.env.toml
-[Config]: config.toml
+[Env]: settings.py
+[Config]: settings.py
 [Generation]: generation.py
 [README.md]: README.md
 [Training]: training.py

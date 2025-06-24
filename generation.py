@@ -15,7 +15,7 @@ def generate_tags(post_content: str, openai: OpenAI) -> set[str]:
     response = openai.responses.create(
         input=f"Extract the most important subjects from the following text:\n\n{post_content}",
         model=SETTINGS.model_name,
-        instructions="You are an advanced text summarization tool. You return the requested data to the user as a list of comma separated strings.",
+        instructions="You are an advanced text summarization tool. Return the requested data to the user as a list of comma-separated strings.",
     )
 
     # Extracting the text from the model's response and splitting into a list of strings.

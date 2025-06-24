@@ -27,7 +27,7 @@ class Env(TOMLSettings, toml_file=".env.toml"):
     openai_model: NonEmptyString
 
 
-class Settings(TOMLSettings, toml_file="config.toml"):
+class Settings(TOMLSettings, toml_file="config.toml", cli_parse_args=True, cli_kebab_case=True, cli_avoid_json=True):
     class Generation(BaseModel):
         blogname: NonEmptyString
         draft_count: NonNegativeInt

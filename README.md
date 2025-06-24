@@ -25,7 +25,6 @@ Description of original project:
 This fork is largely a rewrite of the source code with similarities in its structure and process:
 - Removed features:
    - [Generation]:
-      - Removed command-line options.
       - Removed clearing drafts behavior.
       - Removed the tag limit.
    - [Training]:
@@ -60,6 +59,7 @@ This fork is largely a rewrite of the source code with similarities in its struc
    - Renamed several files.
    - Renamed several [Config] options.
    - Changed the value of several [Config] options.
+   - Added command-line options to override [Config] options.
 
 Probable To-Dos:
 - Add documentation.
@@ -76,7 +76,6 @@ Possible To-Dos:
 - Add information about the current [OpenAI] budget.
 - Generate [Config] if not present.
 - Ask for and store user tokens instead of using [.env.toml].
-- Add command-line options for [tumblr-backup].
 
 
 **Please submit an issue or contact us for features you want to added/reimplemented.**

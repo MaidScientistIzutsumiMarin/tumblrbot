@@ -34,12 +34,11 @@ class CustomLive(Live):
         super().__enter__()
         return self
 
-    def custom_update(self, body: RenderableType, tags: Iterable[str] = ()) -> None:
-        tags_string = " ".join(f"#{tag.strip()}" for tag in tags)
-
+    def custom_update(self, body: RenderableType, tags: Iterable[str] = []) -> None:
         table = Table.grid()
         table.add_row(self.progress)
         if body:
+            tags_string = " ".join(f"#{tag}" for tag in tags if tag)
             table.add_row(Panel(body, title="Preview", subtitle=tags_string, subtitle_align="left"))
 
         return self.update(table)

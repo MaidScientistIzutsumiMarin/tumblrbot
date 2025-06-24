@@ -8,9 +8,9 @@ from common import CustomLive, run_main
 from settings import ENV, SETTINGS
 
 
-def generate_tags(post_content: str, openai: OpenAI) -> list[str]:
+def generate_tags(post_content: str, openai: OpenAI) -> set[str]:
     if random() > SETTINGS.generation.tags_chance:  # noqa: S311
-        return []
+        return {""}
 
     response = openai.responses.create(
         input="You are an advanced text summarization tool. You return the requested data to the user as a list of comma separated strings.",
@@ -18,10 +18,11 @@ def generate_tags(post_content: str, openai: OpenAI) -> list[str]:
         instructions=f"Extract the most important subjects from the following text:\n\n{post_content}",
     )
 
-    # Extract the text from the model's response and splitting into a list of strings.
+    # Extracting the text from the model's response and splitting into a list of strings.
     # It's not technically necessary to split here since Tumblr will handle it for us,
-    # but it makes previewing the tags much simpler.
-    return response.output_text.split(",")
+    # but it makes previewing the tags much simpler and consistent.
+    tags = response.output_text.split(",")
+    return set(map(str.strip, tags))
 
 
 def generate_text(openai: OpenAI) -> str:
@@ -33,14 +34,14 @@ def generate_text(openai: OpenAI) -> str:
     return response.output_text
 
 
-def create_draft(openai: OpenAI, tumblr: TumblrRestClient) -> tuple[str, list[str]]:
+def create_draft(openai: OpenAI, tumblr: TumblrRestClient) -> tuple[str, set[str]]:
     body = generate_text(openai)
     tags = generate_tags(body, openai)
 
     response = tumblr.create_text(
         SETTINGS.generation.blogname,
         state="draft",
-        tags=tags or [""],
+        tags=tags,
         format="markdown",
         body=body,
     )

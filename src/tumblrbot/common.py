@@ -12,6 +12,7 @@ from rich.panel import Panel
 from rich.progress import MofNCompleteColumn, Progress, SpinnerColumn, TimeElapsedColumn
 from rich.prompt import Prompt
 from rich.table import Table
+from rich.text import TextType
 from rich.traceback import install
 
 
@@ -50,6 +51,13 @@ class CustomLive(Live):
             table.add_row(Panel(body, title="Preview", subtitle=str(tags or ""), subtitle_align="left"))
 
         return self.update(table)
+
+
+def yes_no_prompt(prompt: TextType, *, default: bool) -> bool:
+    yes_option = "y"
+    no_option = "n"
+    answer = Prompt.ask(prompt, choices=[yes_option, no_option], case_sensitive=False, default=yes_option if default else no_option)
+    return answer == yes_option
 
 
 def run_main(name: str, main: Callable[[], str | int | None]) -> None:

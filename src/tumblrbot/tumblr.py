@@ -8,6 +8,8 @@ from requests_oauthlib import OAuth1Session
 from rich.prompt import Prompt
 from tumblr_backup.main import EXIT_NOPOSTS
 
+from src.tumblrbot.common import yes_no_prompt
+
 
 def generate_oauth_tokens() -> tuple[str, str, str, str]:
     rich.print("Retrieve a consumer key and consumer secret from: http://tumblr.com/oauth/apps")
@@ -35,12 +37,12 @@ def generate_oauth_tokens() -> tuple[str, str, str, str]:
     )
     tokens = session.fetch_access_token("http://tumblr.com/oauth/access_token")
 
+    rich.print("Successfully generated tokens!\n")
     return consumer_key, consumer_secret, tokens["oauth_token"], tokens["oauth_token_secret"]
 
 
 def download_posts(tumblr_consumer_key: str, blognames: Iterable[str], data_directory: Path) -> list[Path]:
-    yes_option = "y"
-    should_download = Prompt.ask("\nDownload latest posts?", choices=[yes_option, "n"], case_sensitive=False, default=yes_option) == yes_option
+    should_download = yes_no_prompt("Download latest posts?", default=True)
 
     tumblr_backup_filename = "tumblr-backup"
     tumblr_backup_path = which(tumblr_backup_filename) or ""

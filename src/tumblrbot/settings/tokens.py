@@ -6,6 +6,7 @@ from pydantic.fields import FieldInfo
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource
 from rich.prompt import Prompt
 
+from src.tumblrbot.common import yes_no_prompt
 from src.tumblrbot.tumblr import generate_oauth_tokens
 
 
@@ -41,11 +42,11 @@ class Tokens(BaseSettings):
     def model_post_init(self, context: object) -> None:
         super().model_post_init(context)
 
-        if not (self.tumblr_consumer_key and self.tumblr_consumer_secret and self.tumblr_oauth_token and self.tumblr_oauth_secret):
+        if "" in {self.tumblr_consumer_key, self.tumblr_consumer_secret, self.tumblr_oauth_token, self.tumblr_oauth_secret} or yes_no_prompt("Reset Tumblr tokens?", default=False):
             self.tumblr_consumer_key, self.tumblr_consumer_secret, self.tumblr_oauth_token, self.tumblr_oauth_secret = generate_oauth_tokens()
 
-        if not self.openai_api_key:
-            rich.print("\nGet an OpenAI API key here: https://platform.openai.com/account/api-keys")
+        if not self.openai_api_key or yes_no_prompt("Change OpenAI API key?", default=False):
+            rich.print("Get an OpenAI API key here: https://platform.openai.com/account/api-keys")
             self.openai_api_key = Prompt.ask("Enter the key").strip()
 
         self.save_tokens()

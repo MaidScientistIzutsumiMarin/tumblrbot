@@ -1,19 +1,15 @@
 from collections.abc import Collection, Generator, Iterable, Mapping
 from json import dump, load
 from pathlib import Path
-from shutil import which
-from subprocess import CalledProcessError, run
 from textwrap import dedent
 
 import rich
 from bs4 import BeautifulSoup
 from rich.console import Console
-from rich.prompt import Prompt
 from tiktoken import encoding_for_model, get_encoding
-from tumblr_backup.main import EXIT_NOPOSTS
 
-from common import CustomLive, run_main
-from settings import ENV, SETTINGS
+from common import CustomLive
+from confiig import CONFIG
 
 
 def count_tokens(dataset: Iterable[Collection[Mapping[str, str]]]) -> int:
@@ -21,7 +17,7 @@ def count_tokens(dataset: Iterable[Collection[Mapping[str, str]]]) -> int:
     # and https://cookbook.openai.com/examples/chat_finetuning_data_prep
 
     try:
-        encoding = encoding_for_model(SETTINGS.model_name)
+        encoding = encoding_for_model(CONFIG.model_name)
     except KeyError as exc:
         encoding = get_encoding("o200k_base")
         Console(stderr=True, style="logging.level.warning").print(f"[Warning] Using encoding '{encoding.name}': {exc.args[0]}")
@@ -32,7 +28,7 @@ def count_tokens(dataset: Iterable[Collection[Mapping[str, str]]]) -> int:
         for message in messages:
             for value in message.values():
                 messages_tokens += len(encoding.encode(value))
-        total_tokens += min(SETTINGS.training.max_output_tokens, messages_tokens)
+        total_tokens += min(CONFIG.training.max_output_tokens, messages_tokens)
     return total_tokens
 
 
@@ -40,7 +36,7 @@ def build_messages(content: str) -> list[dict[str, str]]:
     return [
         {
             "role": "user",
-            "content": SETTINGS.user_message,
+            "content": CONFIG.user_message,
         },
         {
             "role": "assistant",
@@ -63,7 +59,7 @@ def get_content(post_path: Path) -> str:
 
 
 def write_training_data(post_paths: Iterable[Path]) -> Generator[list[dict[str, str]]]:
-    with SETTINGS.training.output_file.open("w", encoding="utf-8") as fp, CustomLive() as live:
+    with CONFIG.training.output_file.open("w", encoding="utf-8") as fp, CustomLive() as live:
         for post_path in live.progress.track(post_paths, description="Writing training data..."):
             if content := get_content(post_path):
                 live.custom_update(content)
@@ -80,59 +76,21 @@ def write_training_data(post_paths: Iterable[Path]) -> Generator[list[dict[str, 
                 yield messages
 
 
-def download_posts() -> list[Path]:
-    yes_option = "y"
-    should_download = Prompt.ask("Download latest posts?", choices=[yes_option, "n"], case_sensitive=False, default=yes_option) == yes_option
+def main(post_paths: Iterable[Path]) -> None:
+    CONFIG.training.output_file.parent.mkdir(parents=True, exist_ok=True)
 
-    tumblr_backup_filename = "tumblr-backup"
-    tumblr_backup_path = which(tumblr_backup_filename) or ""
-
-    try:
-        run(
-            [tumblr_backup_path, "--set-api-key", ENV.tumblr_consumer_key],
-            check=True,
-        )
-    except FileNotFoundError as error:
-        error.filename = tumblr_backup_filename
-        raise
-
-    post_paths: list[Path] = []
-    for blogname in SETTINGS.training.blognames:
-        output_directory = SETTINGS.training.data_directory / blogname
-
-        if should_download:
-            try:
-                run(
-                    [tumblr_backup_path, blogname, "--outdir", output_directory, "--incremental", "--skip-images", "--json", "--type", "text", "--no-reblog"],
-                    check=True,
-                )
-            except CalledProcessError as error:
-                if error.returncode != EXIT_NOPOSTS:
-                    raise
-
-        post_paths += (output_directory / "json").iterdir()
-    return post_paths
-
-
-def main() -> None:
-    SETTINGS.training.output_file.parent.mkdir(parents=True, exist_ok=True)
-
-    post_paths = download_posts()
     training_data = write_training_data(post_paths)
 
     tokens = count_tokens(training_data)
-    total_tokens = SETTINGS.training.target_epochs * tokens
+    total_tokens = CONFIG.training.target_epochs * tokens
 
     text = f"""
         Total tokens {tokens:,}:
-        Total tokens for [bold orange1]{SETTINGS.training.target_epochs}[/] epoch(s): {total_tokens:,}
-        Expected cost when trained with [bold purple]{SETTINGS.model_name}[/]: ${SETTINGS.training.token_price / 1000000 * total_tokens:.2f}
+        Total tokens for [bold orange1]{CONFIG.training.target_epochs}[/] epoch(s): {total_tokens:,}
+        Expected cost when trained with [bold purple]{CONFIG.model_name}[/]: ${CONFIG.training.token_price / 1000000 * total_tokens:.2f}
         NOTE: Token values are approximate and may not be 100% accurate, please be aware of this when using the data.
                 [italic red]Neither Amelia nor Mutsumi are responsible for any inaccuracies in the token count or estimated price.[/]
 
-        [bold]The training data has been written to the '{SETTINGS.training.output_file}' directory.
+        [bold]The training data has been written to the '{CONFIG.training.output_file}' directory.
     """
     rich.print(dedent(text))
-
-
-run_main(__name__, main)

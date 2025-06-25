@@ -43,7 +43,7 @@ class CustomLive(Live):
         super().__enter__()
         return self
 
-    def custom_update(self, body: RenderableType, tags: Tags | None = None) -> None:
+    def custom_update(self, body: RenderableType, tags: Tags = None) -> None:
         table = Table.grid()
         table.add_row(self.progress)
         if body:

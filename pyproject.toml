@@ -1,30 +1,27 @@
 [project]
 name = "tumblrbot"
-version = "0.1.0"
 description = "An updated bot that posts to Tumblr, based on your very own blog!"
 readme = "README.md"
 requires-python = ">= 3.13"
 license = "Unlicense"
 license-files = ["UNLICENSE"]
 dependencies = [
+  "CacheControl",
   "beautifulsoup4[lxml]",
   "openai",
   "pydantic",
   "pydantic-settings",
-  "pytumblr",
+  "requests-oauthlib",
   "rich",
   "tiktoken",
   "tomlkit",
   "tumblr-backup",
 ]
+dynamic = ["version"]
 
 [project.urls]
 Issues = "https://github.com/MaidThatPrograms/tumblrbot/issues"
 Repository = "https://github.com/MaidThatPrograms/tumblrbot"
-
-[project.scripts]
-tumblrbot-generation = "generation:main"
-tumblrbot-training = "training:main"
 
 [build-system]
 requires = ["hatchling"]

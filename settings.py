@@ -22,13 +22,14 @@ class TOMLSettings(BaseSettings):
         return (TomlConfigSettingsSource(settings_cls),)
 
     def model_post_init(self, context: object) -> None:
+        super().model_post_init(context)
+
         toml_files = self.model_config.get("toml_file")
         if isinstance(toml_files, (Path, str)):
             self.dump_toml(toml_files)
         elif isinstance(toml_files, Sequence):
             for toml_file in toml_files:
                 self.dump_toml(toml_file)
-        return super().model_post_init(context)
 
     def dump_toml(self, toml_file: "StrPath") -> None:
         toml_path = Path(toml_file)

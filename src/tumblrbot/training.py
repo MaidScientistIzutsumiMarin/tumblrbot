@@ -52,7 +52,7 @@ def get_content(post_path: Path) -> str:
     soup = BeautifulSoup(post["body"], "lxml")
 
     # Remove the classes specified which only contain garbage data that would be picked up as text.
-    for element in soup(class_="tmblr-alt-text-helper"):
+    for element in soup(class_=["tmblr-alt-text-helper", "poll-question", "poll-row", "poll-see-results"]):
         element.decompose()
 
     return soup.get_text(" ", strip=True)

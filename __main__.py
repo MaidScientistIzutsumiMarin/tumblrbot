@@ -1,10 +1,10 @@
 import rich
 
-import training
-from common import run_main
-from confiig import CONFIG
-from tokens import TOKENS
-from tumblr import download_posts
+from src.tumblrbot import training
+from src.tumblrbot.common import run_main
+from src.tumblrbot.settings.config import CONFIG
+from src.tumblrbot.settings.tokens import TOKENS
+from src.tumblrbot.tumblr import download_posts
 
 
 def main() -> None:

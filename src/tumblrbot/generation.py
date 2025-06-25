@@ -2,17 +2,16 @@ from random import random
 
 import rich
 from openai import OpenAI
-from pytumblr import TumblrRestClient
 
 from common import CustomLive, Tags, run_main
-from settings import ENV, SETTINGS
+from src.tumblrbot.config import get_settings, get_tokens
 
 
 def generate_tags(post_content: str, openai: OpenAI) -> Tags | None:
-    if random() < SETTINGS.generation.tags_chance:  # noqa: S311
+    if random() < get_settings.generation.tags_chance:  # noqa: S311
         response = openai.responses.parse(
             input=post_content,
-            model=SETTINGS.model_name,
+            model=get_settings.model_name,
             text_format=Tags,
             instructions="Extract a very short list of the most important subjects from the provided text.",
         )
@@ -24,8 +23,8 @@ def generate_tags(post_content: str, openai: OpenAI) -> Tags | None:
 
 def generate_text(openai: OpenAI) -> str:
     response = openai.responses.create(
-        input=SETTINGS.user_message,
-        model=ENV.openai_model,
+        input=get_settings.user_message,
+        model=get_tokens.openai_model,
     )
     return response.output_text
 
@@ -35,7 +34,7 @@ def create_draft(openai: OpenAI, tumblr: TumblrRestClient) -> tuple[str, Tags | 
     tags = generate_tags(body, openai)
 
     response = tumblr.create_text(
-        SETTINGS.generation.blogname,
+        get_settings.generation.blogname,
         state="draft",
         tags=tags.tags if tags else [""],
         format="markdown",
@@ -47,9 +46,9 @@ def create_draft(openai: OpenAI, tumblr: TumblrRestClient) -> tuple[str, Tags | 
 
 
 def create_drafts(openai: OpenAI, tumblr: TumblrRestClient) -> None:
-    message = f"View drafts here: https://tumblr.com/blog/{SETTINGS.generation.blogname}/drafts"
+    message = f"View drafts here: https://tumblr.com/blog/{get_settings.generation.blogname}/drafts"
     with CustomLive() as live:
-        for i in live.progress.track(range(SETTINGS.generation.draft_count), description="Generating drafts..."):
+        for i in live.progress.track(range(get_settings.generation.draft_count), description="Generating drafts..."):
             try:
                 draft = create_draft(openai, tumblr)
                 live.custom_update(*draft)
@@ -57,15 +56,15 @@ def create_drafts(openai: OpenAI, tumblr: TumblrRestClient) -> None:
                 exc.add_note(f"📉 An error occurred! Generated {i} draft(s) before failing. {message}")
                 raise
 
-    rich.print(f":chart_increasing: [bold green]Generated {SETTINGS.generation.draft_count} draft(s).[/] {message}")
+    rich.print(f":chart_increasing: [bold green]Generated {get_settings.generation.draft_count} draft(s).[/] {message}")
 
 
 def get_tumblr_client() -> TumblrRestClient:
     tumblr = TumblrRestClient(
-        ENV.tumblr_consumer_key,
-        ENV.tumblr_consumer_secret.get_secret_value(),
-        ENV.tumblr_oauth_token,
-        ENV.tumblr_oauth_secret.get_secret_value(),
+        get_tokens.tumblr_consumer_key,
+        get_tokens.tumblr_consumer_secret.get_secret_value(),
+        get_tokens.tumblr_oauth_token,
+        get_tokens.tumblr_oauth_secret.get_secret_value(),
     )
 
     # Force pytumblr to return the raw Response object instead of a json.
@@ -75,7 +74,7 @@ def get_tumblr_client() -> TumblrRestClient:
 
 
 def main() -> None:
-    openai = OpenAI(api_key=ENV.openai_api_key.get_secret_value())
+    openai = OpenAI(api_key=get_tokens.openai_api_key.get_secret_value())
     tumblr = get_tumblr_client()
 
     create_drafts(openai, tumblr)

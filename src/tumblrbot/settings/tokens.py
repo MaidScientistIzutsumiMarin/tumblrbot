@@ -6,7 +6,7 @@ from pydantic.fields import FieldInfo
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource
 from rich.prompt import Prompt
 
-from tumblr import generate_oauth_tokens
+from src.tumblrbot.tumblr import generate_oauth_tokens
 
 
 class KeyringSettingsSource(PydanticBaseSettingsSource):

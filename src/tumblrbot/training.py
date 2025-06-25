@@ -8,8 +8,8 @@ from bs4 import BeautifulSoup
 from rich.console import Console
 from tiktoken import encoding_for_model, get_encoding
 
-from common import CustomLive
-from confiig import CONFIG
+from src.tumblrbot.common import CustomLive
+from src.tumblrbot.settings.config import CONFIG
 
 
 def count_tokens(dataset: Iterable[Collection[Mapping[str, str]]]) -> int:

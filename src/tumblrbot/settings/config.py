@@ -47,6 +47,7 @@ class AutoGenerateSettings(BaseSettings):
 
 class Config(AutoGenerateSettings, cli_parse_args=True, cli_avoid_json=True, cli_kebab_case=True, toml_file="config.toml"):
     class Generation(AutoGenerateSettings):
+        openai_model: str = Field("", description="Model to use for the OpenAI API. This is the model that will be used to generate draft text. You need to first generate the training data for this model.")
         blogname: str = Field(
             "",
             description='The name of the blog which generated drafts will be uploaded to that appears in the URL. This must be a blog associated with the same account as the configured Tumblr secret values. Examples: "staff" for https://staff.tumblr.com and "changes" for https://tumblr.com/changes or https://tumblr.com/@changes',

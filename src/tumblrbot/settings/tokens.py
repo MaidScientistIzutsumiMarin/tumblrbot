@@ -30,9 +30,7 @@ class Tokens(BaseSettings):
     tumblr_consumer_secret: str
     tumblr_oauth_token: str
     tumblr_oauth_secret: str
-
     openai_api_key: str
-    openai_model: str
 
     @classmethod
     @override

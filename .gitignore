@@ -1,6 +1,6 @@
 data
 images
-*.toml
+config.toml
 *.jsonl
 
 # Byte-compiled / optimized / DLL files

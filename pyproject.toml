@@ -6,8 +6,7 @@ requires-python = ">= 3.13"
 license = "Unlicense"
 license-files = ["UNLICENSE"]
 dependencies = [
-  "CacheControl",
-  "beautifulsoup4[lxml]",
+  "CacheControl[filecache]",
   "openai",
   "pydantic",
   "pydantic-settings",
@@ -15,7 +14,6 @@ dependencies = [
   "rich",
   "tiktoken",
   "tomlkit",
-  "tumblr-backup",
 ]
 dynamic = ["version"]
 

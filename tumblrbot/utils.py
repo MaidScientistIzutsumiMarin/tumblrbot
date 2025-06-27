@@ -62,10 +62,10 @@ class PreviewLive(Live):
         return self.update(table)
 
 
-def yes_no_prompt(prompt: TextType, *, default: bool = True) -> bool:
-    yes_option = "y"
+def yes_no_prompt(prompt: TextType) -> bool:
+    yes_option = "Y"
     no_option = "n"
-    answer = Prompt.ask(prompt, choices=[yes_option, no_option], case_sensitive=False, default=yes_option if default else no_option)
+    answer = Prompt.ask(prompt, choices=[yes_option, no_option], case_sensitive=False, default=no_option)
     return answer == yes_option
 
 

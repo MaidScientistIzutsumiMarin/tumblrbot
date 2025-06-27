@@ -12,7 +12,7 @@ from tumblrbot.utils import yes_no_prompt
 
 
 def main() -> None:
-    if not all(TOKENS.tumblr.model_dump().values()) or yes_no_prompt("Reset Tumblr Tokens?", default=False):
+    if not all(TOKENS.tumblr.model_dump().values()) or yes_no_prompt("Reset Tumblr Tokens?"):
         write_tumblr_credentials()
 
     with TumblrSession() as session:

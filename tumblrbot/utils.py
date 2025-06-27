@@ -12,23 +12,18 @@ from rich.prompt import Prompt
 from rich.table import Table
 from rich.text import TextType
 
-MODEL_CONFIG = ConfigDict(extra="allow", validate_default=True)
+
+class ConfiguredModel(BaseModel):
+    model_config = ConfigDict(extra="allow", validate_default=True)
 
 
-class Post(BaseModel):
-    model_config = MODEL_CONFIG
-
-    class Content(BaseModel):
-        model_config = MODEL_CONFIG
-
+class Post(ConfiguredModel):
+    class Content(ConfiguredModel):
         type: str
         text: str = ""
 
-    type ContentList = list[Content]
-    type TagList = list[str]
-
-    content: ContentList
-    tags: TagList
+    content: list[Content]
+    tags: list[str]
     trail: list[object] = []
     timestamp: NonNegativeInt = 0
 
@@ -45,7 +40,7 @@ class PreviewLive(Live):
     def __init__(self, *, transient: bool = False) -> None:
         super().__init__(transient=transient)
 
-        spinner_name = choice(list(SPINNERS))  # noqa: S311
+        spinner_name = choice(list(SPINNERS))
         self.progress = Progress(
             *Progress.get_default_columns(),
             TimeElapsedColumn(),

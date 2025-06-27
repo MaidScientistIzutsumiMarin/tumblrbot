@@ -74,8 +74,8 @@ def main(post_paths: Iterable[Path], total: int) -> None:
     CONFIG.training.output_file.parent.mkdir(parents=True, exist_ok=True)
 
     dataset = write_training_data(post_paths, total)
-
     tokens = count_tokens(dataset)
+
     total_tokens = CONFIG.training.target_epochs * tokens
 
     text = f"""

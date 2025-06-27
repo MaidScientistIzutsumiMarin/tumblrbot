@@ -90,7 +90,7 @@ def token_prompt(token_type: str, *, secret: bool = False) -> Secret[str] | str:
     return token
 
 
-def print_prompt(url: str, *token_types: str) -> None:
+def print_token_url(url: str, *token_types: str) -> None:
     token_types_string = " and ".join(f"[cyan]{token_type}[/]" for token_type in token_types)
     rich.print(f"Retrieve your {token_types_string} from: {url}")
 

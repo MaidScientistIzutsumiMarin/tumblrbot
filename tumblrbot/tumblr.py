@@ -10,7 +10,7 @@ from requests import Response
 from requests_oauthlib import OAuth1Session
 
 from tumblrbot.settings import CONFIG, TOKENS, Tokens
-from tumblrbot.utils import Post, PreviewLive, dump_model, token_prompt
+from tumblrbot.utils import Post, PreviewLive, dump_model, print_token_url, token_prompt
 
 
 class PostsResponse(BaseModel):
@@ -92,7 +92,7 @@ class TumblrSession(OAuth1Session):
     def write_all_published_posts(self, *, should_download: bool) -> tuple[list[Path], int]:
         CONFIG.training.data_directory.mkdir(parents=True, exist_ok=True)
 
-        output_paths: list[Path] = []
+        output_paths = []
         completed = 0
 
         with PreviewLive() as live:
@@ -124,7 +124,7 @@ class TumblrSession(OAuth1Session):
 
 
 def write_tumblr_credentials() -> None:
-    rich.print("Retrieve your [cyan]consumer key[/] and [cyan]consumer secret[/] from: http://tumblr.com/oauth/apps")
+    print_token_url("https://platform.openai.com/settings/organization/api-keys", "consumer key", "consumer secret")
     consumer_key = token_prompt("consumer key")
     consumer_secret = token_prompt("consumer secret", secret=True)
 

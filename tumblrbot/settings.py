@@ -11,11 +11,11 @@ from tomlkit.items import Table
 if TYPE_CHECKING:
     from _typeshed import StrPath
 
-config = SettingsConfigDict(extra="ignore", validate_assignment=True)
+MODEL_CONFIG = SettingsConfigDict(extra="ignore", validate_assignment=True)
 
 
 class TOMLSettings(BaseSettings):
-    model_config = config
+    model_config = MODEL_CONFIG
 
     @classmethod
     @override
@@ -67,7 +67,7 @@ class Config(TOMLSettings):
     )
 
     class Generation(BaseSettings):
-        model_config = config
+        model_config = MODEL_CONFIG
 
         openai_model: str = Field("", description="Model to use for the OpenAI API. This is the model that will be used to generate draft text. You need to first generate the training data for this model.")
         blogname: str = Field(
@@ -78,7 +78,7 @@ class Config(TOMLSettings):
         tags_chance: NonNegativeFloat = Field(0.1, description="The chance to generate tags for any given post. This will incur extra calls to OpenAI. Setting to 0 will disable tag generation. 0.1 is a 10% chance.")
 
     class Training(BaseSettings):
-        model_config = config
+        model_config = MODEL_CONFIG
 
         blognames: list[str] = Field(
             [],
@@ -100,7 +100,7 @@ class Tokens(TOMLSettings):
     model_config = SettingsConfigDict(toml_file="env.toml")
 
     class Tumblr(BaseSettings):
-        model_config = config
+        model_config = MODEL_CONFIG
 
         client_key: str = ""
         client_secret: Secret[str] = Secret("")

@@ -12,7 +12,11 @@ from rich.text import TextType
 
 
 class Post(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
     class Content(BaseModel):
+        model_config = ConfigDict(extra="allow")
+
         type: str
         text: str | None = None
 

@@ -65,7 +65,7 @@ class PreviewLive(Live):
         table = Table.grid()
         table.add_row(self.progress)
         table.add_row(*renderables)
-        return self.update(table)
+        self.update(table)
 
 
 def yes_no_prompt(prompt: TextType) -> bool:
@@ -95,5 +95,5 @@ def print_prompt(url: str, *token_types: str) -> None:
     rich.print(f"Retrieve your {token_types_string} from: {url}")
 
 
-def dump_model(model: BaseModel, fp: IO[bytes]) -> int:
-    return fp.write(model.__pydantic_serializer__.to_json(model) + b"\n")
+def dump_model(model: BaseModel, fp: IO[bytes]) -> None:
+    fp.write(model.__pydantic_serializer__.to_json(model) + b"\n")

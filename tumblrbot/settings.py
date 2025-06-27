@@ -19,7 +19,7 @@ class TOMLSettings(BaseSettings):
 
     @classmethod
     @override
-    def settings_customise_sources(cls, settings_cls: type[BaseSettings], *args: PydanticBaseSettingsSource, **kwargs: object) -> tuple[PydanticBaseSettingsSource, ...]:
+    def settings_customise_sources(cls, settings_cls: type[BaseSettings], *args: object, **kwargs: object) -> tuple[PydanticBaseSettingsSource, ...]:
         return (TomlConfigSettingsSource(settings_cls),)
 
     @classmethod

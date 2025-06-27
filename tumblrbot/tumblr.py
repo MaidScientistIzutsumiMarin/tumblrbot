@@ -55,8 +55,8 @@ class TumblrSession(OAuth1Session):
         response.raise_for_status()
         return response
 
-    def create_draft_post(self, post: Post) -> Response:
-        return self.post(
+    def create_draft_post(self, post: Post) -> None:
+        self.post(
             f"{CONFIG.generation.blogname}/posts",
             data={
                 "content": post.content,

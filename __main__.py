@@ -15,7 +15,7 @@ def main() -> None:
     if not all(TOKENS.tumblr.model_dump().values()) or yes_no_prompt("Reset Tumblr Tokens?"):
         write_tumblr_credentials()
 
-    if not TOKENS.openai_api_key or yes_no_prompt("Reset OpenAI Tokens?"):
+    if not TOKENS.openai_api_key.get_secret_value() or yes_no_prompt("Reset OpenAI Tokens?"):
         print_prompt("https://platform.openai.com/settings/organization/api-keys", "API key")
         TOKENS.openai_api_key = token_prompt("API Key", secret=True)
 

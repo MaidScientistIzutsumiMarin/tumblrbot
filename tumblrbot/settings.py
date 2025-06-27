@@ -3,44 +3,45 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Self, override
 
 from openai.types import ChatModel
-from pydantic import Field, NonNegativeFloat, NonNegativeInt, PositiveInt, Secret, model_validator
+from pydantic import Field, NonNegativeFloat, NonNegativeInt, PositiveInt, Secret, field_serializer, model_validator
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict, TomlConfigSettingsSource
-from tomlkit import comment, dump, table  # pyright: ignore[reportUnknownVariableType]
+from tomlkit import comment, dump, table
 from tomlkit.items import Table
 
 if TYPE_CHECKING:
     from _typeshed import StrPath
 
-MODEL_CONFIG = SettingsConfigDict(extra="ignore", validate_assignment=True)
 
+class TomlSettings(BaseSettings):
+    model_config = SettingsConfigDict(extra="ignore", validate_assignment=True)
 
-class TOMLSettings(BaseSettings):
-    model_config = MODEL_CONFIG
+    @field_serializer("*")
+    @staticmethod
+    def serialize(value: object) -> object:
+        if isinstance(value, Secret):
+            return value.get_secret_value()
+        return value
 
-    @classmethod
-    @override
-    def settings_customise_sources(cls, settings_cls: type[BaseSettings], *args: object, **kwargs: object) -> tuple[PydanticBaseSettingsSource, ...]:
-        return (TomlConfigSettingsSource(settings_cls),)
-
-    @classmethod
-    def get_toml_table(cls, model: BaseSettings) -> Table:
+    def get_toml_table(self) -> Table:
         toml_table = table()
 
-        dumped_model = model.model_dump(mode="json")
-        for name, field in model.__class__.model_fields.items():
+        dumped_model = self.model_dump(mode="json")
+        for name, field in self.__class__.model_fields.items():
             if field.description:
                 for line in field.description.split(". "):
                     toml_table.add(comment(f"{line.removesuffix('.')}."))
 
-            value = getattr(model, name)
-            if isinstance(value, BaseSettings):
-                toml_table[name] = cls.get_toml_table(value)
-            elif isinstance(value, Secret):
-                toml_table[name] = value.get_secret_value()
-            else:
-                toml_table[name] = dumped_model[name]
+            value = getattr(self, name)
+            toml_table[name] = value.get_toml_table() if isinstance(value, TomlSettings) else dumped_model[name]
 
         return toml_table
+
+
+class AutoGenerateTomlSettings(TomlSettings):
+    @classmethod
+    @override
+    def settings_customise_sources(cls, settings_cls: type[BaseSettings], *args: object, **kwargs: object) -> tuple[PydanticBaseSettingsSource, ...]:
+        return (TomlConfigSettingsSource(settings_cls),)
 
     @model_validator(mode="after")
     def save(self) -> Self:
@@ -55,10 +56,10 @@ class TOMLSettings(BaseSettings):
 
     def dump_toml(self, toml_file: "StrPath") -> None:
         with Path(toml_file).open("w", encoding="utf_8") as fp:
-            dump(self.get_toml_table(self), fp)
+            dump(self.get_toml_table(), fp)
 
 
-class Config(TOMLSettings):
+class Config(AutoGenerateTomlSettings):
     model_config = SettingsConfigDict(
         cli_parse_args=True,
         cli_avoid_json=True,
@@ -66,9 +67,7 @@ class Config(TOMLSettings):
         toml_file="config.toml",
     )
 
-    class Generation(BaseSettings):
-        model_config = MODEL_CONFIG
-
+    class Generation(TomlSettings):
         openai_model: str = Field("", description="Model to use for the OpenAI API. This is the model that will be used to generate draft text. You need to first generate the training data for this model.")
         blogname: str = Field(
             "",
@@ -77,9 +76,7 @@ class Config(TOMLSettings):
         draft_count: NonNegativeInt = Field(150, description="The number of drafts to process. This will affect the number of tokens used with OpenAI. Setting to 0 will disable draft generation.")
         tags_chance: NonNegativeFloat = Field(0.1, description="The chance to generate tags for any given post. This will incur extra calls to OpenAI. Setting to 0 will disable tag generation. 0.1 is a 10% chance.")
 
-    class Training(BaseSettings):
-        model_config = MODEL_CONFIG
-
+    class Training(TomlSettings):
         blognames: list[str] = Field(
             [],
             description='The names of the blogs which post data will be downloaded from that appears in the URL. This must be a blog associated with the same account as the configured Tumblr secret values. Examples: ["staff", "changes"] for https://staff.tumblr.com and https://www.tumblr.com/changes or https://www.tumblr.com/@changes',
@@ -96,19 +93,17 @@ class Config(TOMLSettings):
     training: Training = Training()  # pyright: ignore[reportCallIssue]
 
 
-class Tokens(TOMLSettings):
+class Tokens(AutoGenerateTomlSettings):
     model_config = SettingsConfigDict(toml_file="env.toml")
 
-    class Tumblr(BaseSettings):
-        model_config = MODEL_CONFIG
-
+    class Tumblr(TomlSettings):
         client_key: str = ""
         client_secret: Secret[str] = Secret("")
         resource_owner_key: str = ""
         resource_owner_secret: Secret[str] = Secret("")
 
     openai_api_key: Secret[str] = Secret("")
-    tumblr: Tumblr = Tumblr()  # pyright: ignore[reportCallIssue]
+    tumblr: Tumblr = Tumblr()
 
 
 CONFIG = Config()  # pyright: ignore[reportCallIssue]

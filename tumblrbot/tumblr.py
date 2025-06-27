@@ -26,12 +26,7 @@ class PostsResponse(BaseModel):
 
 class TumblrSession(OAuth1Session):
     def __init__(self) -> None:
-        super().__init__(
-            TOKENS.tumblr.client_key,
-            TOKENS.tumblr.client_secret.get_secret_value(),
-            TOKENS.tumblr.resource_owner_key,
-            TOKENS.tumblr.resource_owner_secret.get_secret_value(),
-        )
+        super().__init__(**TOKENS.tumblr.model_dump())
 
         # The returned session is actually just the same as the passed session.
         CacheControl(self)

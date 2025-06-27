@@ -1,12 +1,9 @@
 from pathlib import Path
-from typing import Any, Literal, override
-from urllib.parse import urljoin
+from typing import Literal
 
 import rich
-import rich.pretty
 from cachecontrol import CacheControl
 from pydantic import BaseModel
-from requests import Response
 from requests_oauthlib import OAuth1Session
 
 from tumblrbot.settings import CONFIG, TOKENS, Tokens
@@ -28,47 +25,31 @@ class TumblrSession(OAuth1Session):
     def __init__(self) -> None:
         super().__init__(**TOKENS.tumblr.model_dump())
 
-        # The returned session is actually just the same as the passed session.
         CacheControl(self)
 
-        self.base_url = "https://api.tumblr.com/v2/blog/"
-
-    @override
-    def request(self, method: str | bytes, url: str | bytes, *args: Any, **kwargs: object) -> Response:
-        response = super().request(
-            method,
-            urljoin(self.base_url, url if isinstance(url, str) else url.decode()),
-            *args,
-            **kwargs,
-        )
-
-        # TODO: Remove
-        if not response.ok:
-            rich.pretty.pprint(response.json())
-            input()
-
-        response.raise_for_status()
-        return response
-
     def create_draft_post(self, post: Post) -> None:
-        self.post(
-            f"{CONFIG.generation.blogname}/posts",
+        response = self.post(
+            f"https://api.tumblr.com/v2/blog/{CONFIG.generation.blogname}/posts",
             data={
                 "content": post.content,
                 "state": "draft",
                 "tags": post.tags,
             },
         )
+        response.raise_for_status()
 
     def retrieve_published_posts(self, blogname: str, before: int) -> PostsResponse:
         response = self.get(
-            f"{blogname}/posts",
-            params={
-                "api_key": TOKENS.tumblr.client_key,
-                "before": before,
-                "npf": True,
-            },
+            f"https://api.tumblr.com/v2/blog/{blogname}/posts",
+            params=sorted(
+                {
+                    "api_key": TOKENS.tumblr.client_key,
+                    "before": before,
+                    "npf": True,
+                }.items(),
+            ),
         )
+        response.raise_for_status()
         return PostsResponse.model_validate_json(response.content)
 
     def write_published_posts_paginated(self, blogname: str, before: int | Literal[False], completed: int, output_path: Path, live: PreviewLive) -> int:

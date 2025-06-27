@@ -11,7 +11,7 @@ from tomlkit.items import Table
 if TYPE_CHECKING:
     from _typeshed import StrPath
 
-config = SettingsConfigDict(extra="allow", validate_assignment=True)
+config = SettingsConfigDict(extra="ignore", validate_assignment=True)
 
 
 class TOMLSettings(BaseSettings):

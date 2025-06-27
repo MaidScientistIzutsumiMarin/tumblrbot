@@ -1,7 +1,8 @@
 from random import choice
-from typing import IO, Self, override
+from typing import IO, Literal, Self, overload, override
 
-from pydantic import BaseModel, ConfigDict
+import rich
+from pydantic import BaseModel, ConfigDict, Secret
 from rich._spinners import SPINNERS
 from rich.console import RenderableType
 from rich.live import Live
@@ -21,10 +22,13 @@ class Post(BaseModel):
         type: str
         text: str = ""
 
-    timestamp: int
-    tags: list[str]
-    content: list[Content]
-    trail: list[object]
+    type ContentList = list[Content]
+    type TagList = list[str]
+
+    content: ContentList
+    tags: TagList
+    trail: list[object] = []
+    timestamp: int = 0
 
     def __rich__(self) -> Panel:
         renderable = self.get_text_content()
@@ -32,7 +36,7 @@ class Post(BaseModel):
         return Panel(renderable, title="Preview", subtitle=subtitle, subtitle_align="left")
 
     def get_text_content(self) -> str:
-        return "\n".join(block.text for block in self.content if block.type == "text")
+        return "\n\n".join(block.text for block in self.content if block.type == "text")
 
 
 class PreviewLive(Live):
@@ -67,6 +71,26 @@ def yes_no_prompt(prompt: TextType) -> bool:
     no_option = "n"
     answer = Prompt.ask(prompt, choices=[yes_option, no_option], case_sensitive=False, default=no_option)
     return answer == yes_option
+
+
+@overload
+def token_prompt(token_type: str) -> str: ...
+@overload
+def token_prompt(token_type: str, *, secret: Literal[True]) -> Secret[str]: ...
+def token_prompt(token_type: str, *, secret: bool = False) -> Secret[str] | str:
+    prompt = f"Enter your [cyan]{token_type}"
+    if secret:
+        prompt += " [yellow](hidden)"
+
+    token = Prompt.ask(prompt, password=secret).strip()
+    if secret:
+        return Secret(token)
+    return token
+
+
+def print_prompt(url: str, *token_types: str) -> None:
+    token_types_string = " and ".join(f"[cyan]{token_type}[/]" for token_type in token_types)
+    rich.print(f"Retrieve your {token_types_string} from: {url}")
 
 
 def dump_model(model: BaseModel, fp: IO[bytes]) -> int:

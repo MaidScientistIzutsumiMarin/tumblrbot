@@ -5,13 +5,12 @@ from urllib.parse import urljoin
 import rich
 import rich.pretty
 from cachecontrol import CacheControl
-from pydantic import BaseModel, Secret
+from pydantic import BaseModel
 from requests import Response
 from requests_oauthlib import OAuth1Session
-from rich.prompt import Prompt
 
 from tumblrbot.settings import CONFIG, TOKENS, Tokens
-from tumblrbot.utils import Post, PreviewLive, dump_model
+from tumblrbot.utils import Post, PreviewLive, dump_model, token_prompt
 
 
 class PostsResponse(BaseModel):
@@ -56,13 +55,13 @@ class TumblrSession(OAuth1Session):
         response.raise_for_status()
         return response
 
-    def create_draft_post(self, content: list[str], tags: str) -> Response:
+    def create_draft_post(self, post: Post) -> Response:
         return self.post(
             f"{CONFIG.generation.blogname}/posts",
             data={
-                "content": content,
+                "content": post.content,
                 "state": "draft",
-                "tags": tags,
+                "tags": post.tags,
             },
         )
 
@@ -130,9 +129,9 @@ class TumblrSession(OAuth1Session):
 
 
 def write_tumblr_credentials() -> None:
-    rich.print("Retrieve a consumer key and consumer secret from: http://tumblr.com/oauth/apps")
-    consumer_key = Prompt.ask("Enter the consumer key").strip()
-    consumer_secret = Prompt.ask("Enter the consumer secret [yellow](hidden)", password=True).strip()
+    rich.print("Retrieve your [cyan]consumer key[/] and [cyan]consumer secret[/] from: http://tumblr.com/oauth/apps")
+    consumer_key = token_prompt("consumer key")
+    consumer_secret = token_prompt("consumer secret", secret=True)
 
     # STEP 1: Obtain request token
     session = OAuth1Session(consumer_key, consumer_secret)
@@ -143,7 +142,7 @@ def write_tumblr_credentials() -> None:
 
     # Redirect to authentication page
     rich.print(f"\nGo here and press 'Allow': {authorization_url}")
-    url = Prompt.ask("Enter the full redirected URL").strip()
+    url = token_prompt("full redirected URL")
 
     # STEP 3: Request final access token
     session = OAuth1Session(
@@ -157,7 +156,7 @@ def write_tumblr_credentials() -> None:
 
     TOKENS.tumblr = Tokens.Tumblr(
         client_key=consumer_key,
-        client_secret=Secret(consumer_secret),
+        client_secret=consumer_secret,
         resource_owner_key=tokens["oauth_token"],
         resource_owner_secret=tokens["oauth_token_secret"],
     )

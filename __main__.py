@@ -5,7 +5,7 @@ from rich.console import Console
 from rich.prompt import Prompt
 from rich.traceback import install
 
-from tumblrbot import training
+from tumblrbot import generation, training
 from tumblrbot.settings import TOKENS
 from tumblrbot.tumblr import TumblrSession, write_tumblr_credentials
 from tumblrbot.utils import print_prompt, token_prompt, yes_no_prompt
@@ -27,8 +27,8 @@ def main() -> None:
 
         # TODO: add fine-tuning
 
-        # if yes_no_prompt("Generate drafts?"):
-        #    generation.main()
+        if yes_no_prompt("Generate drafts?"):
+            generation.main(session)
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@ from random import choice
 from typing import IO, Literal, Self, overload, override
 
 import rich
-from pydantic import BaseModel, ConfigDict, Secret
+from pydantic import BaseModel, ConfigDict, NonNegativeInt, Secret
 from rich._spinners import SPINNERS
 from rich.console import RenderableType
 from rich.live import Live
@@ -12,12 +12,14 @@ from rich.prompt import Prompt
 from rich.table import Table
 from rich.text import TextType
 
+MODEL_CONFIG = ConfigDict(extra="allow", validate_default=True)
+
 
 class Post(BaseModel):
-    model_config = ConfigDict(extra="allow")
+    model_config = MODEL_CONFIG
 
     class Content(BaseModel):
-        model_config = ConfigDict(extra="allow")
+        model_config = MODEL_CONFIG
 
         type: str
         text: str = ""
@@ -28,7 +30,7 @@ class Post(BaseModel):
     content: ContentList
     tags: TagList
     trail: list[object] = []
-    timestamp: int = 0
+    timestamp: NonNegativeInt = 0
 
     def __rich__(self) -> Panel:
         renderable = self.get_text_content()

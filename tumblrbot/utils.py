@@ -1,8 +1,9 @@
 from random import choice
 from typing import IO, Self, override
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from rich._spinners import SPINNERS
+from rich.console import RenderableType
 from rich.live import Live
 from rich.panel import Panel
 from rich.progress import MofNCompleteColumn, Progress, SpinnerColumn, TimeElapsedColumn
@@ -57,7 +58,7 @@ class CustomLive(Live):
     def custom_update(self, post: Post | None) -> None:
         table = Table.grid()
         table.add_row(self.progress)
-        table.add_row(post)
+        table.add_row(*renderables)
         return self.update(table)
 
 

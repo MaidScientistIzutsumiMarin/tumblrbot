@@ -6,7 +6,7 @@ requires-python = ">= 3.13"
 license = "Unlicense"
 license-files = ["UNLICENSE"]
 dependencies = [
-  "CacheControl[filecache]",
+  "CacheControl",
   "openai",
   "pydantic",
   "pydantic-settings",

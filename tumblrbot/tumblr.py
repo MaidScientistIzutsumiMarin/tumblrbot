@@ -5,7 +5,6 @@ from urllib.parse import urljoin
 import rich
 import rich.pretty
 from cachecontrol import CacheControl
-from cachecontrol.caches import SeparateBodyFileCache
 from pydantic import BaseModel, Secret
 from requests import Response
 from requests_oauthlib import OAuth1Session
@@ -36,7 +35,7 @@ class TumblrSession(OAuth1Session):
         )
 
         # The returned session is actually just the same as the passed session.
-        CacheControl(self, SeparateBodyFileCache(".web_cache"))
+        CacheControl(self)
 
         self.base_url = "https://api.tumblr.com/v2/blog/"
 

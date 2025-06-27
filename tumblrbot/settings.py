@@ -54,7 +54,7 @@ class TOMLSettings(BaseSettings):
         return self
 
     def dump_toml(self, toml_file: "StrPath") -> None:
-        with Path(toml_file).open("w") as fp:
+        with Path(toml_file).open("w", encoding="utf_8") as fp:
             dump(self.get_toml_table(self), fp)
 
 

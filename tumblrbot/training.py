@@ -10,7 +10,7 @@ from tiktoken import encoding_for_model, get_encoding
 
 from tumblrbot.settings import CONFIG
 from tumblrbot.tumblr import Post
-from tumblrbot.utils import CustomLive, dump_model
+from tumblrbot.utils import PreviewLive, dump_model
 
 
 class Messages(BaseModel):
@@ -55,7 +55,7 @@ def get_posts(posts_paths: Iterable[Path]) -> Generator[Post]:
 
 
 def write_training_data(posts_paths: Iterable[Path], total: int) -> Generator[Messages]:
-    with CONFIG.training.output_file.open("wb") as fp, CustomLive() as live:
+    with CONFIG.training.output_file.open("wb") as fp, PreviewLive() as live:
         for post in live.progress.track(
             get_posts(posts_paths),
             total=total,

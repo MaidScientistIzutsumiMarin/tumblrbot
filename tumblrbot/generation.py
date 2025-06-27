@@ -5,7 +5,7 @@ from openai import OpenAI
 
 from tumblrbot.settings import CONFIG, TOKENS
 from tumblrbot.tumblr import TumblrSession
-from tumblrbot.utils import CustomLive
+from tumblrbot.utils import PreviewLive
 
 
 def generate_tags(post_content: str, openai: OpenAI) -> Tags | None:
@@ -45,7 +45,7 @@ def create_draft(openai: OpenAI, tumblr: TumblrSession) -> tuple[str, Tags | Non
 
 def create_drafts(openai: OpenAI, tumblr: TumblrSession) -> None:
     message = f"View drafts here: https://tumblr.com/blog/{CONFIG.generation.blogname}/drafts"
-    with CustomLive() as live:
+    with PreviewLive() as live:
         for i in live.progress.track(range(CONFIG.generation.draft_count), description="Generating drafts..."):
             try:
                 draft = create_draft(openai, tumblr)

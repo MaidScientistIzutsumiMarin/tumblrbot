@@ -11,7 +11,7 @@ from requests_oauthlib import OAuth1Session
 from rich.prompt import Prompt
 
 from tumblrbot.settings import CONFIG, TOKENS, Tokens
-from tumblrbot.utils import CustomLive, Post, dump_model
+from tumblrbot.utils import Post, PreviewLive, dump_model
 
 
 class PostsResponse(BaseModel):
@@ -77,7 +77,7 @@ class TumblrSession(OAuth1Session):
         )
         return PostsResponse.model_validate_json(response.content)
 
-    def write_published_posts_paginated(self, blogname: str, before: int | Literal[False], completed: int, output_path: Path, live: CustomLive) -> int:
+    def write_published_posts_paginated(self, blogname: str, before: int | Literal[False], completed: int, output_path: Path, live: PreviewLive) -> int:
         with output_path.open("ab") as fp:
             task_id = live.progress.add_task(f"Downloading posts from '{blogname}'...", total=0)
 
@@ -101,7 +101,7 @@ class TumblrSession(OAuth1Session):
         output_paths: list[Path] = []
         completed = 0
 
-        with CustomLive() as live:
+        with PreviewLive() as live:
             for blogname in CONFIG.training.blognames:
                 output_path = (CONFIG.training.data_directory / blogname).with_suffix(".jsonl")
 

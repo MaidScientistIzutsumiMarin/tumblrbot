@@ -35,7 +35,7 @@ class Post(BaseModel):
         return "\n".join(block.text for block in self.content if block.type == "text")
 
 
-class CustomLive(Live):
+class PreviewLive(Live):
     def __init__(self) -> None:
         super().__init__()
 

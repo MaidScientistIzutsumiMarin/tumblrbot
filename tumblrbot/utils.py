@@ -55,7 +55,7 @@ class CustomLive(Live):
         super().__enter__()
         return self
 
-    def custom_update(self, post: Post | None) -> None:
+    def custom_update(self, *renderables: RenderableType | None) -> None:
         table = Table.grid()
         table.add_row(self.progress)
         table.add_row(*renderables)

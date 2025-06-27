@@ -42,8 +42,8 @@ class Post(BaseModel):
 
 
 class PreviewLive(Live):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, *, transient: bool = False) -> None:
+        super().__init__(transient=transient)
 
         spinner_name = choice(list(SPINNERS))  # noqa: S311
         self.progress = Progress(
@@ -54,7 +54,7 @@ class PreviewLive(Live):
             auto_refresh=False,
         )
 
-        self.custom_update(None)
+        self.custom_update()
 
     @override
     def __enter__(self) -> Self:

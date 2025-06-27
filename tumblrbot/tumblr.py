@@ -76,7 +76,7 @@ class TumblrSession(OAuth1Session):
         output_paths = []
         completed = 0
 
-        with PreviewLive() as live:
+        with PreviewLive(transient=not should_download) as live:
             for blogname in CONFIG.training.blognames:
                 output_path = (CONFIG.training.data_directory / blogname).with_suffix(".jsonl")
 

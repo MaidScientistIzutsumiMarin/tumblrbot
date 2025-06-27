@@ -18,7 +18,7 @@ class Post(BaseModel):
         model_config = ConfigDict(extra="allow")
 
         type: str
-        text: str | None = None
+        text: str = ""
 
     timestamp: int
     tags: list[str]
@@ -31,7 +31,7 @@ class Post(BaseModel):
         return Panel(renderable, title="Preview", subtitle=subtitle, subtitle_align="left")
 
     def get_text_content(self) -> str:
-        return "\n".join(block.text for block in self.content if block.type == "text" and block.text is not None)
+        return "\n".join(block.text for block in self.content if block.type == "text")
 
 
 class CustomLive(Live):

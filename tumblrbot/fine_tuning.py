@@ -55,7 +55,7 @@ def main(openai: OpenAI, tokens: int) -> None:
             Cost: {get_cost_string(job.trained_tokens)}
         """)
 
-    if job.error:
+    if job.status == "failed" and job.error is not None:
         msg = f"Error: {job.error.message}"
         raise RuntimeError(msg)
 

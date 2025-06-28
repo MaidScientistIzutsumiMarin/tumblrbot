@@ -1,32 +1,33 @@
-[Beautiful Soup]: https://pypi.org/project/beautifulsoup4
-[lxml]: https://pypi.org/project/lxml
 [OpenAI]: https://pypi.org/project/openai
 [Rich]: https://pypi.org/project/rich
-[tumblr-backup]: https://pypi.org/project/tumblr-backup
 
-[gpt-4.1-nano]: https://platform.openai.com/docs/models/gpt-4.1-nano
-[pip]: https://pypi.org
+[gpt-4.1-nano-2025-04-14]: https://platform.openai.com/docs/models/gpt-4.1-nano
+[Moderation API]: https://platform.openai.com/docs/api-reference/moderations
 [New Post Format]: https://tumblr.com/docs/npf
+[OAuth 2.0]: https://www.tumblr.com/docs/en/api/v2#oauth2-authorization
+[pip]: https://pypi.org
 
-[json.dump]: https://docs.python.org/3/library/json.html#json.dump
-[max output tokens]: https://platform.openai.com/docs/api-reference/responses/create#responses-create-max_output_tokens
-[temperature]: https://platform.openai.com/docs/api-reference/responses/create#responses-create-temperature
-
-[Env]: settings.py
-[Config]: settings.py
-[Generation]: generation.py
+[Fine-Tuning]: tumblrbot/fine_tuning.py
+[Generation]: tumblrbot/generation.py
+[Settings]: tumblrbot/settings.py
+[Training]: tumblrbot/training.py
+[Tumblr]: tumblrbot/tumblr.py
+[Main]: __main__.py
 [README.md]: README.md
-[Training]: training.py
 
 # tumblrbot
 Description of original project:
 > 4tv-tumblrbot was a collaborative project I embarked on with my close friend Dima, who goes by @smoqueen on Tumblr. The aim of this endeavor was straightforward yet silly: to develop a Tumblr bot powered by a machine-learning model. This bot would be specifically trained on the content from a particular Tumblr blog or a selected set of blogs, allowing it to mimic the style, tone, and thematic essence of the original posts.
 
 This fork is largely a rewrite of the source code with similarities in its structure and process:
+- Updates:
+   - Updated to [OAuth 2.0].
+   - Updated to the [New Post Format].
+   - Updated to the latest version of [OpenAI].
+   - Updated the [model version][Settings] to [gpt-4.1-nano-2025-04-14].
 - Removed features:
    - [Generation]:
       - Removed clearing drafts behavior.
-      - Removed the tag limit.
    - [Training]:
       - Removed exports that had HTML or reblogs.
       - Removed special word-replacement behavior.
@@ -35,47 +36,42 @@ This fork is largely a rewrite of the source code with similarities in its struc
    - Removed setup and related files.
 - Changed/Added features:
    - [Generation]:
-      - Changed to the default [temperature] for tags.
-      - Changed to the default [max output tokens].
-      - Changed the draft format to HTML.
+      - Changed tag generation to be based on the [specified blogs][Settings].
       - Added a link to the blog's draft page after generation.
       - Added error checking for uploading generated drafts.
    - [Training]:
-      - Changed to escaping training data automatically with [json.dump].
-      - Changed to [lxml] for [Beautiful Soup].
+      - Changed to escaping training data automatically.
       - Set encoding for reading post data to `UTF-8` to fix decoding errors.
       - Added spaces between paragraphs in the training data.
       - Removed "ALT" and poll text from the training data.
-      - Improved estimated token counts and costs.
-      - Added [tumblr-backup] to automatically download post data.
-   - Updated to the latest version of [OpenAI].
-   - Updated the [model version][Config] to [gpt-4.1-nano].
+      - Improved the estimated token counts and costs.
+   - **Created a [guided utility][Main] for every step of building your bot blog:**
+      1. [Downloads][Tumblr] the latest posts from the [specified blogs][Settings].
+      1. [Creates][Training] a training dataset from the downloaded post data.
+      1. [Fine-tunes][Fine-Tuning] the [specified base model][Settings] with the training dataset.
+      2. [Generates][Generation] draft posts from the newly trained model.
    - Changed to [Rich] for output.
-   - Added full type-checking coverage.
+      - Added progress bars.
+      - Added post previews.
+      - Added color, formatting, and more information to output.
+   - Reduced [prompt][Settings] length.
    - Maid scripts wait for user input before the console closes.
-   - Added progress bars.
-   - Added post previews.
-   - Added color, formatting, and more information to output.
+   - Added command-line options to override [Settings] options.
+   - Added behavior to regenerate the default [config.toml][Settings] and [env.toml][Settings] if missing.
    - Renamed several files.
-   - Renamed several [Config] options.
-   - Changed the value of several [Config] options.
-   - Added command-line options to override [Config] options.
-   - Added behavior to regenerate default [Config] and [Env] if missing.
+   - Renamed several [Settings] options.
+   - Changed the value of several [Settings] options.
+   - Added full type-checking coverage (fully importable from third-party scripts).
 
 Probable To-Dos:
 - Add documentation.
-- Create `__main__.py` which will be an entry point for everything, including fine-tuning and downloading posts.
-- Add token cost estimate for [Generation].
-- Add command line arguments for [Config] options.
 - Finish updating [README.md].
+- Add calls to the [Moderation API] to see what caused a fine-tuning job to fail.
 
 Possible To-Dos:
-- Create a simple Tumblr API wrapper that supports the [New Post Format].
-- Use classes to store settings data instead of global variables.
+- Use classes to store [Settings] data instead of global variables.
 - Make this an installable [pip] package.
-- Add an OpenAI model pricing and max output tokens scraper.
-- Add information about the current [OpenAI] budget.
-- Ask for and store user tokens instead of using [Env].
+- Add an [OpenAI] model pricing scraper.
 
 
 **Please submit an issue or contact us for features you want to added/reimplemented.**

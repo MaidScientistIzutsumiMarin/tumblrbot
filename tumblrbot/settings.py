@@ -81,7 +81,7 @@ class Config(AutoGenerateTomlSettings):
         estimated_epochs: PositiveInt = Field(3, description="The number of epochs fine-tuning will be run for.")
         token_price: NonNegativeFloat = Field(1.50, description="The expected price in USD per million tokens during fine-tuning for the current model. Setting to 0 will treat fine-tuning as free.")
 
-    user_message: str = Field("Write a funny Tumblr post.", description="The user message for the OpenAI API. This is the prompt that will be sent to the API to generate drafts.")
+    user_message: str = Field("Write a comical Tumblr post.", description="The user message for the OpenAI API. This is the prompt that will be sent to the API to generate drafts.")
     model_name: ChatModel = Field("gpt-4.1-nano-2025-04-14", description="The name of the model that will be fine-tuned by the generated training data.")
 
     generation: Generation = Generation()  # pyright: ignore[reportCallIssue]

@@ -1,8 +1,12 @@
+from collections.abc import Generator
+from itertools import chain
 from random import choice
-from typing import IO, Literal, Self, overload, override
+from textwrap import dedent
+from typing import Self, override
 
 import rich
-from pydantic import BaseModel, ConfigDict, NonNegativeInt, Secret
+from pydantic import BaseModel, ConfigDict, Field, NonNegativeInt, model_validator
+from pydantic.json_schema import SkipJsonSchema
 from rich._spinners import SPINNERS
 from rich.console import RenderableType
 from rich.live import Live
@@ -12,28 +16,44 @@ from rich.prompt import Prompt
 from rich.table import Table
 from rich.text import TextType
 
-
-class ConfiguredModel(BaseModel):
-    model_config = ConfigDict(extra="allow", validate_default=True)
+from tumblrbot.settings import CONFIG
 
 
-class Post(ConfiguredModel):
-    class Content(ConfiguredModel):
-        type: str
+class Post(BaseModel):
+    model_config = ConfigDict(validate_default=True)
+
+    class ContentBlock(BaseModel):
+        model_config = ConfigDict(validate_default=True)
+
+        type: SkipJsonSchema[str] = Field("text", exclude=True)
         text: str = ""
 
-    content: list[Content]
+    class LayoutBlock(BaseModel):
+        model_config = ConfigDict(validate_default=True)
+
+        type: str
+        blocks: list[int] = []
+
+    timestamp: SkipJsonSchema[NonNegativeInt] = Field(0, exclude=True)
+    is_submission: SkipJsonSchema[bool] = Field(default=False, exclude=True)
     tags: list[str]
-    trail: list[object] = []
-    timestamp: NonNegativeInt = 0
+    content: list[ContentBlock]
+    layout: SkipJsonSchema[list[LayoutBlock]] = Field([], exclude=True)
+    trail: SkipJsonSchema[list[object]] = Field([], exclude=True)
 
     def __rich__(self) -> Panel:
-        renderable = self.get_text_content()
-        subtitle = " ".join(f"#{tag}" for tag in self.tags)
-        return Panel(renderable, title="Preview", subtitle=subtitle, subtitle_align="left")
+        return Panel(
+            "\n\n".join(block.text for block in self.content),
+            title="Preview",
+            subtitle=" ".join(f"#{tag}" for tag in self.tags),
+            subtitle_align="left",
+        )
 
-    def get_text_content(self) -> str:
-        return "\n\n".join(block.text for block in self.content if block.type == "text")
+    @model_validator(mode="after")
+    def get_text_blocks(self) -> Self:
+        ask_blocks = {*chain.from_iterable(block.blocks for block in self.layout if block.type == "ask")}
+        self.content = [block for i, block in enumerate(self.content) if i not in ask_blocks and block.type == "text"]
+        return self
 
 
 class PreviewLive(Live):
@@ -70,25 +90,21 @@ def yes_no_prompt(prompt: TextType) -> bool:
     return answer == yes_option
 
 
-@overload
-def token_prompt(token_type: str) -> str: ...
-@overload
-def token_prompt(token_type: str, *, secret: Literal[True]) -> Secret[str]: ...
-def token_prompt(token_type: str, *, secret: bool = False) -> Secret[str] | str:
-    prompt = f"Enter your [cyan]{token_type}"
-    if secret:
-        prompt += " [yellow](hidden)"
+def token_prompt(url: str, *tokens: str) -> Generator[str]:
+    token_strings = [f"[cyan]{token}[/]" for token in tokens]
+    url_prompt_tokens = " and ".join(token_strings)
 
-    token = Prompt.ask(prompt, password=secret).strip()
-    if secret:
-        return Secret(token)
-    return token
+    rich.print(f"Retrieve your {url_prompt_tokens} from: {url}")
+    for token in token_strings:
+        prompt = f"Enter your [cyan]{token}"
+        yield Prompt.ask(prompt).strip()
+
+    rich.print()
 
 
-def print_token_url(url: str, *token_types: str) -> None:
-    token_types_string = " and ".join(f"[cyan]{token_type}[/]" for token_type in token_types)
-    rich.print(f"Retrieve your {token_types_string} from: {url}")
+def get_cost_string(tokens: int) -> str:
+    return f"${CONFIG.training.token_price / 1000000 * tokens:.2f}"
 
 
-def dump_model(model: BaseModel, fp: IO[bytes]) -> None:
-    fp.write(model.__pydantic_serializer__.to_json(model) + b"\n")
+def dedent_print(text: str) -> None:
+    rich.print(dedent(text).lstrip())

@@ -1,11 +1,11 @@
 from collections.abc import Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Self, override
+from typing import TYPE_CHECKING, override
 
 from openai.types import ChatModel
-from pydantic import Field, NonNegativeFloat, NonNegativeInt, PositiveInt, Secret, field_serializer, model_validator
+from pydantic import Field, NonNegativeFloat, NonNegativeInt, PositiveInt
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict, TomlConfigSettingsSource
-from tomlkit import comment, dump, table
+from tomlkit import comment, dumps, table  # pyright: ignore[reportUnknownVariableType]
 from tomlkit.items import Table
 
 if TYPE_CHECKING:
@@ -14,13 +14,6 @@ if TYPE_CHECKING:
 
 class TomlSettings(BaseSettings):
     model_config = SettingsConfigDict(extra="ignore", validate_assignment=True)
-
-    @field_serializer("*")
-    @staticmethod
-    def serialize(value: object) -> object:
-        if isinstance(value, Secret):
-            return value.get_secret_value()
-        return value
 
     def get_toml_table(self) -> Table:
         toml_table = table()
@@ -43,8 +36,10 @@ class AutoGenerateTomlSettings(TomlSettings):
     def settings_customise_sources(cls, settings_cls: type[BaseSettings], *args: object, **kwargs: object) -> tuple[PydanticBaseSettingsSource, ...]:
         return (TomlConfigSettingsSource(settings_cls),)
 
-    @model_validator(mode="after")
-    def save(self) -> Self:
+    @override
+    def model_post_init(self, context: object = None) -> None:
+        super().model_post_init(context)
+
         # Make sure to call this if updating values in nested models.
         toml_files = self.model_config.get("toml_file")
         if isinstance(toml_files, (Path, str)):
@@ -52,11 +47,12 @@ class AutoGenerateTomlSettings(TomlSettings):
         elif isinstance(toml_files, Sequence):
             for toml_file in toml_files:
                 self.dump_toml(toml_file)
-        return self
 
     def dump_toml(self, toml_file: "StrPath") -> None:
-        with Path(toml_file).open("w", encoding="utf_8") as fp:
-            dump(self.get_toml_table(), fp)
+        Path(toml_file).write_text(
+            dumps(self.get_toml_table()),
+            encoding="utf_8",
+        )
 
 
 class Config(AutoGenerateTomlSettings):
@@ -68,26 +64,25 @@ class Config(AutoGenerateTomlSettings):
     )
 
     class Generation(TomlSettings):
-        openai_model: str = Field("", description="Model to use for the OpenAI API. This is the model that will be used to generate draft text. You need to first generate the training data for this model.")
-        blogname: str = Field(
+        fine_tuned_model: str = Field("", description="The name of the OpenAI model that was fine-tuned with your posts.")
+        blog_name: str = Field(
             "",
             description='The name of the blog which generated drafts will be uploaded to that appears in the URL. This must be a blog associated with the same account as the configured Tumblr secret values. Examples: "staff" for https://staff.tumblr.com and "changes" for https://tumblr.com/changes or https://tumblr.com/@changes',
         )
         draft_count: NonNegativeInt = Field(150, description="The number of drafts to process. This will affect the number of tokens used with OpenAI. Setting to 0 will disable draft generation.")
-        tags_chance: NonNegativeFloat = Field(0.1, description="The chance to generate tags for any given post. This will incur extra calls to OpenAI. Setting to 0 will disable tag generation. 0.1 is a 10% chance.")
 
     class Training(TomlSettings):
-        blognames: list[str] = Field(
+        blog_names: list[str] = Field(
             [],
             description='The names of the blogs which post data will be downloaded from that appears in the URL. This must be a blog associated with the same account as the configured Tumblr secret values. Examples: ["staff", "changes"] for https://staff.tumblr.com and https://www.tumblr.com/changes or https://www.tumblr.com/@changes',
         )
         data_directory: Path = Field(Path("data"), description="Where to store downloaded post data.")
         output_file: Path = Field(Path("training.jsonl"), description="Where to output the training data that will be used to fine-tune the model.")
-        target_epochs: PositiveInt = Field(3, description="The number of epochs fine-tuning will be run for.")
+        estimated_epochs: PositiveInt = Field(3, description="The number of epochs fine-tuning will be run for.")
         token_price: NonNegativeFloat = Field(1.50, description="The expected price in USD per million tokens during fine-tuning for the current model. Setting to 0 will treat fine-tuning as free.")
 
-    user_message: str = Field("Write a comical Tumblr post.", description="The user message for the OpenAI API. This is the prompt that will be sent to the API to generate the text.")
-    model_name: ChatModel = Field("gpt-4.1-nano", description="The name of the model that will be fine-tuned by the generated training data.")
+    user_message: str = Field("Write a funny Tumblr post.", description="The user message for the OpenAI API. This is the prompt that will be sent to the API to generate drafts.")
+    model_name: ChatModel = Field("gpt-4.1-nano-2025-04-14", description="The name of the model that will be fine-tuned by the generated training data.")
 
     generation: Generation = Generation()  # pyright: ignore[reportCallIssue]
     training: Training = Training()  # pyright: ignore[reportCallIssue]
@@ -97,12 +92,11 @@ class Tokens(AutoGenerateTomlSettings):
     model_config = SettingsConfigDict(toml_file="env.toml")
 
     class Tumblr(TomlSettings):
-        client_key: str = ""
-        client_secret: Secret[str] = Secret("")
-        resource_owner_key: str = ""
-        resource_owner_secret: Secret[str] = Secret("")
+        client_id: str = ""
+        client_secret: str = ""
+        token: dict[str, object] = {}
 
-    openai_api_key: Secret[str] = Secret("")
+    openai_api_key: str = ""
     tumblr: Tumblr = Tumblr()
 
 

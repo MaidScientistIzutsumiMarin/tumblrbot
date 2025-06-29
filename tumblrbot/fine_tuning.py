@@ -108,7 +108,7 @@ def main(openai: OpenAI, tokens: int) -> None:
     if job.finished_at and job.trained_tokens:
         with (CONFIG.training.data_directory / "timing.txt").open("a+", encoding="utf_8") as fp:
             actual_tokens_per_second = job.trained_tokens / (job.finished_at - job.created_at)
-            fp.write(str(actual_tokens_per_second))
+            fp.write(f"{actual_tokens_per_second}\n")
 
             fp.seek(0)
             CONFIG.training.expected_tokens_per_second = fmean(map(float, fp.readlines()))

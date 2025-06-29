@@ -6,9 +6,9 @@ import rich
 from rich.console import Console
 from tiktoken import Encoding, encoding_for_model, get_encoding
 
-from tumblrbot.fine_tuning import print_estimates
+from tumblrbot.openai_utils import print_estimates
 from tumblrbot.settings import CONFIG
-from tumblrbot.tumblr import Post
+from tumblrbot.tumblr_utils import Post
 from tumblrbot.utils import Example
 
 

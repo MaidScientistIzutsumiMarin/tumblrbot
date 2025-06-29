@@ -1,14 +1,14 @@
 import sys
 from pathlib import Path
 
-from openai import OpenAI
 from rich.console import Console
 from rich.prompt import Prompt
 from rich.traceback import install
 
-from tumblrbot import fine_tuning, generation, training
+from tumblrbot import training
+from tumblrbot.openai_utils import OpenAISession
 from tumblrbot.settings import TOKENS
-from tumblrbot.tumblr import TumblrSession, write_tumblr_credentials
+from tumblrbot.tumblr_utils import TumblrSession, write_tumblr_credentials
 from tumblrbot.utils import token_prompt, yes_no_prompt
 
 
@@ -20,7 +20,7 @@ def main() -> None:
         (TOKENS.openai_api_key,) = token_prompt("https://platform.openai.com/api-keys", "API key")
         TOKENS.model_post_init()
 
-    with OpenAI(api_key=TOKENS.openai_api_key) as openai, TumblrSession() as tumblr:
+    with OpenAISession() as openai, TumblrSession() as tumblr:
         should_download = yes_no_prompt("Download latest posts?")
         post_paths = tumblr.write_all_published_posts(should_download=should_download)
 
@@ -28,10 +28,10 @@ def main() -> None:
         tokens = training.main(post_paths, should_write=should_write)
 
         if yes_no_prompt("Upload data to OpenAI for fine-tuning?"):
-            fine_tuning.main(openai, tokens)
+            openai.start_fine_tuning(tokens)
 
         if yes_no_prompt("Generate drafts?"):
-            generation.main(openai, tumblr)
+            openai.create_drafts(tumblr)
 
 
 if __name__ == "__main__":

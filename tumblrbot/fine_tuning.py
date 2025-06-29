@@ -77,7 +77,7 @@ def main(openai: OpenAI, tokens: int) -> None:
         task_id = live.progress.add_task("", total=None)
 
         while job.status not in {"succeeded", "failed", "cancelled"}:
-            poll_job_status(job.id, openai, tokens)
+            job = poll_job_status(job.id, openai, tokens)
 
             live.progress.update(
                 task_id,

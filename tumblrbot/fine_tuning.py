@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from pathlib import Path
 from statistics import fmean
 from time import sleep, time
 
@@ -107,7 +106,7 @@ def main(openai: OpenAI, tokens: int) -> None:
         raise RuntimeError(msg)
 
     if job.finished_at and job.trained_tokens:
-        with Path("Training Data").open("a+", encoding="utf_8") as fp:
+        with (CONFIG.training.data_directory / "timing.txt").open("a+", encoding="utf_8") as fp:
             actual_tokens_per_second = job.trained_tokens / (job.finished_at - job.created_at)
             fp.write(str(actual_tokens_per_second))
 

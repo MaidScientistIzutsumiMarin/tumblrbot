@@ -60,9 +60,9 @@ class TumblrSession(OAuth2Session):
             },
         )
 
-    def retrieve_published_posts(self, blogname: str, before: int) -> Response:
+    def retrieve_published_posts(self, blog_name: str, before: int) -> Response:
         return self.get(
-            f"https://api.tumblr.com/v2/blog/{blogname}/posts",
+            f"https://api.tumblr.com/v2/blog/{blog_name}/posts",
             params=sorted(
                 {
                     "api_key": TOKENS.tumblr.client_id,
@@ -72,12 +72,12 @@ class TumblrSession(OAuth2Session):
             ),
         )
 
-    def write_published_posts_paginated(self, blogname: str, before: int | Literal[False], completed: int, output_path: Path, live: PreviewLive) -> None:
+    def write_published_posts_paginated(self, blog_name: str, before: int | Literal[False], completed: int, output_path: Path, live: PreviewLive) -> None:
         with output_path.open("a", encoding="utf_8") as fp:
-            task_id = live.progress.add_task(f"Downloading posts from '{blogname}'...", total=None, completed=completed)
+            task_id = live.progress.add_task(f"Downloading posts from '{blog_name}'...", total=None, completed=completed)
 
             while True:
-                response = self.retrieve_published_posts(blogname, before)
+                response = self.retrieve_published_posts(blog_name, before)
                 response_object = PostsResponse.model_validate_json(response.text)
 
                 for post in response_object.response.posts:
@@ -100,8 +100,8 @@ class TumblrSession(OAuth2Session):
         output_paths: list[Path] = []
 
         with PreviewLive(transient=not should_download) as live:
-            for blogname in CONFIG.training.blog_names:
-                output_path = (CONFIG.training.data_directory / blogname).with_suffix(".jsonl")
+            for blog_name in CONFIG.training.blog_names:
+                output_path = (CONFIG.training.data_directory / blog_name).with_suffix(".jsonl")
                 output_paths.append(output_path)
 
                 before = False
@@ -115,7 +115,7 @@ class TumblrSession(OAuth2Session):
 
                 if should_download:
                     self.write_published_posts_paginated(
-                        blogname,
+                        blog_name,
                         before,
                         completed,
                         output_path,

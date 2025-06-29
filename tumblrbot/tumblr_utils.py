@@ -95,14 +95,12 @@ class TumblrSession(OAuth2Session):
                 if not response_object.response.posts:
                     break
 
-    def write_all_published_posts(self, *, should_download: bool) -> list[Path]:
+    def write_all_published_posts(self, *, should_download: bool) -> None:
         CONFIG.training.data_directory.mkdir(parents=True, exist_ok=True)
-        output_paths: list[Path] = []
 
         with PreviewLive(transient=not should_download) as live:
             for blog_name in CONFIG.training.blog_names:
-                output_path = (CONFIG.training.data_directory / blog_name).with_suffix(".jsonl")
-                output_paths.append(output_path)
+                output_path = Post.get_posts_path(blog_name)
 
                 before = False
                 if output_path.exists():
@@ -121,8 +119,6 @@ class TumblrSession(OAuth2Session):
                         output_path,
                         live,
                     )
-
-        return output_paths
 
 
 def write_token(token: dict[str, object]) -> None:

@@ -1,8 +1,9 @@
 from collections.abc import Generator
 from itertools import chain
+from pathlib import Path
 from random import choice
 from textwrap import dedent
-from typing import Literal, Self, override
+from typing import Self, override
 
 import rich
 from pydantic import BaseModel, ConfigDict, NonNegativeInt, model_validator
@@ -23,14 +24,6 @@ class ConfiguredModel(BaseModel):
     model_config = ConfigDict(validate_default=True)
 
 
-class Example(BaseModel):
-    class Message(BaseModel):
-        content: str
-        role: Literal["developer", "user", "assistant"]
-
-    messages: list[Message]
-
-
 class Post(ConfiguredModel):
     class ContentBlock(ConfiguredModel):
         type: SkipJsonSchema[str] = "text"
@@ -46,6 +39,17 @@ class Post(ConfiguredModel):
     content: list[ContentBlock]
     layout: SkipJsonSchema[list[LayoutBlock]] = []
     trail: SkipJsonSchema[list[object]] = []
+
+    @staticmethod
+    def get_posts_path(blog_name: str) -> Path:
+        return (CONFIG.training.data_directory / blog_name).with_suffix(".jsonl")
+
+    @classmethod
+    def get(cls) -> Generator[Self]:
+        for blog_name in CONFIG.training.blog_names:
+            with cls.get_posts_path(blog_name).open(encoding="utf_8") as fp:
+                for line in fp:
+                    yield cls.model_validate_json(line)
 
     def __rich__(self) -> Panel:
         return Panel(
@@ -63,26 +67,6 @@ class Post(ConfiguredModel):
 
     def get_text_content(self) -> str:
         return "\n\n".join(block.text for block in self.content)
-
-    def to_example(self) -> Example | None:
-        if not (self.is_submission or self.trail) and self.content:
-            return Example(
-                messages=[
-                    Example.Message(
-                        role="developer",
-                        content=CONFIG.developer_message,
-                    ),
-                    Example.Message(
-                        role="user",
-                        content=CONFIG.user_input,
-                    ),
-                    Example.Message(
-                        role="assistant",
-                        content=self.get_text_content(),
-                    ),
-                ],
-            )
-        return None
 
 
 class PreviewLive(Live):

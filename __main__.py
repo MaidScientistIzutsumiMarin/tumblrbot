@@ -5,7 +5,6 @@ from rich.console import Console
 from rich.prompt import Prompt
 from rich.traceback import install
 
-from tumblrbot import training
 from tumblrbot.openai_utils import OpenAISession
 from tumblrbot.settings import TOKENS
 from tumblrbot.tumblr_utils import TumblrSession, write_tumblr_credentials
@@ -22,10 +21,10 @@ def main() -> None:
 
     with OpenAISession() as openai, TumblrSession() as tumblr:
         should_download = yes_no_prompt("Download latest posts?")
-        post_paths = tumblr.write_all_published_posts(should_download=should_download)
+        tumblr.write_all_published_posts(should_download=should_download)
 
         should_write = yes_no_prompt("Create training data?")
-        tokens = training.main(post_paths, should_write=should_write)
+        tokens = openai.write_examples(should_write=should_write)
 
         if yes_no_prompt("Upload data to OpenAI for fine-tuning?"):
             openai.start_fine_tuning(tokens)

@@ -1,19 +1,92 @@
 from datetime import datetime
+from math import ceil
 from time import sleep, time
+from typing import Literal
 
 import rich
-from openai import OpenAI
+from hishel import CacheTransport, FileStorage
+from httpx import HTTPTransport
+from more_itertools import chunked
+from openai import DefaultHttpxClient, OpenAI
 from openai.types.fine_tuning import FineTuningJob
 from openai.types.responses import ParsedResponse
+from pydantic import BaseModel
+from rich.console import Console
+from tiktoken import Encoding, encoding_for_model, get_encoding
 
 from tumblrbot.settings import CONFIG, TOKENS
 from tumblrbot.tumblr_utils import TumblrSession
-from tumblrbot.utils import Post, PreviewLive, dedent_print
+from tumblrbot.utils import Post, PreviewLive, dedent_print, yes_no_prompt
+
+
+class Example(BaseModel):
+    class Message(BaseModel):
+        content: str
+        role: Literal["developer", "user", "assistant"]
+
+    messages: list[Message]
 
 
 class OpenAISession(OpenAI):
     def __init__(self) -> None:
-        super().__init__(api_key=TOKENS.openai_api_key)
+        super().__init__(
+            api_key=TOKENS.openai_api_key,
+            http_client=DefaultHttpxClient(
+                http2=True,
+                transport=CacheTransport(
+                    HTTPTransport(),
+                    FileStorage(),
+                ),
+            ),
+        )
+
+    def write_examples(self, *, should_write: bool) -> int:
+        try:
+            encoding = encoding_for_model(CONFIG.base_model)
+        except KeyError as error:
+            encoding = get_encoding("o200k_base")
+            Console(stderr=True, style="logging.level.warning").print(f"[Warning] Using encoding '{encoding.name}': {''.join(error.args)}\n")
+
+        CONFIG.training.output_file.parent.mkdir(parents=True, exist_ok=True)
+
+        posts = [post for post in Post.get() if post.get_text_content() and not (post.is_submission or post.trail)]
+        if should_write and yes_no_prompt("Remove posts flagged by the OpenAI moderation? This can sometimes resolve errors with fine-tuning validation, but is slow."):
+            filtered_posts: list[Post] = []
+            with PreviewLive() as live:
+                for chunk in live.progress.track(
+                    chunked(posts, 32),
+                    ceil(len(posts) / 32),
+                    description="Removing flagged posts...",
+                ):
+                    response = self.moderations.create(input=list(map(Post.get_text_content, chunk)))
+                    for post, moderation in zip(chunk, response.results, strict=True):
+                        if moderation.flagged:
+                            live.custom_update(post)
+                        else:
+                            filtered_posts.append(post)
+        else:
+            filtered_posts = posts
+
+        tokens = 0
+        mode = "w" if should_write else "a"
+        with CONFIG.training.output_file.open(mode, encoding="utf_8") as fp:
+            for post in filtered_posts:
+                example = Example(
+                    messages=[
+                        Example.Message(role="developer", content=CONFIG.developer_message),
+                        Example.Message(role="user", content=CONFIG.user_input),
+                        Example.Message(role="assistant", content=post.get_text_content()),
+                    ],
+                )
+                if should_write:
+                    fp.write(f"{example.model_dump_json()}\n")
+
+                tokens += count_tokens(example, encoding)
+
+        print_estimates(tokens)
+        rich.print(f"[bold]The training data can be found at: '{CONFIG.training.output_file}'\n")
+
+        return tokens
 
     def poll_job_status(self, job_id: str, tokens: int) -> FineTuningJob:
         job = self.fine_tuning.jobs.retrieve(job_id)
@@ -76,13 +149,15 @@ class OpenAISession(OpenAI):
                 Cost: {get_cost_string(job.trained_tokens)}
             """)
 
-        if job.status == "failed" and job.error is not None:
-            msg = f"Error: {job.error.message}"
-            raise RuntimeError(msg)
-
-        CONFIG.generation.fine_tuned_model = job.fine_tuned_model or ""
         CONFIG.training.job_id = ""
         CONFIG.model_post_init()
+
+        if job.status == "failed" and job.error is not None:
+            raise RuntimeError(job.error.message)
+
+        if job.fine_tuned_model:
+            CONFIG.generation.fine_tuned_model = job.fine_tuned_model or ""
+            CONFIG.model_post_init()
 
     def generate_content(self) -> ParsedResponse[Post]:
         return self.responses.parse(
@@ -121,6 +196,15 @@ class OpenAISession(OpenAI):
                     raise
 
         rich.print(f":chart_increasing: [bold green]Generated {CONFIG.generation.draft_count} draft(s).[/] {message}")
+
+
+def count_tokens(example: Example, encoding: Encoding) -> int:
+    # Based on https://cookbook.openai.com/examples/how_to_count_tokens_with_tiktoken
+    # and https://cookbook.openai.com/examples/chat_finetuning_data_prep
+    num_tokens = 3 * (len(example.messages) + 1)  # every reply is primed with <|start|>assistant<|message|>
+    for message in example.messages:
+        num_tokens += len(encoding.encode(message.content))
+    return num_tokens
 
 
 def get_total_tokens(tokens: int) -> int:

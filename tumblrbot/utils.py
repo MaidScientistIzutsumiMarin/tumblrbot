@@ -5,7 +5,7 @@ from textwrap import dedent
 from typing import Self, override
 
 import rich
-from pydantic import BaseModel, ConfigDict, Field, NonNegativeInt, model_validator
+from pydantic import BaseModel, ConfigDict, NonNegativeInt, model_validator
 from pydantic.json_schema import SkipJsonSchema
 from rich._spinners import SPINNERS
 from rich.console import RenderableType
@@ -16,30 +16,28 @@ from rich.prompt import Prompt
 from rich.table import Table
 from rich.text import TextType
 
-from tumblrbot.settings import CONFIG
+type TagsList = list[str]
 
 
-class Post(BaseModel):
+class ConfiguredModel(BaseModel):
     model_config = ConfigDict(validate_default=True)
 
-    class ContentBlock(BaseModel):
-        model_config = ConfigDict(validate_default=True)
 
-        type: SkipJsonSchema[str] = Field("text", exclude=True)
+class Post(ConfiguredModel):
+    class ContentBlock(ConfiguredModel):
+        type: SkipJsonSchema[str] = "text"
         text: str = ""
 
-    class LayoutBlock(BaseModel):
-        model_config = ConfigDict(validate_default=True)
-
+    class LayoutBlock(ConfiguredModel):
         type: str
         blocks: list[int] = []
 
-    timestamp: SkipJsonSchema[NonNegativeInt] = Field(0, exclude=True)
-    is_submission: SkipJsonSchema[bool] = Field(default=False, exclude=True)
+    timestamp: SkipJsonSchema[NonNegativeInt] = 0
+    is_submission: SkipJsonSchema[bool] = False
     tags: list[str]
     content: list[ContentBlock]
-    layout: SkipJsonSchema[list[LayoutBlock]] = Field([], exclude=True)
-    trail: SkipJsonSchema[list[object]] = Field([], exclude=True)
+    layout: SkipJsonSchema[list[LayoutBlock]] = []
+    trail: SkipJsonSchema[list[object]] = []
 
     def __rich__(self) -> Panel:
         return Panel(
@@ -100,10 +98,6 @@ def token_prompt(url: str, *tokens: str) -> Generator[str]:
         yield Prompt.ask(prompt).strip()
 
     rich.print()
-
-
-def get_cost_string(tokens: int) -> str:
-    return f"${CONFIG.training.token_price / 1000000 * tokens:.2f}"
 
 
 def dedent_print(text: str) -> None:

@@ -28,7 +28,10 @@ class TumblrSession(OAuth2Session):
         super().__init__(  # pyright: ignore[reportUnknownMemberType]
             TOKENS.tumblr.client_id,
             auto_refresh_url="https://api.tumblr.com/v2/oauth2/token",
-            auto_refresh_kwargs={"client_id": TOKENS.tumblr.client_id, "client_secret": TOKENS.tumblr.client_secret},
+            auto_refresh_kwargs={
+                "client_id": TOKENS.tumblr.client_id,
+                "client_secret": TOKENS.tumblr.client_secret,
+            },
             token=TOKENS.tumblr.token,
             token_updater=write_token,
         )
@@ -84,9 +87,10 @@ class TumblrSession(OAuth2Session):
                     post_object = Post.model_validate(post)
                     before = post_object.timestamp
 
+                    live.progress.update(task_id, advance=1)
                     live.custom_update(post_object)
 
-                live.progress.update(task_id, total=response_object.response.blog.posts, advance=len(response_object.response.posts))
+                live.progress.update(task_id, total=response_object.response.blog.posts)
 
                 if not response_object.response.posts:
                     break

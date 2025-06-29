@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, override
 
 from openai.types import ChatModel
-from pydantic import Field, NonNegativeFloat, NonNegativeInt, PositiveInt
+from pydantic import Field, PositiveFloat, PositiveInt
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict, TomlConfigSettingsSource
 from tomlkit import comment, dumps, table  # pyright: ignore[reportUnknownVariableType]
 from tomlkit.items import Table
@@ -33,7 +33,7 @@ class TomlSettings(BaseSettings):
 class AutoGenerateTomlSettings(TomlSettings):
     @classmethod
     @override
-    def settings_customise_sources(cls, settings_cls: type[BaseSettings], *args: object, **kwargs: object) -> tuple[PydanticBaseSettingsSource, ...]:
+    def settings_customise_sources(cls, settings_cls: type[BaseSettings], *args: PydanticBaseSettingsSource, **kwargs: PydanticBaseSettingsSource) -> tuple[PydanticBaseSettingsSource, ...]:
         return (TomlConfigSettingsSource(settings_cls),)
 
     @override
@@ -69,7 +69,7 @@ class Config(AutoGenerateTomlSettings):
             "",
             description='The name of the blog which generated drafts will be uploaded to that appears in the URL. This must be a blog associated with the same account as the configured Tumblr secret values. Examples: "staff" for https://staff.tumblr.com and "changes" for https://tumblr.com/changes or https://tumblr.com/@changes',
         )
-        draft_count: NonNegativeInt = Field(150, description="The number of drafts to process. This will affect the number of tokens used with OpenAI. Setting to 0 will disable draft generation.")
+        draft_count: PositiveInt = Field(150, description="The number of drafts to process. This will affect the number of tokens used with OpenAI")
 
     class Training(TomlSettings):
         blog_names: list[str] = Field(
@@ -78,11 +78,16 @@ class Config(AutoGenerateTomlSettings):
         )
         data_directory: Path = Field(Path("data"), description="Where to store downloaded post data.")
         output_file: Path = Field(Path("training.jsonl"), description="Where to output the training data that will be used to fine-tune the model.")
-        estimated_epochs: PositiveInt = Field(3, description="The number of epochs fine-tuning will be run for.")
-        token_price: NonNegativeFloat = Field(1.50, description="The expected price in USD per million tokens during fine-tuning for the current model. Setting to 0 will treat fine-tuning as free.")
+        job_id: str = ""
 
-    user_message: str = Field("Write a comical Tumblr post.", description="The user message for the OpenAI API. This is the prompt that will be sent to the API to generate drafts.")
-    model_name: ChatModel = Field("gpt-4.1-nano-2025-04-14", description="The name of the model that will be fine-tuned by the generated training data.")
+        expected_epochs: PositiveInt = Field(3, description="The expected number of epochs fine-tuning will be run for. This will be updated during fine-tuning.")
+        expected_tokens_per_second: PositiveFloat = Field(100, description="The expected number of tokens per second fine-tuning will run for. This will be updated during fine-tuning.")
+        token_price: PositiveFloat = Field(1.50, description="The expected price in USD per million tokens during fine-tuning for the current model.")
+
+    base_model: ChatModel = Field("gpt-4.1-nano-2025-04-14", description="The name of the model that will be fine-tuned by the generated training data.")
+
+    developer_message: str = Field("You are a Tumblr post bot. Please generate a Tumblr post in accordance with the user's request.", description="The developer message used by the OpenAI API to generate drafts.")
+    user_input: str = Field("Please write a comical Tumblr post.", description="The user input used by the OpenAI API to generate drafts.")
 
     generation: Generation = Generation()  # pyright: ignore[reportCallIssue]
     training: Training = Training()  # pyright: ignore[reportCallIssue]

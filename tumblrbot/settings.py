@@ -78,7 +78,7 @@ class Config(AutoGenerateTomlSettings):
         )
         data_directory: Path = Field(Path("data"), description="Where to store downloaded post data.")
         output_file: Path = Field(Path("training.jsonl"), description="Where to output the training data that will be used to fine-tune the model.")
-        job_id: str = ""
+        job_id: str = Field("", description="The fine-tuning job ID that will be polled on next run.")
 
         expected_epochs: PositiveInt = Field(3, description="The expected number of epochs fine-tuning will be run for. This will be updated during fine-tuning.")
         token_price: PositiveFloat = Field(1.50, description="The expected price in USD per million tokens during fine-tuning for the current model.")

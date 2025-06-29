@@ -2,7 +2,7 @@ from collections.abc import Generator
 from itertools import chain
 from random import choice
 from textwrap import dedent
-from typing import Self, override
+from typing import Literal, Self, override
 
 import rich
 from pydantic import BaseModel, ConfigDict, NonNegativeInt, model_validator
@@ -16,11 +16,19 @@ from rich.prompt import Prompt
 from rich.table import Table
 from rich.text import TextType
 
-type TagsList = list[str]
+from tumblrbot.settings import CONFIG
 
 
 class ConfiguredModel(BaseModel):
     model_config = ConfigDict(validate_default=True)
+
+
+class Example(BaseModel):
+    class Message(BaseModel):
+        content: str
+        role: Literal["developer", "user", "assistant"]
+
+    messages: list[Message]
 
 
 class Post(ConfiguredModel):
@@ -41,17 +49,40 @@ class Post(ConfiguredModel):
 
     def __rich__(self) -> Panel:
         return Panel(
-            "\n\n".join(block.text for block in self.content),
+            self.get_text_content(),
             title="Preview",
             subtitle=" ".join(f"#{tag}" for tag in self.tags),
             subtitle_align="left",
         )
 
     @model_validator(mode="after")
-    def get_text_blocks(self) -> Self:
+    def filter_content(self) -> Self:
         ask_blocks = {*chain.from_iterable(block.blocks for block in self.layout if block.type == "ask")}
         self.content = [block for i, block in enumerate(self.content) if i not in ask_blocks and block.type == "text"]
         return self
+
+    def get_text_content(self) -> str:
+        return "\n\n".join(block.text for block in self.content)
+
+    def to_example(self) -> Example | None:
+        if not (self.is_submission or self.trail) and self.content:
+            return Example(
+                messages=[
+                    Example.Message(
+                        role="developer",
+                        content=CONFIG.developer_message,
+                    ),
+                    Example.Message(
+                        role="user",
+                        content=CONFIG.user_input,
+                    ),
+                    Example.Message(
+                        role="assistant",
+                        content=self.get_text_content(),
+                    ),
+                ],
+            )
+        return None
 
 
 class PreviewLive(Live):

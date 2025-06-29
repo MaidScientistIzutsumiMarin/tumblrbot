@@ -81,7 +81,6 @@ class Config(AutoGenerateTomlSettings):
         job_id: str = ""
 
         expected_epochs: PositiveInt = Field(3, description="The expected number of epochs fine-tuning will be run for. This will be updated during fine-tuning.")
-        expected_tokens_per_second: PositiveFloat = Field(100, description="The expected number of tokens per second fine-tuning will run for. This will be updated during fine-tuning.")
         token_price: PositiveFloat = Field(1.50, description="The expected price in USD per million tokens during fine-tuning for the current model.")
 
     base_model: ChatModel = Field("gpt-4.1-nano-2025-04-14", description="The name of the model that will be fine-tuned by the generated training data.")

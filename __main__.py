@@ -51,7 +51,7 @@ def verify_tokens() -> Tokens:
 
             authorization_response = token_prompt(uri, "full redirected URL")
             tokens.tumblr.token = client.fetch_token("https://api.tumblr.com/v2/oauth2/token", authorization_response=authorization_response)
-            tokens.model_dump_json()
+            tokens.model_post_init()
 
     return tokens
 

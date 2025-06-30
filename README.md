@@ -7,11 +7,9 @@
 [OAuth 2.0]: https://www.tumblr.com/docs/en/api/v2#oauth2-authorization
 [pip]: https://pypi.org
 
-[Fine-Tuning]: tumblrbot/fine_tuning.py
-[Generation]: tumblrbot/generation.py
+[OpenAI Utils]: tumblrbot/openai_utils.py
+[Tumblr Utils]: tumblrbot/tumblr_utils.py
 [Settings]: tumblrbot/settings.py
-[Training]: tumblrbot/training.py
-[Tumblr]: tumblrbot/tumblr.py
 [Main]: __main__.py
 [README.md]: README.md
 
@@ -26,35 +24,34 @@ This fork is largely a rewrite of the source code with similarities in its struc
    - Updated to the latest version of [OpenAI].
    - Updated the [model version][Settings] to [gpt-4.1-nano-2025-04-14].
 - Removed features:
-   - [Generation]:
+   - Generation:
       - Removed clearing drafts behavior.
-   - [Training]:
+   - Training:
       - Removed exports that had HTML or reblogs.
       - Removed special word-replacement behavior.
       - Removed filtering by year.
    - Removed the system message.
    - Removed setup and related files.
 - Changed/Added features:
-   - [Generation]:
-      - Changed tag generation to be based on the [specified blogs][Settings].
+   - Generation:
       - Added a link to the blog's draft page after generation.
       - Added error checking for uploading generated drafts.
-   - [Training]:
+   - Training:
+      - Added the option to remove posts flagged by the [Moderation API].
       - Changed to escaping training data automatically.
       - Set encoding for reading post data to `UTF-8` to fix decoding errors.
       - Added spaces between paragraphs in the training data.
       - Removed "ALT" and poll text from the training data.
       - Improved the estimated token counts and costs.
    - **Created a [guided utility][Main] for every step of building your bot blog:**
-      1. [Downloads][Tumblr] the latest posts from the [specified blogs][Settings].
-      1. [Creates][Training] a training dataset from the downloaded post data.
-      1. [Fine-tunes][Fine-Tuning] the [specified base model][Settings] with the training dataset.
-      2. [Generates][Generation] draft posts from the newly trained model.
+      1. [Downloads][Tumblr Utils] the latest posts from the [specified blogs][Settings].
+      1. [Creates][OpenAI Utils] a training dataset from the downloaded post data.
+      1. [Fine-tunes][OpenAI Utils] the [specified base model][Settings] with the training dataset.
+      2. [Generates][OpenAI Utils] draft posts from the newly trained model.
    - Changed to [Rich] for output.
       - Added progress bars.
       - Added post previews.
       - Added color, formatting, and more information to output.
-   - Reduced [prompt][Settings] length.
    - Maid scripts wait for user input before the console closes.
    - Added command-line options to override [Settings] options.
    - Added behavior to regenerate the default [config.toml][Settings] and [env.toml][Settings] if missing.
@@ -66,7 +63,6 @@ This fork is largely a rewrite of the source code with similarities in its struc
 Probable To-Dos:
 - Add documentation.
 - Finish updating [README.md].
-- Add calls to the [Moderation API] to see what caused a fine-tuning job to fail.
 
 Possible To-Dos:
 - Use classes to store [Settings] data instead of global variables.

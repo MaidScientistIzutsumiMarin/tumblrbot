@@ -88,21 +88,6 @@ class OpenAIClient(OpenAI):
 
         return tokens
 
-    def poll_job_status(self, job_id: str, tokens: int) -> FineTuningJob:
-        job = self.fine_tuning.jobs.retrieve(job_id)
-
-        if CONFIG.training.expected_epochs != job.hyperparameters.n_epochs and isinstance(job.hyperparameters.n_epochs, int):
-            CONFIG.training.expected_epochs = job.hyperparameters.n_epochs
-            CONFIG.model_post_init()
-
-            dedent_print(f"""
-                The number of epochs has been updated to {job.hyperparameters.n_epochs}!
-                [cyan]Updated the config.
-            """)
-            print_estimates(tokens)
-
-        return job
-
     def start_fine_tuning(self, tokens: int) -> None:
         if CONFIG.training.job_id:
             job = self.fine_tuning.jobs.retrieve(CONFIG.training.job_id)
@@ -159,6 +144,42 @@ class OpenAIClient(OpenAI):
             CONFIG.generation.fine_tuned_model = job.fine_tuned_model or ""
             CONFIG.model_post_init()
 
+    def poll_job_status(self, job_id: str, tokens: int) -> FineTuningJob:
+        job = self.fine_tuning.jobs.retrieve(job_id)
+
+        if CONFIG.training.expected_epochs != job.hyperparameters.n_epochs and isinstance(job.hyperparameters.n_epochs, int):
+            CONFIG.training.expected_epochs = job.hyperparameters.n_epochs
+            CONFIG.model_post_init()
+
+            dedent_print(f"""
+                The number of epochs has been updated to {job.hyperparameters.n_epochs}!
+                [cyan]Updated the config.
+            """)
+            print_estimates(tokens)
+
+        return job
+
+    def create_drafts(self, tumblr: TumblrClient) -> None:
+        message = f"View drafts here: https://tumblr.com/blog/{CONFIG.generation.blog_name}/drafts"
+
+        with PreviewLive() as live:
+            for i in live.progress.track(range(CONFIG.generation.draft_count), description="Generating drafts..."):
+                try:
+                    if post := self.generate_post():
+                        tumblr.create_draft_post(post)
+                        live.custom_update(post)
+                except BaseException as exc:
+                    exc.add_note(f"📉 An error occurred! Generated {i} draft(s) before failing. {message}")
+                    raise
+
+        rich.print(f":chart_increasing: [bold green]Generated {CONFIG.generation.draft_count} draft(s).[/] {message}")
+
+    def generate_post(self) -> Post | None:
+        response = self.generate_content()
+        if response.output_parsed and (tags := self.generate_tags(response.id)):
+            response.output_parsed.tags = tags.tags
+        return response.output_parsed
+
     def generate_content(self) -> ParsedResponse[Post]:
         return self.responses.parse(
             input=CONFIG.user_input,
@@ -176,27 +197,6 @@ class OpenAIClient(OpenAI):
             previous_response_id=response_id,
         ).output_parsed
 
-    def generate_post(self) -> Post | None:
-        response = self.generate_content()
-        if response.output_parsed and (tags := self.generate_tags(response.id)):
-            response.output_parsed.tags = tags.tags
-        return response.output_parsed
-
-    def create_drafts(self, tumblr: TumblrClient) -> None:
-        message = f"View drafts here: https://tumblr.com/blog/{CONFIG.generation.blog_name}/drafts"
-
-        with PreviewLive() as live:
-            for i in live.progress.track(range(CONFIG.generation.draft_count), description="Generating drafts..."):
-                try:
-                    if post := self.generate_post():
-                        tumblr.create_draft_post(post)
-                        live.custom_update(post)
-                except BaseException as exc:
-                    exc.add_note(f"📉 An error occurred! Generated {i} draft(s) before failing. {message}")
-                    raise
-
-        rich.print(f":chart_increasing: [bold green]Generated {CONFIG.generation.draft_count} draft(s).[/] {message}")
-
 
 def count_tokens(example: Example, encoding: Encoding) -> int:
     # Based on https://cookbook.openai.com/examples/how_to_count_tokens_with_tiktoken
@@ -205,10 +205,6 @@ def count_tokens(example: Example, encoding: Encoding) -> int:
     for message in example.messages:
         num_tokens += len(encoding.encode(message.content))
     return num_tokens
-
-
-def get_cost_string(total_tokens: int) -> str:
-    return f"${CONFIG.training.token_price / 1000000 * total_tokens:.2f}"
 
 
 def print_estimates(tokens: int) -> None:
@@ -221,3 +217,7 @@ def print_estimates(tokens: int) -> None:
         NOTE: Token values are approximate and may not be 100% accurate, please be aware of this when using the data.
                 [italic red]Neither Amelia nor Mutsumi are responsible for any inaccuracies in the token count or estimated price.[/]
     """)
+
+
+def get_cost_string(total_tokens: int) -> str:
+    return f"${CONFIG.training.token_price / 1000000 * total_tokens:.2f}"

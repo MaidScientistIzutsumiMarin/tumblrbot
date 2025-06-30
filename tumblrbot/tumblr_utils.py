@@ -35,12 +35,12 @@ class TumblrAuth(Auth):
         super().__init__()
 
         self.client = client
-        self.token_time = datetime.min.replace(tzinfo=UTC)
 
     @override
     def auth_flow(self, request: Request) -> Generator[Request, Response]:
-        if datetime.now(UTC) >= self.token_time + TOKENS.tumblr.token.expires_in:
-            self.client.set_access_token("refresh_token", None)
+        if datetime.now(UTC) >= self.client.token_time + TOKENS.tumblr.token.expires_in:
+            TOKENS.tumblr.token = self.client.grant_token("refresh_token", None).json()
+            TOKENS.model_post_init()
 
         request.headers["Authorization"] = f"Bearer {TOKENS.tumblr.token.access_token}"
         yield request
@@ -52,7 +52,6 @@ class TumblrClient(Client):
             auth=TumblrAuth(self),
             http2=True,
             event_hooks={
-                "request": [],
                 "response": [Response.raise_for_status],
             },
             base_url="https://api.tumblr.com/v2",
@@ -64,6 +63,7 @@ class TumblrClient(Client):
 
         self.token_time = datetime.min.replace(tzinfo=UTC)
 
+    @override
     def __enter__(self: Self) -> Self:
         super().__enter__()
 
@@ -85,11 +85,14 @@ class TumblrClient(Client):
                 msg = f"Tumblr authorization failed! {response.error_description or 'State does not match.'}"
                 raise RuntimeError(msg)
 
-            self.set_access_token("authorization_code", response.code)
+            TOKENS.tumblr.token = self.grant_token("authorization_code", response.code).json()
+            TOKENS.model_post_init()
 
         return self
 
     def grant_token(self, grant_type: Literal["authorization_code", "refresh_token"], code: str | None) -> Response:
+        self.token_time = datetime.now(UTC)
+
         return self.post(
             "oauth2/token",
             data={
@@ -121,11 +124,6 @@ class TumblrClient(Client):
                 "npf": True,
             },
         )
-
-    def set_access_token(self, grant_type: Literal["authorization_code", "refresh_token"], code: str | None) -> None:
-        self.token_time = datetime.now(UTC)
-        TOKENS.tumblr.token = self.grant_token(grant_type, code).json()
-        TOKENS.model_post_init()
 
     def write_published_posts_paginated(self, blog_name: str, before: int | Literal[False], completed: int, output_path: Path, live: PreviewLive) -> None:
         with output_path.open("a", encoding="utf_8") as fp:

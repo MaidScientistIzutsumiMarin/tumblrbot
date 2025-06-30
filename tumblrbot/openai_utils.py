@@ -15,7 +15,7 @@ from rich.console import Console
 from tiktoken import Encoding, encoding_for_model, get_encoding
 
 from tumblrbot.settings import CONFIG, TOKENS
-from tumblrbot.tumblr_utils import TumblrSession
+from tumblrbot.tumblr_utils import TumblrClient
 from tumblrbot.utils import Post, PreviewLive, dedent_print, yes_no_prompt
 
 
@@ -27,7 +27,7 @@ class Example(BaseModel):
     messages: list[Message]
 
 
-class OpenAISession(OpenAI):
+class OpenAIClient(OpenAI):
     def __init__(self) -> None:
         super().__init__(
             api_key=TOKENS.openai_api_key,
@@ -182,7 +182,7 @@ class OpenAISession(OpenAI):
             response.output_parsed.tags = tags.tags
         return response.output_parsed
 
-    def create_drafts(self, tumblr: TumblrSession) -> None:
+    def create_drafts(self, tumblr: TumblrClient) -> None:
         message = f"View drafts here: https://tumblr.com/blog/{CONFIG.generation.blog_name}/drafts"
 
         with PreviewLive() as live:
@@ -207,20 +207,12 @@ def count_tokens(example: Example, encoding: Encoding) -> int:
     return num_tokens
 
 
-def get_total_tokens(tokens: int) -> int:
-    return CONFIG.training.expected_epochs * tokens
-
-
 def get_cost_string(total_tokens: int) -> str:
     return f"${CONFIG.training.token_price / 1000000 * total_tokens:.2f}"
 
 
-def get_time_delta(job: FineTuningJob, offset: float) -> float:
-    return offset - job.created_at
-
-
 def print_estimates(tokens: int) -> None:
-    total_tokens = get_total_tokens(tokens)
+    total_tokens = CONFIG.training.expected_epochs * tokens
 
     dedent_print(f"""
         Tokens {tokens:,}:

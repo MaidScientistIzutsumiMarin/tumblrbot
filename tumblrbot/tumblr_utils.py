@@ -31,7 +31,7 @@ class PostsResponse(BaseModel):
 
 
 class TumblrAuth(Auth):
-    def __init__(self, client: "TumblrSession") -> None:
+    def __init__(self, client: "TumblrClient") -> None:
         super().__init__()
 
         self.client = client
@@ -46,7 +46,7 @@ class TumblrAuth(Auth):
         yield request
 
 
-class TumblrSession(Client):
+class TumblrClient(Client):
     def __init__(self) -> None:
         super().__init__(
             auth=TumblrAuth(self),

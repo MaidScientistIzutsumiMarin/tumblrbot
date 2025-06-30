@@ -5,9 +5,9 @@ from rich.console import Console
 from rich.prompt import Prompt
 from rich.traceback import install
 
-from tumblrbot.openai_utils import OpenAISession
+from tumblrbot.openai_utils import OpenAIClient
 from tumblrbot.settings import TOKENS
-from tumblrbot.tumblr_utils import TumblrSession
+from tumblrbot.tumblr_utils import TumblrClient
 from tumblrbot.utils import token_prompt, yes_no_prompt
 
 
@@ -20,7 +20,7 @@ def main() -> None:
         TOKENS.tumblr.client_id, TOKENS.tumblr.client_secret = token_prompt("https://tumblr.com/oauth/apps", "consumer key", "consumer secret")
         TOKENS.model_post_init()
 
-    with OpenAISession() as openai, TumblrSession() as tumblr:
+    with OpenAIClient() as openai, TumblrClient() as tumblr:
         should_download = yes_no_prompt("Download latest posts?")
         tumblr.write_all_published_posts(should_download=should_download)
 

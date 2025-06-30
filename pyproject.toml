@@ -6,7 +6,6 @@ requires-python = ">= 3.13"
 license = "Unlicense"
 license-files = ["UNLICENSE"]
 dependencies = [
-  "hishel",
   "httpx[http2]",
   "more-itertools",
   "openai",

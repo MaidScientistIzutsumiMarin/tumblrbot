@@ -91,6 +91,7 @@ class Config(AutoGenerateTomlSettings):
 
     developer_message: str = Field("You are a Tumblr post bot. Please generate a Tumblr post in accordance with the user's request.", description="The developer message used by the OpenAI API to generate drafts.")
     user_input: str = Field("Please write a comical Tumblr post.", description="The user input used by the OpenAI API to generate drafts.")
+    tags_chance: float = Field(0.1, description="The chance to generate tags for any given post. This will incur extra calls to OpenAI.")
 
     generation: Generation = Generation()  # pyright: ignore[reportCallIssue]
     training: Training = Training()  # pyright: ignore[reportCallIssue]
@@ -111,7 +112,3 @@ class Tokens(AutoGenerateTomlSettings):
 
     openai_api_key: str = ""
     tumblr: Tumblr = Tumblr()
-
-
-CONFIG = Config()  # pyright: ignore[reportCallIssue]
-TOKENS = Tokens()

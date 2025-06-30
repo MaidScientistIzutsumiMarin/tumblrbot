@@ -5,24 +5,15 @@ from pathlib import Path
 
 import rich
 from more_itertools import chunked
-from pydantic import BaseModel
 from rich.console import Console
 from tiktoken import encoding_for_model, get_encoding
 
-from tumblrbot.tumblr import Post
-from tumblrbot.utils import PreviewLive, PreviewUtil, yes_no_prompt
-
-
-class Example(BaseModel):
-    class Message(BaseModel):
-        role: str
-        content: str
-
-    messages: list[Message]
+from tumblrbot.models import Example, Post
+from tumblrbot.utils import PreviewLive, UtilClass, yes_no_prompt
 
 
 @dataclass
-class ExamplesWriter(PreviewUtil):
+class ExamplesWriter(UtilClass):
     download_paths: list[Path]
 
     def count_tokens(self) -> Generator[int]:

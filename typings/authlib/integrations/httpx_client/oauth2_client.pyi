@@ -18,7 +18,7 @@ class OAuth2Client(_OAuth2Client, Client):
         redirect_uri: str | None = None,
         token: dict[str, object] | None = None,
         token_placement: str = "header",  # noqa: S107
-        update_token: Callable[[dict[str, object], str | None, str | None], None] | None = None,
+        update_token: Callable[[dict[str, object]], None] | None = None,
         **kwargs: object,
     ) -> None: ...
     def create_authorization_url(

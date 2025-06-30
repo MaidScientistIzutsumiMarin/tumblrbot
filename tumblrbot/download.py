@@ -2,24 +2,12 @@ from json import dump
 from pathlib import Path
 
 from more_itertools import last
-from pydantic import BaseModel, NonNegativeInt
 
-from tumblrbot.tumblr import Post
-from tumblrbot.utils import PreviewLive, PreviewUtil
-
-
-class PostsResponse(BaseModel):
-    class Response(BaseModel):
-        class Blog(BaseModel):
-            posts: NonNegativeInt
-
-        blog: Blog
-        posts: list[object]
-
-    response: Response
+from tumblrbot.models import Post, PostsResponse
+from tumblrbot.utils import PreviewLive, UtilClass
 
 
-class PostDownloader(PreviewUtil):
+class PostDownloader(UtilClass):
     def paginate_posts(self, blog_name: str, before: int, completed: int, download_path: Path, live: PreviewLive) -> None:
         with download_path.open("a", encoding="utf_8") as fp:
             task_id = live.progress.add_task(f"Downloading posts from '{blog_name}'...", total=None, completed=completed)

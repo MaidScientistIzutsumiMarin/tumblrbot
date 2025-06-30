@@ -19,7 +19,7 @@ class PreviewLive(Live):
     def __init__(self) -> None:
         super().__init__()
 
-        spinner_name = choice(list(SPINNERS))
+        spinner_name = choice(list(SPINNERS))  # noqa: S311
         self.progress = Progress(
             *Progress.get_default_columns(),
             TimeElapsedColumn(),
@@ -43,7 +43,7 @@ class PreviewLive(Live):
 
 
 @dataclass
-class PreviewUtil:
+class UtilClass:
     config: ClassVar = Config()  # pyright: ignore[reportCallIssue]
 
     openai: OpenAI

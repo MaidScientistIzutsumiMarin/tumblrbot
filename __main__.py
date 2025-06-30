@@ -4,7 +4,7 @@ from pathlib import Path
 
 import rich
 from authlib.integrations.httpx_client import OAuth2Client
-from openai import DefaultHttpxClient, OpenAI
+from openai import OpenAI
 from rich.console import Console
 from rich.prompt import Prompt
 from rich.traceback import install
@@ -18,7 +18,7 @@ from tumblrbot.tumblr import TumblrClient
 from tumblrbot.utils import yes_no_prompt
 
 
-def token_prompt(url: object, *tokens: object) -> Generator[str]:
+def token_prompt(url: str, *tokens: str) -> Generator[str]:
     token_strings = [f"[cyan]{token}[/]" for token in tokens]
     url_prompt_tokens = " and ".join(token_strings)
 
@@ -48,7 +48,6 @@ def verify_tokens() -> Tokens:
             scope="basic write offline_access",
         ) as client:
             uri, _ = client.create_authorization_url("https://tumblr.com/oauth2/authorize")
-
             authorization_response = token_prompt(uri, "full redirected URL")
             tokens.tumblr.token = client.fetch_token("https://api.tumblr.com/v2/oauth2/token", authorization_response=authorization_response)
             tokens.model_post_init()
@@ -65,16 +64,9 @@ def main() -> None:
 
     try:
         install(show_locals=True)
-
         tokens = verify_tokens()
 
-        with (
-            OpenAI(
-                api_key=tokens.openai_api_key,
-                http_client=DefaultHttpxClient(http2=True),
-            ) as openai,
-            TumblrClient(tokens) as tumblr,
-        ):
+        with OpenAI(api_key=tokens.openai_api_key) as openai, TumblrClient(tokens) as tumblr:
             post_downloader = PostDownloader(openai, tumblr)
             if yes_no_prompt("Download latest posts?"):
                 post_downloader.download()
@@ -91,7 +83,7 @@ def main() -> None:
                 fine_tuner.fine_tune()
 
             if yes_no_prompt("Generate drafts?"):
-                DraftGenerator(openai, tumblr).create_drafts()
+                DraftGenerator(openai=openai, tumblr=tumblr).create_drafts()
     except BaseException:
         if console_auto_closes:
             Console(stderr=True, style="logging.level.error").print_exception()

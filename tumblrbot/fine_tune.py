@@ -6,11 +6,11 @@ from time import sleep, time
 import rich
 from openai.types.fine_tuning import FineTuningJob
 
-from tumblrbot.utils import PreviewLive, PreviewUtil
+from tumblrbot.utils import PreviewLive, UtilClass
 
 
 @dataclass
-class FineTuner(PreviewUtil):
+class FineTuner(UtilClass):
     estimated_tokens: int
 
     @staticmethod

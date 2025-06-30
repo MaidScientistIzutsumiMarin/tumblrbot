@@ -2,13 +2,13 @@ from random import random
 
 import rich
 
-from tumblrbot.tumblr import Post
-from tumblrbot.utils import PreviewLive, PreviewUtil
+from tumblrbot.models import Post
+from tumblrbot.utils import PreviewLive, UtilClass
 
 
-class DraftGenerator(PreviewUtil):
-    def generate_tags(self, content: Post.ContentBlock) -> Post | None:
-        if random() < self.config.tags_chance:
+class DraftGenerator(UtilClass):
+    def generate_tags(self, content: Post.Block) -> Post | None:
+        if random() < self.config.tags_chance:  # noqa: S311
             return self.openai.responses.parse(
                 input=content.text,
                 instructions="You are an advanced text summarization tool. You should extract a very short list of the most important subjects.",
@@ -18,24 +18,29 @@ class DraftGenerator(PreviewUtil):
 
         return None
 
-    def generate_content(self) -> Post.ContentBlock:
+    def generate_content(self) -> Post.Block:
         content = self.openai.responses.create(
             input=self.config.user_input,
             instructions=self.config.developer_message,
             model=self.config.generation.fine_tuned_model,
         ).output_text
-        return Post.ContentBlock(
+        return Post.Block(
             type="text",
             text=content,
+            blocks=set(),
         )
 
     def generate_post(self) -> Post:
         content = self.generate_content()
-        post = Post(content=[content])
-
-        if tags := self.generate_tags(content):
-            post.tags = tags.tags
-        return post
+        tags = self.generate_tags(content)
+        return Post(
+            timestamp=0,
+            is_submission=False,
+            tags=tags.tags if tags else set(),
+            content=[content],
+            layout=[],
+            trail=[],
+        )
 
     def create_drafts(self) -> None:
         message = f"View drafts here: https://tumblr.com/blog/{self.config.generation.blog_name}/drafts"

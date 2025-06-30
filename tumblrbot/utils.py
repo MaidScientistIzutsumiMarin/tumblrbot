@@ -103,7 +103,7 @@ def yes_no_prompt(prompt: TextType) -> bool:
     return answer == yes_option
 
 
-def token_prompt(url: str, *tokens: str) -> Generator[str]:
+def token_prompt(url: object, *tokens: object) -> Generator[str]:
     token_strings = [f"[cyan]{token}[/]" for token in tokens]
     url_prompt_tokens = " and ".join(token_strings)
 

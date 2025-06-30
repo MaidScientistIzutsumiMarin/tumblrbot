@@ -7,16 +7,17 @@ from rich.traceback import install
 
 from tumblrbot.openai_utils import OpenAISession
 from tumblrbot.settings import TOKENS
-from tumblrbot.tumblr_utils import TumblrSession, write_tumblr_credentials
+from tumblrbot.tumblr_utils import TumblrSession
 from tumblrbot.utils import token_prompt, yes_no_prompt
 
 
 def main() -> None:
-    if not all(TOKENS.tumblr.model_dump().values()):
-        write_tumblr_credentials()
-
-    if not TOKENS.openai_api_key:
+    if TOKENS.any_values_missing():
         (TOKENS.openai_api_key,) = token_prompt("https://platform.openai.com/api-keys", "API key")
+        TOKENS.model_post_init()
+
+    if TOKENS.tumblr.any_values_missing():
+        TOKENS.tumblr.client_id, TOKENS.tumblr.client_secret = token_prompt("https://tumblr.com/oauth/apps", "consumer key", "consumer secret")
         TOKENS.model_post_init()
 
     with OpenAISession() as openai, TumblrSession() as tumblr:

@@ -1,15 +1,22 @@
+from collections.abc import Generator
+from datetime import UTC, datetime
 from json import dump
 from pathlib import Path
-from typing import Any, Literal, override
+from secrets import token_urlsafe
+from typing import Literal, Self, override
 
-import rich
-from cachecontrol import CacheControl
+from hishel import CacheTransport, FileStorage
+from httpx import URL, Auth, Client, HTTPTransport, Request, Response
 from pydantic import BaseModel, NonNegativeInt
-from requests import HTTPError, Response
-from requests_oauthlib import OAuth2Session
 
 from tumblrbot.settings import CONFIG, TOKENS
 from tumblrbot.utils import Post, PreviewLive, token_prompt
+
+
+class AuthorizationResponse(BaseModel):
+    error_description: str = ""
+    code: str = ""
+    state: str = ""
 
 
 class PostsResponse(BaseModel):
@@ -23,37 +30,82 @@ class PostsResponse(BaseModel):
     response: Response
 
 
-class TumblrSession(OAuth2Session):
-    def __init__(self) -> None:
-        super().__init__(  # pyright: ignore[reportUnknownMemberType]
-            TOKENS.tumblr.client_id,
-            auto_refresh_url="https://api.tumblr.com/v2/oauth2/token",
-            auto_refresh_kwargs={
-                "client_id": TOKENS.tumblr.client_id,
-                "client_secret": TOKENS.tumblr.client_secret,
-            },
-            token=TOKENS.tumblr.token,
-            token_updater=write_token,
-        )
+class TumblrAuth(Auth):
+    def __init__(self, client: "TumblrSession") -> None:
+        super().__init__()
 
-        CacheControl(self)
+        self.client = client
+        self.token_time = datetime.min.replace(tzinfo=UTC)
 
     @override
-    def request(self, *args: Any, **kwargs: object) -> Response:
-        response = super().request(*args, **kwargs)  # pyright: ignore[reportUnknownMemberType]
+    def auth_flow(self, request: Request) -> Generator[Request, Response]:
+        if datetime.now(UTC) >= self.token_time + TOKENS.tumblr.token.expires_in:
+            self.client.set_access_token("refresh_token", None)
 
-        try:
-            response.raise_for_status()
-        except HTTPError as error:
-            error.add_note(f"Full Response: {response.json()}")
-            raise
+        request.headers["Authorization"] = f"Bearer {TOKENS.tumblr.token.access_token}"
+        yield request
 
-        return response
+
+class TumblrSession(Client):
+    def __init__(self) -> None:
+        super().__init__(
+            auth=TumblrAuth(self),
+            http2=True,
+            event_hooks={
+                "request": [],
+                "response": [Response.raise_for_status],
+            },
+            base_url="https://api.tumblr.com/v2",
+            transport=CacheTransport(
+                HTTPTransport(),
+                FileStorage(),
+            ),
+        )
+
+        self.token_time = datetime.min.replace(tzinfo=UTC)
+
+    def __enter__(self: Self) -> Self:
+        super().__enter__()
+
+        if TOKENS.tumblr.token.any_values_missing():
+            state = token_urlsafe()
+            url = URL(
+                "https://tumblr.com/oauth2/authorize",
+                params={
+                    "client_id": TOKENS.tumblr.client_id,
+                    "response_type": "code",
+                    "scope": "basic write offline_access",
+                    "state": state,
+                },
+            )
+
+            (response,) = token_prompt(url, "full callback URL")
+            response = AuthorizationResponse.model_validate(URL(response).params)
+            if response.error_description or response.state != state:
+                msg = f"Tumblr authorization failed! {response.error_description or 'State does not match.'}"
+                raise RuntimeError(msg)
+
+            self.set_access_token("authorization_code", response.code)
+
+        return self
+
+    def grant_token(self, grant_type: Literal["authorization_code", "refresh_token"], code: str | None) -> Response:
+        return self.post(
+            "oauth2/token",
+            data={
+                "grant_type": grant_type,
+                "code": code,
+                "client_id": TOKENS.tumblr.client_id,
+                "client_secret": TOKENS.tumblr.client_secret,
+                "refresh_token": TOKENS.tumblr.token.refresh_token,
+            },
+            auth=lambda request: request,
+        )
 
     def create_draft_post(self, post: Post) -> Response:
         return self.post(
-            f"https://api.tumblr.com/v2/blog/{CONFIG.generation.blog_name}/posts",
-            json={
+            f"blog/{CONFIG.generation.blog_name}/posts",
+            data={
                 "content": list(map(dict, post.content)),
                 "state": "draft",
                 "tags": ",".join(post.tags),
@@ -62,19 +114,22 @@ class TumblrSession(OAuth2Session):
 
     def retrieve_published_posts(self, blog_name: str, before: int) -> Response:
         return self.get(
-            f"https://api.tumblr.com/v2/blog/{blog_name}/posts",
-            params=sorted(
-                {
-                    "api_key": TOKENS.tumblr.client_id,
-                    "before": before,
-                    "npf": True,
-                }.items(),
-            ),
+            f"blog/{blog_name}/posts",
+            params={
+                "api_key": TOKENS.tumblr.client_id,
+                "before": before,
+                "npf": True,
+            },
         )
+
+    def set_access_token(self, grant_type: Literal["authorization_code", "refresh_token"], code: str | None) -> None:
+        self.token_time = datetime.now(UTC)
+        TOKENS.tumblr.token = self.grant_token(grant_type, code).json()
+        TOKENS.model_post_init()
 
     def write_published_posts_paginated(self, blog_name: str, before: int | Literal[False], completed: int, output_path: Path, live: PreviewLive) -> None:
         with output_path.open("a", encoding="utf_8") as fp:
-            task_id = live.progress.add_task(f"Downloading posts from '{blog_name}'...", total=None, completed=completed)
+            task_id = live.progress.add_task(f"Downloading posts from '{blog_name}'...", completed=completed)
 
             while True:
                 response = self.retrieve_published_posts(blog_name, before)
@@ -119,25 +174,3 @@ class TumblrSession(OAuth2Session):
                         output_path,
                         live,
                     )
-
-
-def write_token(token: dict[str, object]) -> None:
-    TOKENS.tumblr.token = token
-    TOKENS.model_post_init()
-
-
-def write_tumblr_credentials() -> None:
-    TOKENS.tumblr.client_id, TOKENS.tumblr.client_secret = token_prompt("https://tumblr.com/oauth/apps", "consumer key", "consumer secret")
-
-    oauth = OAuth2Session(TOKENS.tumblr.client_id, scope=["basic", "write", "offline_access"])
-    authorization_url, _ = oauth.authorization_url("https://tumblr.com/oauth2/authorize")  # pyright: ignore[reportUnknownMemberType]
-    (authorization_response,) = token_prompt(authorization_url, "full callback URL")
-
-    token = oauth.fetch_token(  # pyright: ignore[reportUnknownMemberType]
-        "https://api.tumblr.com/v2/oauth2/token",
-        authorization_response=authorization_response,
-        client_secret=TOKENS.tumblr.client_secret,
-    )
-    write_token(token)
-
-    rich.print("[bold green]Successfully generated and saved tokens!\n")

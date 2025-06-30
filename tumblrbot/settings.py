@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from datetime import timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, override
 
@@ -28,6 +29,9 @@ class TomlSettings(BaseSettings):
             toml_table[name] = value.get_toml_table() if isinstance(value, TomlSettings) else dumped_model[name]
 
         return toml_table
+
+    def any_values_missing(self) -> bool:
+        return not all(self.model_dump().values())
 
 
 class AutoGenerateTomlSettings(TomlSettings):
@@ -96,9 +100,14 @@ class Tokens(AutoGenerateTomlSettings):
     model_config = SettingsConfigDict(toml_file="env.toml")
 
     class Tumblr(TomlSettings):
+        class Token(TomlSettings):
+            access_token: str = ""
+            expires_in: timedelta = timedelta()
+            refresh_token: str = ""
+
         client_id: str = ""
         client_secret: str = ""
-        token: dict[str, object] = {}
+        token: Token = Token()
 
     openai_api_key: str = ""
     tumblr: Tumblr = Tumblr()

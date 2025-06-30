@@ -3,6 +3,7 @@ from collections.abc import Generator
 from pathlib import Path
 
 import rich
+from authlib.integrations.httpx_client import OAuth2Client
 from openai import DefaultHttpxClient, OpenAI
 from rich.console import Console
 from rich.prompt import Prompt
@@ -29,6 +30,32 @@ def token_prompt(url: object, *tokens: object) -> Generator[str]:
     rich.print()
 
 
+def verify_tokens() -> Tokens:
+    tokens = Tokens()
+
+    if not tokens.openai_api_key:
+        (tokens.openai_api_key,) = token_prompt("https://platform.openai.com/api-keys", "API key")
+        tokens.model_post_init()
+
+    if not (tokens.tumblr.client_id and tokens.tumblr.client_secret):
+        tokens.tumblr.client_id, tokens.tumblr.client_secret = token_prompt("https://tumblr.com/oauth/apps", "consumer key", "consumer secret")
+        tokens.model_post_init()
+
+    if not tokens.tumblr.token:
+        with OAuth2Client(
+            tokens.tumblr.client_id,
+            tokens.tumblr.client_secret,
+            scope="basic write offline_access",
+        ) as client:
+            uri, _ = client.create_authorization_url("https://tumblr.com/oauth2/authorize")
+
+            authorization_response = token_prompt(uri, "full redirected URL")
+            tokens.tumblr.token = client.fetch_token("https://api.tumblr.com/v2/oauth2/token", authorization_response=authorization_response)
+            tokens.model_dump_json()
+
+    return tokens
+
+
 def main() -> None:
     # It seems like calling 'python script.py' will use the relative path to the script.
     # Meanwhile, double-clicking or calling the script directly will use an absolute path to the script.
@@ -39,14 +66,7 @@ def main() -> None:
     try:
         install(show_locals=True)
 
-        tokens = Tokens()
-        if tokens.any_values_missing():
-            (tokens.openai_api_key,) = token_prompt("https://platform.openai.com/api-keys", "API key")
-            tokens.model_post_init()
-
-        if tokens.tumblr.any_values_missing():
-            tokens.tumblr.client_id, tokens.tumblr.client_secret = token_prompt("https://tumblr.com/oauth/apps", "consumer key", "consumer secret")
-            tokens.model_post_init()
+        tokens = verify_tokens()
 
         with (
             OpenAI(

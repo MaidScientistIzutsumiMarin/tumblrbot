@@ -63,11 +63,12 @@ This fork is largely a rewrite of the source code with similarities in its struc
 Probable To-Dos:
 - Add documentation.
 - Finish updating [README.md].
+- Fix token counter.
+- Look into places more-itertools can help.
+- Look into other Tumblr NPF libraries. Not having to manage that would remove a huge amount of complexity.
 
 Possible To-Dos:
-- Use classes to store [Settings] data instead of global variables.
 - Make this an installable [pip] package.
-- Add an [OpenAI] model pricing scraper.
 
 
 **Please submit an issue or contact us for features you want to added/reimplemented.**

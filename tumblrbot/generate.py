@@ -11,7 +11,7 @@ class DraftGenerator(UtilClass):
         if random() < self.config.tags_chance:  # noqa: S311
             return self.openai.responses.parse(
                 input=content.text,
-                instructions="You are an advanced text summarization tool. You should extract a very short list of the most important subjects.",
+                instructions="You are an advanced text summarization tool. You should extract a very short list of the most important subjects from the input.",
                 model=self.config.base_model,
                 text_format=Post,
             ).output_parsed
@@ -24,22 +24,16 @@ class DraftGenerator(UtilClass):
             instructions=self.config.developer_message,
             model=self.config.generation.fine_tuned_model,
         ).output_text
-        return Post.Block(
-            type="text",
-            text=content,
-            blocks=set(),
-        )
+
+        return Post.Block(type="text", text=content)  # pyright: ignore[reportCallIssue]
 
     def generate_post(self) -> Post:
         content = self.generate_content()
         tags = self.generate_tags(content)
-        return Post(
-            timestamp=0,
-            is_submission=False,
-            tags=tags.tags if tags else set(),
+
+        return Post(  # pyright: ignore[reportCallIssue]
+            tags=tags.tags if tags else [],
             content=[content],
-            layout=[],
-            trail=[],
         )
 
     def create_drafts(self) -> None:

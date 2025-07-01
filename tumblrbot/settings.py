@@ -13,7 +13,12 @@ if TYPE_CHECKING:
 
 
 class TomlSettings(BaseSettings):
-    model_config = SettingsConfigDict(extra="ignore", validate_assignment=True)
+    model_config = SettingsConfigDict(
+        extra="ignore",
+        validate_assignment=True,
+        validate_return=True,
+        validate_by_name=True,
+    )
 
     def get_toml_table(self) -> Table:
         toml_table = table()

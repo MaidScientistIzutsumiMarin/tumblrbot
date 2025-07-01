@@ -1,7 +1,7 @@
-from typing import Any, override
+from typing import Annotated, Any, Literal, override
 
 from openai import BaseModel
-from pydantic import ConfigDict
+from pydantic import ConfigDict, PlainSerializer
 from pydantic.json_schema import SkipJsonSchema
 from rich.panel import Panel
 
@@ -12,7 +12,6 @@ class FullyValidatedModel(BaseModel):
         validate_assignment=True,
         validate_default=True,
         validate_return=True,
-        validate_by_alias=True,
         validate_by_name=True,
     )
 
@@ -23,12 +22,13 @@ class Post(FullyValidatedModel):
         text: str = ""
         blocks: set[int] = set()  # noqa: RUF012
 
-    timestamp: SkipJsonSchema[int] = 0
-    is_submission: SkipJsonSchema[bool] = False
+    tags: Annotated[list[str], PlainSerializer(",".join)] = []  # noqa: RUF012
     content: SkipJsonSchema[list[Block]] = []  # noqa: RUF012
     layout: SkipJsonSchema[list[Block]] = []  # noqa: RUF012
     trail: SkipJsonSchema[list[Any]] = []  # noqa: RUF012
-    tags: set[str] = set()  # noqa: RUF012
+    state: SkipJsonSchema[Literal["published", "queued", "draft", "private", "unapproved"]] = "draft"
+    timestamp: SkipJsonSchema[int] = 0
+    is_submission: SkipJsonSchema[bool] = False
 
     def __rich__(self) -> Panel:
         return Panel(

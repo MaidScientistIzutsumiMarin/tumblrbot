@@ -69,11 +69,7 @@ class TumblrClient(OAuth2Session):
     def create_draft_post(self, blog_name: str, post: Post) -> Response:
         return self.post(
             f"https://api.tumblr.com/v2/blog/{blog_name}/posts",
-            json={
-                "content": post.content,
-                "state": "draft",
-                "tags": ",".join(post.tags),
-            },
+            json=post.model_dump(mode="json"),
         )
 
     def retrieve_published_posts(self, blog_name: str, before: int) -> Response:

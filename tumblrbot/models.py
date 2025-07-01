@@ -24,17 +24,6 @@ class Example(FullyValidatedModel):
     messages: list[Message]
 
 
-class PostsResponse(FullyValidatedModel):
-    class Response(FullyValidatedModel):
-        class Blog(FullyValidatedModel):
-            posts: int
-
-        blog: Blog
-        posts: list[Any]
-
-    response: Response
-
-
 class Post(FullyValidatedModel):
     class Block(FullyValidatedModel):
         type: str
@@ -69,16 +58,3 @@ class Post(FullyValidatedModel):
 
     def get_text_content(self) -> str:
         return "\n\n".join(block.text for block in self.content)
-
-
-class ErrorResponse(FullyValidatedModel):
-    class Error(FullyValidatedModel):
-        title: str
-        code: int
-        detail: str
-
-        @override
-        def __str__(self) -> str:
-            return f"Subcode {self.code} {self.title}: {self.detail}"
-
-    errors: list[Error]

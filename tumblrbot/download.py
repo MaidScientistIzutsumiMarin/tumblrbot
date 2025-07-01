@@ -3,7 +3,7 @@ from pathlib import Path
 
 from more_itertools import last
 
-from tumblrbot.models import Post, PostsResponse
+from tumblrbot.models import Post
 from tumblrbot.utils import PreviewLive, UtilClass
 
 
@@ -13,12 +13,15 @@ class PostDownloader(UtilClass):
             task_id = live.progress.add_task(f"Downloading posts from '{blog_name}'...", total=None, completed=completed)
 
             while True:
-                response = self.tumblr.retrieve_published_posts(blog_name, before)
-                response_object = PostsResponse.model_validate_json(response.text)
+                response = self.tumblr.retrieve_published_posts(blog_name, before).json()
+                posts = response["response"]["posts"]
 
-                live.progress.update(task_id, total=response_object.response.blog.posts)
+                live.progress.update(task_id, total=response["response"]["blog"]["posts"])
 
-                for post in response_object.response.posts:
+                if not posts:
+                    break
+
+                for post in posts:
                     dump(post, fp)
                     fp.write("\n")
 
@@ -27,9 +30,6 @@ class PostDownloader(UtilClass):
 
                     live.progress.update(task_id, advance=1)
                     live.custom_update(post_object)
-
-                if not response_object.response.posts:
-                    break
 
     def get_download_path(self, blog_name: str) -> Path:
         return (self.config.training.data_directory / blog_name).with_suffix(".jsonl")

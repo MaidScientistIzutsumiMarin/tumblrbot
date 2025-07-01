@@ -6,12 +6,12 @@ requires-python = ">= 3.13"
 license = "Unlicense"
 license-files = ["UNLICENSE"]
 dependencies = [
-  "Authlib",
-  "httpx[http2]",
   "more-itertools",
   "openai",
   "pydantic",
   "pydantic-settings",
+  "requests",
+  "requests-oauthlib",
   "rich",
   "tiktoken",
   "tomlkit",

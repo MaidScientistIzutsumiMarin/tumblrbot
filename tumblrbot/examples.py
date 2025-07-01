@@ -22,18 +22,17 @@ class ExamplesWriter(UtilClass):
         # Based on https://cookbook.openai.com/examples/how_to_count_tokens_with_tiktoken
         # and https://cookbook.openai.com/examples/chat_finetuning_data_prep
         try:
-            self.encoding = encoding_for_model(self.config.base_model)
+            encoding = encoding_for_model(self.config.base_model)
         except KeyError as error:
-            self.encoding = get_encoding("o200k_base")
-            Console(stderr=True, style="logging.level.warning").print(f"[Warning] Using encoding '{self.encoding.name}': {''.join(error.args)}\n")
+            encoding = get_encoding("o200k_base")
+            Console(stderr=True, style="logging.level.warning").print(f"[Warning] Using encoding '{encoding.name}': {''.join(error.args)}\n")
 
         with self.config.training.output_file.open(encoding="utf_8") as fp:
             for line in fp:
                 example = Example.model_validate_json(line)
-                yield 3 * (len(example.messages) + 1)  # every reply is primed with <|start|>assistant<|message|>
-
+                yield 3  # every reply is primed with <|start|>assistant<|message|>
                 for message in example.messages:
-                    yield len(self.encoding.encode(message.content))
+                    yield 3 + len(encoding.encode(message.content))
 
     def get_moderation_chunk_limit(self) -> int:
         test_n = 1000
@@ -72,7 +71,7 @@ class ExamplesWriter(UtilClass):
                             live.custom_update(post)
                         else:
                             yield post
-            rich.print(f"Removed {removed} posts.")
+            rich.print(f"[red]Removed {removed} posts.\n")
         else:
             yield from posts
 

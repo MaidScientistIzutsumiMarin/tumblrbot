@@ -30,9 +30,9 @@ class ExamplesWriter(UtilClass):
         with self.config.training.output_file.open(encoding="utf_8") as fp:
             for line in fp:
                 example = Example.model_validate_json(line)
-                yield 3  # every reply is primed with <|start|>assistant<|message|>
+                yield len(encoding.encode("assistant"))  # every reply is primed with <|start|>assistant<|message|>
                 for message in example.messages:
-                    yield 3 + len(encoding.encode(message.content))
+                    yield 4 + len(encoding.encode(message.content))
 
     def get_moderation_chunk_limit(self) -> int:
         test_n = 1000

@@ -8,20 +8,13 @@ from rich.panel import Panel
 
 class FullyValidatedModel(BaseModel):
     model_config = ConfigDict(
+        extra="ignore",
         validate_assignment=True,
         validate_default=True,
         validate_return=True,
         validate_by_alias=True,
         validate_by_name=True,
     )
-
-
-class Example(FullyValidatedModel):
-    class Message(FullyValidatedModel):
-        role: str
-        content: str
-
-    messages: list[Message]
 
 
 class Post(FullyValidatedModel):
@@ -58,3 +51,11 @@ class Post(FullyValidatedModel):
 
     def get_text_content(self) -> str:
         return "\n\n".join(block.text for block in self.content)
+
+
+class Example(FullyValidatedModel):
+    class Message(FullyValidatedModel):
+        role: str
+        content: str
+
+    messages: list[Message]

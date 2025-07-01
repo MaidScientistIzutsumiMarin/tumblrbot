@@ -2,9 +2,11 @@ from collections.abc import Generator
 from dataclasses import dataclass
 from math import ceil
 from pathlib import Path
+from re import search
 
 import rich
 from more_itertools import chunked
+from openai import BadRequestError
 from rich.console import Console
 from tiktoken import encoding_for_model, get_encoding
 
@@ -33,6 +35,16 @@ class ExamplesWriter(UtilClass):
                 for message in example.messages:
                     yield len(self.encoding.encode(message.content))
 
+    def get_moderation_chunk_limit(self) -> int:
+        test_n = 1000
+        try:
+            self.openai.moderations.create(input=[""] * test_n)
+        except BadRequestError as error:
+            message = error.response.json()["error"]["message"]
+            if match := search(r"(\d+)\.", message):
+                return int(match.group(1))
+        return test_n
+
     def get_valid_posts(self) -> Generator[Post]:
         for download_path in self.download_paths:
             with download_path.open(encoding="utf_8") as fp:
@@ -43,30 +55,31 @@ class ExamplesWriter(UtilClass):
 
     def get_filtered_posts(self) -> Generator[Post]:
         posts = list(self.get_valid_posts())
-        n = 32  # Maybe get this dynamically in the future.
 
         if yes_no_prompt("Remove posts flagged by the OpenAI moderation? This can sometimes resolve errors with fine-tuning validation, but is slow."):
+            removed = 0
+            chunk_size = self.get_moderation_chunk_limit()
             with PreviewLive() as live:
                 for chunk in live.progress.track(
-                    chunked(posts, n),
-                    ceil(len(posts) / n),
+                    chunked(posts, chunk_size),
+                    ceil(len(posts) / chunk_size),
                     description="Removing flagged posts...",
                 ):
                     response = self.openai.moderations.create(input=list(map(Post.get_text_content, chunk)))
                     for post, moderation in zip(chunk, response.results, strict=True):
                         if moderation.flagged:
+                            removed += 1
                             live.custom_update(post)
                         else:
                             yield post
+            rich.print(f"Removed {removed} posts.")
         else:
             yield from posts
 
     def write_examples(self) -> None:
         self.config.training.output_file.parent.mkdir(parents=True, exist_ok=True)
-        posts = self.get_filtered_posts()
-
         with self.config.training.output_file.open("w", encoding="utf_8") as fp:
-            for post in posts:
+            for post in self.get_filtered_posts():
                 example = Example(
                     messages=[
                         Example.Message(role="developer", content=self.config.developer_message),

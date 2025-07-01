@@ -27,11 +27,11 @@ class FineTuner(UtilClass):
         self.config.training.job_id = ""
         self.config.model_post_init()
 
-        if job.status == "failed" and job.error is not None:
-            if yes_no_prompt("Should the failed file be removed from OpenAI?"):
-                self.openai.files.delete(job.training_file)
-                rich.print("[green]File deleted!\n")
+        if yes_no_prompt("Should the training file be removed from OpenAI?"):
+            self.openai.files.delete(job.training_file)
+            rich.print("[green]File deleted!\n")
 
+        if job.status == "failed" and job.error is not None:
             raise RuntimeError(job.error.message)
 
         if job.fine_tuned_model:

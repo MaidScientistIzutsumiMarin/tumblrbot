@@ -6,7 +6,7 @@ from time import sleep, time
 import rich
 from openai.types.fine_tuning import FineTuningJob
 
-from tumblrbot.utils import PreviewLive, UtilClass
+from tumblrbot.utils import PreviewLive, UtilClass, yes_no_prompt
 
 
 @dataclass
@@ -28,6 +28,10 @@ class FineTuner(UtilClass):
         self.config.model_post_init()
 
         if job.status == "failed" and job.error is not None:
+            if yes_no_prompt("Should the failed file be removed from OpenAI?"):
+                self.openai.files.delete(job.training_file)
+                rich.print("[green]File deleted!\n")
+
             raise RuntimeError(job.error.message)
 
         if job.fine_tuned_model:

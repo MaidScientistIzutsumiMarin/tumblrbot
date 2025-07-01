@@ -2,8 +2,6 @@ from dataclasses import dataclass
 from typing import Self
 
 import rich
-from cachecontrol import CacheControl
-from cachecontrol.caches import SeparateBodyFileCache
 from requests import HTTPError, Response
 from requests_oauthlib import OAuth2Session
 from rich.prompt import Prompt
@@ -21,15 +19,13 @@ class TumblrClient(OAuth2Session):
             self.tokens.tumblr.client_id,
             auto_refresh_url="https://api.tumblr.com/v2/oauth2/token",
             auto_refresh_kwargs={
-                # "client_id": self.tokens.tumblr.client_id,
+                "client_id": self.tokens.tumblr.client_id,
                 "client_secret": self.tokens.tumblr.client_secret,
             },
             scope=["basic", "write", "offline_access"],
             token=self.tokens.tumblr.token,
             token_updater=self.token_saver,
         )
-
-        CacheControl(self, SeparateBodyFileCache(".cache"))
 
         self.hooks["response"].append(self.response_hook)
 
@@ -60,24 +56,32 @@ class TumblrClient(OAuth2Session):
         try:
             response.raise_for_status()
         except HTTPError as error:
-            error.add_note(response.json()["error_description"])
+            json = response.json()
+            if error_description := json.get("error_description", None):
+                error.add_note(error_description)
+            elif errors := json.get("errors", None):
+                for suberror in errors:
+                    error.add_note(f"{suberror['title']} ({suberror['code']}): {suberror['detail']}")
+            else:
+                error.add_note(str(json))
             raise
 
     def create_draft_post(self, blog_name: str, post: Post) -> Response:
         return self.post(
             f"https://api.tumblr.com/v2/blog/{blog_name}/posts",
-            json={
-                "content": post.content,
-                "state": "draft",
-                "tags": ",".join(post.tags),
-            },
+            json=sorted(
+                {
+                    "content": post.content,
+                    "state": "draft",
+                    "tags": ",".join(post.tags),
+                }.items(),
+            ),
         )
 
     def retrieve_published_posts(self, blog_name: str, before: int) -> Response:
         return self.get(
             f"https://api.tumblr.com/v2/blog/{blog_name}/posts",
             params={
-                "api_key": self.tokens.tumblr.client_id,
                 "before": before,
                 "npf": True,
             },

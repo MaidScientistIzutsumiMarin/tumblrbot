@@ -6,7 +6,7 @@ from time import sleep, time
 import rich
 from openai.types.fine_tuning import FineTuningJob
 
-from tumblrbot.utils import PreviewLive, UtilClass, yes_no_prompt
+from tumblrbot.utils import PreviewLive, UtilClass
 
 
 @dataclass
@@ -26,10 +26,6 @@ class FineTuner(UtilClass):
 
         self.config.training.job_id = ""
         self.config.model_post_init()
-
-        if yes_no_prompt("Should the training file be removed from OpenAI?"):
-            self.openai.files.delete(job.training_file)
-            rich.print("[green]File deleted!\n")
 
         if job.status == "failed" and job.error is not None:
             raise RuntimeError(job.error.message)
@@ -90,7 +86,6 @@ class FineTuner(UtilClass):
 
                 live.progress.update(
                     task_id,
-                    total=job.estimated_finish - job.created_at if job.estimated_finish else None,
                     completed=time() - job.created_at,
                     description=f"Fine-tuning is {job.status.replace('_', ' ')}...",
                 )

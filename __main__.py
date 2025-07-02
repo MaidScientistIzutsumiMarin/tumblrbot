@@ -44,6 +44,30 @@ def verify_tokens() -> Tokens:
 
 
 def main() -> None:
+    install(show_locals=True)
+    tokens = verify_tokens()
+
+    with OpenAI(api_key=tokens.openai_api_key) as openai, TumblrClient(tokens) as tumblr:
+        post_downloader = PostDownloader(openai, tumblr)
+        if yes_no_prompt("Download latest posts?"):
+            post_downloader.download()
+        download_paths = post_downloader.get_download_paths()
+
+        examples_writer = ExamplesWriter(openai, tumblr, download_paths)
+        if yes_no_prompt("Create training data?"):
+            examples_writer.write_examples()
+        estimated_tokens = sum(examples_writer.count_tokens())
+
+        fine_tuner = FineTuner(openai, tumblr, estimated_tokens)
+        fine_tuner.print_estimates()
+        if yes_no_prompt("Upload data to OpenAI for fine-tuning?"):
+            fine_tuner.fine_tune()
+
+        if yes_no_prompt("Generate drafts?"):
+            DraftGenerator(openai=openai, tumblr=tumblr).create_drafts()
+
+
+if __name__ == "__main__":
     # It seems like calling 'python script.py' will use the relative path to the script.
     # Meanwhile, double-clicking or calling the script directly will use an absolute path to the script.
     # So, this is currently the only way we know to tell if the console window will close after running.
@@ -51,27 +75,9 @@ def main() -> None:
     console_auto_closes = Path(sys.argv[0]).is_absolute()
 
     try:
-        install(show_locals=True)
-        tokens = verify_tokens()
-
-        with OpenAI(api_key=tokens.openai_api_key) as openai, TumblrClient(tokens) as tumblr:
-            post_downloader = PostDownloader(openai, tumblr)
-            if yes_no_prompt("Download latest posts?"):
-                post_downloader.download()
-            download_paths = post_downloader.get_download_paths()
-
-            examples_writer = ExamplesWriter(openai, tumblr, download_paths)
-            if yes_no_prompt("Create training data?"):
-                examples_writer.write_examples()
-            estimated_tokens = sum(examples_writer.count_tokens())
-
-            fine_tuner = FineTuner(openai, tumblr, estimated_tokens)
-            fine_tuner.print_estimates()
-            if yes_no_prompt("Upload data to OpenAI for fine-tuning?"):
-                fine_tuner.fine_tune()
-
-            if yes_no_prompt("Generate drafts?"):
-                DraftGenerator(openai=openai, tumblr=tumblr).create_drafts()
+        sys.exit(main())
+    except SystemExit:
+        raise
     except BaseException:
         if console_auto_closes:
             Console(stderr=True, style="logging.level.error").print_exception()
@@ -79,7 +85,3 @@ def main() -> None:
     finally:
         if console_auto_closes:
             Prompt.ask("Press Enter to close")
-
-
-if __name__ == "__main__":
-    sys.exit(main())

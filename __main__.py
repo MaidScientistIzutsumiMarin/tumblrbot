@@ -17,26 +17,6 @@ from tumblrbot.utils.settings import Tokens
 from tumblrbot.utils.tumblr import TumblrClient
 
 
-def start_flow(openai: OpenAI, tumblr: TumblrClient) -> None:
-    post_downloader = PostDownloader(openai, tumblr)
-    if Confirm.ask("Download latest posts?", default=False):
-        post_downloader.download()
-    download_paths = post_downloader.get_download_paths()
-
-    examples_writer = ExamplesWriter(openai, tumblr, download_paths)
-    if Confirm.ask("Create training data?", default=False):
-        examples_writer.write_examples()
-    estimated_tokens = sum(examples_writer.count_tokens())
-
-    fine_tuner = FineTuner(openai, tumblr, estimated_tokens)
-    fine_tuner.print_estimates()
-    if Confirm.ask("Upload data to OpenAI for fine-tuning?", default=False):
-        fine_tuner.fine_tune()
-
-    if Confirm.ask("Generate drafts?", default=False):
-        DraftGenerator(openai=openai, tumblr=tumblr).create_drafts()
-
-
 def online_token_prompt(url: str, *tokens: str) -> Generator[Secret[str]]:
     token_strings = [f"[cyan]{token}[/]" for token in tokens]
     url_prompt_tokens = " and ".join(token_strings)
@@ -67,7 +47,23 @@ def main() -> None:
     install(show_locals=True)
     tokens = verify_tokens()
     with OpenAI(api_key=tokens.openai.api_key.get_secret_value()) as openai, TumblrClient(tokens) as tumblr:
-        start_flow(openai, tumblr)
+        post_downloader = PostDownloader(openai, tumblr)
+        if Confirm.ask("Download latest posts?", default=False):
+            post_downloader.download()
+        download_paths = post_downloader.get_download_paths()
+
+        examples_writer = ExamplesWriter(openai, tumblr, download_paths)
+        if Confirm.ask("Create training data?", default=False):
+            examples_writer.write_examples()
+        estimated_tokens = sum(examples_writer.count_tokens())
+
+        fine_tuner = FineTuner(openai, tumblr, estimated_tokens)
+        fine_tuner.print_estimates()
+        if Confirm.ask("Upload data to OpenAI for fine-tuning?", default=False):
+            fine_tuner.fine_tune()
+
+        if Confirm.ask("Generate drafts?", default=False):
+            DraftGenerator(openai, tumblr).create_drafts()
 
 
 if __name__ == "__main__":

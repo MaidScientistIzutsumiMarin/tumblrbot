@@ -62,9 +62,8 @@ This fork is largely a rewrite of the source code with similarities in its struc
    - Changed the value of several [Settings] options.
    - Added full type-checking coverage (fully importable from third-party scripts).
 
-To-Dos:
+To-Do:
 - Add documentation.
-- Reorganize the config.
 - Finish updating [README.md].
 - Look into places more-itertools can help.
 - Make this an installable [pip] package.

@@ -11,8 +11,8 @@ from rich.prompt import Prompt
 from rich.table import Table
 from rich.text import TextType
 
-from tumblrbot.settings import Config
-from tumblrbot.tumblr import TumblrClient
+from tumblrbot.utils.settings import Config
+from tumblrbot.utils.tumblr import TumblrClient
 
 
 class PreviewLive(Live):

@@ -8,13 +8,13 @@ from rich.console import Console
 from rich.prompt import Prompt
 from rich.traceback import install
 
-from tumblrbot.download import PostDownloader
-from tumblrbot.examples import ExamplesWriter
-from tumblrbot.fine_tune import FineTuner
-from tumblrbot.generate import DraftGenerator
-from tumblrbot.settings import Tokens
-from tumblrbot.tumblr import TumblrClient
-from tumblrbot.utils import yes_no_prompt
+from tumblrbot.flow.download import PostDownloader
+from tumblrbot.flow.examples import ExamplesWriter
+from tumblrbot.flow.fine_tune import FineTuner
+from tumblrbot.flow.generate import DraftGenerator
+from tumblrbot.utils.common import yes_no_prompt
+from tumblrbot.utils.settings import Tokens
+from tumblrbot.utils.tumblr import TumblrClient
 
 
 def token_prompt(url: str, *tokens: str) -> Generator[str]:

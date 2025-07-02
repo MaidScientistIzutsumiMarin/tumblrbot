@@ -10,8 +10,8 @@ from openai import BadRequestError
 from rich.console import Console
 from tiktoken import encoding_for_model, get_encoding
 
-from tumblrbot.models import Example, Post
-from tumblrbot.utils import PreviewLive, UtilClass, yes_no_prompt
+from tumblrbot.utils.common import PreviewLive, UtilClass, yes_no_prompt
+from tumblrbot.utils.models import Example, Post
 
 
 @dataclass

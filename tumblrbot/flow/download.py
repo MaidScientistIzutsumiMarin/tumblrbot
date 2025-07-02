@@ -3,8 +3,8 @@ from pathlib import Path
 
 from more_itertools import last
 
-from tumblrbot.models import Post
-from tumblrbot.utils import PreviewLive, UtilClass
+from tumblrbot.utils.common import PreviewLive, UtilClass
+from tumblrbot.utils.models import Post
 
 
 class PostDownloader(UtilClass):

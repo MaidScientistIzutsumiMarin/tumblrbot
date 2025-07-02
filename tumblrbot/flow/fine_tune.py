@@ -6,7 +6,7 @@ from time import sleep, time
 import rich
 from openai.types.fine_tuning import FineTuningJob
 
-from tumblrbot.utils import PreviewLive, UtilClass
+from tumblrbot.utils.common import PreviewLive, UtilClass
 
 
 @dataclass

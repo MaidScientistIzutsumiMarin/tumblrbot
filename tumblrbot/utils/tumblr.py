@@ -6,8 +6,8 @@ from requests import HTTPError, Response
 from requests_oauthlib import OAuth2Session
 from rich.prompt import Prompt
 
-from tumblrbot.models import Post
-from tumblrbot.settings import Tokens
+from tumblrbot.utils.models import Post
+from tumblrbot.utils.settings import Tokens
 
 
 @dataclass

@@ -7,9 +7,14 @@
 [OAuth 2.0]: https://www.tumblr.com/docs/en/api/v2#oauth2-authorization
 [pip]: https://pypi.org
 
-[OpenAI Utils]: tumblrbot/openai_utils.py
-[Tumblr Utils]: tumblrbot/tumblr_utils.py
-[Settings]: tumblrbot/settings.py
+[Download]: tumblrbot/flow/download.py
+[Examples]: tumblrbot/flow/examples.py
+[Fine-Tune]: tumblrbot/flow/fine_tune.py
+[Generate]: tumblrbot/flow/generate.py
+[Utils]: tumblrbot/utils/common.py
+[Models]: tumblrbot/utils/models.py
+[Settings]: tumblrbot/utils/settings.py
+[Tumblr]: tumblrbot/utils/tumblr.py
 [Main]: __main__.py
 [README.md]: README.md
 
@@ -22,53 +27,53 @@ This fork is largely a rewrite of the source code with similarities in its struc
    - Updated to [OAuth 2.0].
    - Updated to the [New Post Format].
    - Updated to the latest version of [OpenAI].
-   - Updated the [model version][Settings] to [gpt-4.1-nano-2025-04-14].
+   - Updated the [base model version][Settings] to [gpt-4.1-nano-2025-04-14].
 - Removed features:
-   - Generation:
+   - [Generation][Generate]:
       - Removed clearing drafts behavior.
-   - Training:
+   - [Training][Examples]:
       - Removed exports that had HTML or reblogs.
       - Removed special word-replacement behavior.
       - Removed filtering by year.
-   - Removed the system message.
    - Removed setup and related files.
 - Changed/Added features:
-   - Generation:
+   - [Generation][Generate]:
       - Added a link to the blog's draft page after generation.
       - Added error checking for uploading generated drafts.
-   - Training:
+   - [Training][Examples]:
       - Added the option to remove posts flagged by the [Moderation API].
       - Changed to escaping training data automatically.
       - Set encoding for reading post data to `UTF-8` to fix decoding errors.
-      - Added spaces between paragraphs in the training data.
-      - Removed "ALT" and poll text from the training data.
+      - Added newlines between paragraphs in the training data.
+      - Removed "ALT", submission, ask, and poll text from the training data.
       - Improved the estimated token counts and costs.
    - **Created a [guided utility][Main] for every step of building your bot blog:**
-      1. [Downloads][Tumblr Utils] the latest posts from the [specified blogs][Settings].
-      1. [Creates][OpenAI Utils] a training dataset from the downloaded post data.
-      1. [Fine-tunes][OpenAI Utils] the [specified base model][Settings] with the training dataset.
-      2. [Generates][OpenAI Utils] draft posts from the newly trained model.
+      1. [Downloads][Download] the latest posts from the [specified blogs][Settings].
+      1. [Creates][Examples] a training dataset from the downloaded post data.
+         - Optionally removes posts that are flagged by the [Moderation API].
+      1. [Fine-tunes][Fine-Tune] the [specified base model][Settings] with the training dataset.
+      1. [Generates][Generate] draft posts from the newly trained model.
    - Changed to [Rich] for output.
       - Added progress bars.
       - Added post previews.
       - Added color, formatting, and more information to output.
    - Maid scripts wait for user input before the console closes.
-   - Added command-line options to override [Settings] options.
+   - Added comand-line options to override [Settings] options.
    - Added behavior to regenerate the default [config.toml][Settings] and [env.toml][Settings] if missing.
    - Renamed several files.
    - Renamed several [Settings] options.
    - Changed the value of several [Settings] options.
    - Added full type-checking coverage (fully importable from third-party scripts).
 
-Probable To-Dos:
+To-Dos:
 - Add documentation.
+- Reorganize the config.
 - Finish updating [README.md].
-- Fix token counter.
 - Look into places more-itertools can help.
 - Look into other Tumblr NPF libraries. Not having to manage that would remove a huge amount of complexity.
-
-Possible To-Dos:
 - Make this an installable [pip] package.
+- Add in-program configuration for non-defaulted [Settings].
+- Rename objects in documentation like `training data` to `examples`.
 
 
 **Please submit an issue or contact us for features you want to added/reimplemented.**

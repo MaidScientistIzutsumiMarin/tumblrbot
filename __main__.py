@@ -6,35 +6,34 @@ import rich
 from openai import OpenAI
 from pydantic import Secret
 from rich.console import Console
-from rich.prompt import Prompt
+from rich.prompt import Confirm, Prompt
 from rich.traceback import install
 
 from tumblrbot.flow.download import PostDownloader
 from tumblrbot.flow.examples import ExamplesWriter
 from tumblrbot.flow.fine_tune import FineTuner
 from tumblrbot.flow.generate import DraftGenerator
-from tumblrbot.utils.common import yes_no_prompt
 from tumblrbot.utils.settings import Tokens
 from tumblrbot.utils.tumblr import TumblrClient
 
 
 def start_flow(openai: OpenAI, tumblr: TumblrClient) -> None:
     post_downloader = PostDownloader(openai, tumblr)
-    if yes_no_prompt("Download latest posts?"):
+    if Confirm.ask("Download latest posts?", default=False):
         post_downloader.download()
     download_paths = post_downloader.get_download_paths()
 
     examples_writer = ExamplesWriter(openai, tumblr, download_paths)
-    if yes_no_prompt("Create training data?"):
+    if Confirm.ask("Create training data?", default=False):
         examples_writer.write_examples()
     estimated_tokens = sum(examples_writer.count_tokens())
 
     fine_tuner = FineTuner(openai, tumblr, estimated_tokens)
     fine_tuner.print_estimates()
-    if yes_no_prompt("Upload data to OpenAI for fine-tuning?"):
+    if Confirm.ask("Upload data to OpenAI for fine-tuning?", default=False):
         fine_tuner.fine_tune()
 
-    if yes_no_prompt("Generate drafts?"):
+    if Confirm.ask("Generate drafts?", default=False):
         DraftGenerator(openai=openai, tumblr=tumblr).create_drafts()
 
 

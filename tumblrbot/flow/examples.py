@@ -8,9 +8,10 @@ import rich
 from more_itertools import chunked
 from openai import BadRequestError
 from rich.console import Console
+from rich.prompt import Confirm
 from tiktoken import encoding_for_model, get_encoding
 
-from tumblrbot.utils.common import PreviewLive, UtilClass, yes_no_prompt
+from tumblrbot.utils.common import PreviewLive, UtilClass
 from tumblrbot.utils.models import Example, Post
 
 
@@ -55,7 +56,7 @@ class ExamplesWriter(UtilClass):
     def get_filtered_posts(self) -> Generator[Post]:
         posts = list(self.get_valid_posts())
 
-        if yes_no_prompt("Remove posts flagged by the OpenAI moderation? This can sometimes resolve errors with fine-tuning validation, but is slow."):
+        if Confirm.ask("Remove posts flagged by the OpenAI moderation? This can sometimes resolve errors with fine-tuning validation, but is slow.", default=False):
             removed = 0
             chunk_size = self.get_moderation_chunk_limit()
             with PreviewLive() as live:

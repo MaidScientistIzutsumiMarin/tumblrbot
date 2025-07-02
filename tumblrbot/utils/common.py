@@ -7,9 +7,7 @@ from rich._spinners import SPINNERS
 from rich.console import RenderableType
 from rich.live import Live
 from rich.progress import MofNCompleteColumn, Progress, SpinnerColumn, TimeElapsedColumn
-from rich.prompt import Prompt
 from rich.table import Table
-from rich.text import TextType
 
 from tumblrbot.utils.settings import Config
 from tumblrbot.utils.tumblr import TumblrClient
@@ -48,10 +46,3 @@ class UtilClass:
 
     openai: OpenAI
     tumblr: TumblrClient
-
-
-def yes_no_prompt(prompt: TextType) -> bool:
-    yes_option = "Y"
-    no_option = "n"
-    answer = Prompt.ask(prompt, choices=[yes_option, no_option], case_sensitive=False, default=no_option)
-    return answer == yes_option

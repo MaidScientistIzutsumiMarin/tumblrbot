@@ -17,7 +17,7 @@ from tumblrbot.utils.models import Example, Post
 
 @dataclass
 class ExamplesWriter(UtilClass):
-    download_paths: list[Path]
+    data_paths: list[Path]
 
     def count_tokens(self) -> Generator[int]:
         # Based on https://cookbook.openai.com/examples/how_to_count_tokens_with_tiktoken
@@ -46,8 +46,8 @@ class ExamplesWriter(UtilClass):
         return test_n
 
     def get_valid_posts(self) -> Generator[Post]:
-        for download_path in self.download_paths:
-            with download_path.open(encoding="utf_8") as fp:
+        for data_path in self.data_paths:
+            with data_path.open(encoding="utf_8") as fp:
                 for line in fp:
                     post = Post.model_validate_json(line)
                     if post.get_text_content() and not (post.is_submission or post.trail):
@@ -89,4 +89,4 @@ class ExamplesWriter(UtilClass):
                 )
                 fp.write(f"{example.model_dump_json()}\n")
 
-        rich.print(f"[bold]The training data can be found at: '{self.config.training.output_file}'\n")
+        rich.print(f"[bold]The examples file can be found at: '{self.config.training.output_file}'\n")

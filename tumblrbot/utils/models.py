@@ -18,11 +18,11 @@ class FullyValidatedModel(BaseModel):
 
 class Post(FullyValidatedModel):
     class Block(FullyValidatedModel):
-        type: str
+        type: str = "text"
         text: str = ""
         blocks: set[int] = set()  # noqa: RUF012
 
-    tags: Annotated[list[str], PlainSerializer(",".join)] = []  # noqa: RUF012
+    tags: Annotated[set[str], PlainSerializer(",".join)] = set()  # noqa: RUF012
     content: SkipJsonSchema[list[Block]] = []  # noqa: RUF012
     layout: SkipJsonSchema[list[Block]] = []  # noqa: RUF012
     trail: SkipJsonSchema[list[Any]] = []  # noqa: RUF012
@@ -42,12 +42,12 @@ class Post(FullyValidatedModel):
     def model_post_init(self, context: object) -> None:
         super().model_post_init(context)
 
-        ask_indices: set[int] = set()
+        indices: set[int] = set()
         for block in self.layout:
             if block.type == "ask":
-                ask_indices |= block.blocks
+                indices |= block.blocks
 
-        self.content = [block for i, block in enumerate(self.content) if i not in ask_indices and block.type == "text"]
+        self.content = [block for i, block in enumerate(self.content) if i not in indices and block.type == "text"]
 
     def get_text_content(self) -> str:
         return "\n\n".join(block.text for block in self.content)

@@ -38,25 +38,22 @@ This fork is largely a rewrite of the source code with similarities in its struc
    - Removed setup and related files.
 - Changed/Added features:
    - [Generation][Generate]:
-      - Added a link to the blog's draft page after generation.
-      - Added error checking for uploading generated drafts.
+      - Added a link to the blog's draft page.
+      - Added error checking for uploading drafts.
    - [Training][Examples]:
+      - Added the option to [Download] the latest posts from the [specified blogs][Settings].
       - Added the option to remove posts flagged by the [Moderation API].
-      - Changed to escaping training data automatically.
+      - Added the option to automatically [Fine-Tune] the examples on the [specified base model][Settings].
+      - Changed to now escape examples automatically.
       - Set encoding for reading post data to `UTF-8` to fix decoding errors.
-      - Added newlines between paragraphs in the training data.
-      - Removed "ALT", submission, ask, and poll text from the training data.
+      - Added newlines between paragraphs.
+      - Removed "ALT", submission, ask, and poll text from posts.
       - Improved the estimated token counts and costs.
-   - **Created a [guided utility][Main] for every step of building your bot blog:**
-      1. [Downloads][Download] the latest posts from the [specified blogs][Settings].
-      1. [Creates][Examples] a training dataset from the downloaded post data.
-         - Optionally removes posts that are flagged by the [Moderation API].
-      1. [Fine-tunes][Fine-Tune] the [specified base model][Settings] with the training dataset.
-      1. [Generates][Generate] draft posts from the newly trained model.
    - Changed to [Rich] for output.
       - Added progress bars.
       - Added post previews.
       - Added color, formatting, and more information to output.
+   - Created a [guided utility][Main] for every step of building your bot blog.
    - Maid scripts wait for user input before the console closes.
    - Added comand-line options to override [Settings] options.
    - Added behavior to regenerate the default [config.toml][Settings] and [env.toml][Settings] if missing.
@@ -70,10 +67,8 @@ To-Dos:
 - Reorganize the config.
 - Finish updating [README.md].
 - Look into places more-itertools can help.
-- Look into other Tumblr NPF libraries. Not having to manage that would remove a huge amount of complexity.
 - Make this an installable [pip] package.
 - Add in-program configuration for non-defaulted [Settings].
-- Rename objects in documentation like `training data` to `examples`.
 
 
 **Please submit an issue or contact us for features you want to added/reimplemented.**

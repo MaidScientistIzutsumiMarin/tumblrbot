@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from textwrap import dedent
-from time import sleep, time
+from time import sleep
 
 import rich
 from openai.types.fine_tuning import FineTuningJob
@@ -86,8 +86,7 @@ class FineTuner(UtilClass):
 
                 live.progress.update(
                     task_id,
-                    completed=time() - job.created_at,
-                    description=f"Fine-tuning is {job.status.replace('_', ' ')}...",
+                    description=f"Fine-tuning: {job.status}...",
                 )
 
                 sleep(1)

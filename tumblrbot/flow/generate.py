@@ -8,7 +8,7 @@ from tumblrbot.utils.models import Post
 
 class DraftGenerator(UtilClass):
     def generate_tags(self, content: Post.Block) -> Post | None:
-        if random() < self.config.tags_chance:  # noqa: S311
+        if random() < self.config.generation.tags_chance:  # noqa: S311
             return self.openai.responses.parse(
                 input=content.text,
                 model=self.config.base_model,
@@ -30,12 +30,10 @@ class DraftGenerator(UtilClass):
 
     def generate_post(self) -> Post:
         content = self.generate_content()
-        tags = self.generate_tags(content)
-
-        return Post(
-            tags=tags.tags if tags else [],
-            content=[content],
-        )
+        post = Post(content=[content])
+        if tags := self.generate_tags(content):
+            post.tags = tags.tags
+        return post
 
     def create_drafts(self) -> None:
         message = f"View drafts here: https://tumblr.com/blog/{self.config.generation.blog_name}/drafts"

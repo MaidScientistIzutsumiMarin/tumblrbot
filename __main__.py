@@ -18,11 +18,11 @@ from tumblrbot.utils.tumblr import TumblrClient
 
 
 def online_token_prompt(url: str, *tokens: str) -> Generator[Secret[str]]:
-    token_strings = [f"[cyan]{token}[/]" for token in tokens]
-    url_prompt_tokens = " and ".join(token_strings)
+    formatted_tokens = [f"[cyan]{token}[/]" for token in tokens]
+    formatted_token_string = " and ".join(formatted_tokens)
 
-    rich.print(f"Retrieve your {url_prompt_tokens} from: {url}")
-    for token in token_strings:
+    rich.print(f"Retrieve your {formatted_token_string} from: {url}")
+    for token in formatted_tokens:
         prompt = f"Enter your {token} [yellow](hidden)"
         yield Secret(Prompt.ask(prompt, password=True).strip())
 
@@ -50,7 +50,7 @@ def main() -> None:
         post_downloader = PostDownloader(openai, tumblr)
         if Confirm.ask("Download latest posts?", default=False):
             post_downloader.download()
-        download_paths = post_downloader.get_download_paths()
+        download_paths = post_downloader.get_data_paths()
 
         examples_writer = ExamplesWriter(openai, tumblr, download_paths)
         if Confirm.ask("Create training data?", default=False):

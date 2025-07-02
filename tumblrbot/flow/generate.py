@@ -26,13 +26,13 @@ class DraftGenerator(UtilClass):
             model=self.config.generation.fine_tuned_model,
         ).output_text
 
-        return Post.Block(type="text", text=content)  # pyright: ignore[reportCallIssue]
+        return Post.Block(type="text", text=content)
 
     def generate_post(self) -> Post:
         content = self.generate_content()
         tags = self.generate_tags(content)
 
-        return Post(  # pyright: ignore[reportCallIssue]
+        return Post(
             tags=tags.tags if tags else [],
             content=[content],
         )

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Self
 
 import rich
+from pydantic import Secret
 from requests import HTTPError, Response
 from requests_oauthlib import OAuth2Session
 from rich.prompt import Prompt
@@ -16,14 +17,11 @@ class TumblrClient(OAuth2Session):
 
     def __post_init__(self) -> None:
         super().__init__(
-            self.tokens.tumblr.client_id,
+            self.tokens.tumblr.client_id.get_secret_value(),
             auto_refresh_url="https://api.tumblr.com/v2/oauth2/token",
-            auto_refresh_kwargs={
-                "client_id": self.tokens.tumblr.client_id,
-                "client_secret": self.tokens.tumblr.client_secret,
-            },
+            auto_refresh_kwargs=self.tokens.tumblr.model_dump(mode="json"),
             scope=["basic", "write", "offline_access"],
-            token=self.tokens.tumblr.token,
+            token=self.tokens.tumblr.token.get_secret_value(),
             token_updater=self.token_saver,
         )
 
@@ -32,24 +30,25 @@ class TumblrClient(OAuth2Session):
     def __enter__(self) -> Self:
         super().__enter__()
 
-        if not self.tokens.tumblr.token:
+        if not self.tokens.tumblr.token.get_secret_value():
             authorization_url, _ = self.authorization_url("https://tumblr.com/oauth2/authorize")
 
             rich.print(f"Please go to {authorization_url} and authorize access.")
             authorization_response = Prompt.ask("Enter the full callback URL")
+            rich.print("\n")
 
             self.token_saver(
                 self.fetch_token(
                     "https://api.tumblr.com/v2/oauth2/token",
                     authorization_response=authorization_response,
-                    client_secret=self.tokens.tumblr.client_secret,
+                    client_secret=self.tokens.tumblr.client_secret.get_secret_value(),
                 ),
             )
 
         return self
 
     def token_saver(self, token: object) -> None:
-        self.tokens.tumblr.token = token
+        self.tokens.tumblr.token = Secret(token)
         self.tokens.model_post_init()
 
     def response_hook(self, response: Response, **_: object) -> None:

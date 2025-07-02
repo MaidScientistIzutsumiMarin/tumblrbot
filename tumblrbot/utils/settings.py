@@ -3,9 +3,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, override
 
 from openai.types import ChatModel
-from pydantic import Field, PositiveFloat, PositiveInt
+from pydantic import Field, PositiveFloat, PositiveInt, Secret, field_serializer
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict, TomlConfigSettingsSource
-from tomlkit import comment, dumps, table  # pyright: ignore[reportUnknownVariableType]
+from tomlkit import comment, dumps, table
 from tomlkit.items import Table
 
 if TYPE_CHECKING:
@@ -19,6 +19,13 @@ class TomlSettings(BaseSettings):
         validate_return=True,
         validate_by_name=True,
     )
+
+    @field_serializer("*", when_used="json-unless-none")
+    @staticmethod
+    def serialize_secret(value: object) -> object:
+        if isinstance(value, Secret):
+            return value.get_secret_value()
+        return value
 
     def get_toml_table(self) -> Table:
         toml_table = table()
@@ -36,8 +43,8 @@ class TomlSettings(BaseSettings):
 
 
 class AutoGenerateTomlSettings(TomlSettings):
-    @classmethod
     @override
+    @classmethod
     def settings_customise_sources(cls, settings_cls: type[BaseSettings], *args: PydanticBaseSettingsSource, **kwargs: PydanticBaseSettingsSource) -> tuple[PydanticBaseSettingsSource, ...]:
         return (TomlConfigSettingsSource(settings_cls),)
 
@@ -89,10 +96,9 @@ class Config(AutoGenerateTomlSettings):
         token_price: PositiveFloat = Field(1.50, description="The expected price in USD per million tokens during fine-tuning for the current model.")
 
     base_model: ChatModel = Field("gpt-4.1-nano-2025-04-14", description="The name of the model that will be fine-tuned by the generated training data.")
-
+    tags_chance: float = Field(0.1, description="The chance to generate tags for any given post. This will incur extra calls to OpenAI.")
     developer_message: str = Field("You are a Tumblr post bot. Please generate a Tumblr post in accordance with the user's request.", description="The developer message used by the OpenAI API to generate drafts.")
     user_input: str = Field("Please write a comical Tumblr post.", description="The user input used by the OpenAI API to generate drafts.")
-    tags_chance: float = Field(0.1, description="The chance to generate tags for any given post. This will incur extra calls to OpenAI.")
 
     generation: Generation = Generation()  # pyright: ignore[reportCallIssue]
     training: Training = Training()  # pyright: ignore[reportCallIssue]
@@ -101,10 +107,13 @@ class Config(AutoGenerateTomlSettings):
 class Tokens(AutoGenerateTomlSettings):
     model_config = SettingsConfigDict(toml_file="env.toml")
 
-    class Tumblr(TomlSettings):
-        client_id: str = ""
-        client_secret: str = ""
-        token: Any = {}
+    class OpenAI(TomlSettings):
+        api_key: Secret[str] = Secret("")
 
-    openai_api_key: str = ""
+    class Tumblr(TomlSettings):
+        client_id: Secret[str] = Secret("")
+        client_secret: Secret[str] = Secret("")
+        token: Secret[Any] = Secret({})
+
+    openai: OpenAI = OpenAI()
     tumblr: Tumblr = Tumblr()

@@ -4,6 +4,7 @@ from pathlib import Path
 
 import rich
 from openai import OpenAI
+from pydantic import Secret
 from rich.console import Console
 from rich.prompt import Prompt
 from rich.traceback import install
@@ -37,14 +38,14 @@ def start_flow(openai: OpenAI, tumblr: TumblrClient) -> None:
         DraftGenerator(openai=openai, tumblr=tumblr).create_drafts()
 
 
-def token_prompt(url: str, *tokens: str) -> Generator[str]:
+def online_token_prompt(url: str, *tokens: str) -> Generator[Secret[str]]:
     token_strings = [f"[cyan]{token}[/]" for token in tokens]
     url_prompt_tokens = " and ".join(token_strings)
 
     rich.print(f"Retrieve your {url_prompt_tokens} from: {url}")
     for token in token_strings:
-        prompt = f"Enter your [cyan]{token}"
-        yield Prompt.ask(prompt).strip()
+        prompt = f"Enter your {token} [yellow](hidden)"
+        yield Secret(Prompt.ask(prompt, password=True).strip())
 
     rich.print()
 
@@ -52,12 +53,12 @@ def token_prompt(url: str, *tokens: str) -> Generator[str]:
 def verify_tokens() -> Tokens:
     tokens = Tokens()
 
-    if not tokens.openai_api_key:
-        (tokens.openai_api_key,) = token_prompt("https://platform.openai.com/api-keys", "API key")
+    if not tokens.openai.api_key.get_secret_value():
+        (tokens.openai.api_key,) = online_token_prompt("https://platform.openai.com/api-keys", "API key")
         tokens.model_post_init()
 
-    if not (tokens.tumblr.client_id and tokens.tumblr.client_secret):
-        tokens.tumblr.client_id, tokens.tumblr.client_secret = token_prompt("https://tumblr.com/oauth/apps", "consumer key", "consumer secret")
+    if not (tokens.tumblr.client_id.get_secret_value() and tokens.tumblr.client_secret.get_secret_value()):
+        tokens.tumblr.client_id, tokens.tumblr.client_secret = online_token_prompt("https://tumblr.com/oauth/apps", "consumer key", "consumer secret")
         tokens.model_post_init()
 
     return tokens
@@ -66,7 +67,7 @@ def verify_tokens() -> Tokens:
 def main() -> None:
     install(show_locals=True)
     tokens = verify_tokens()
-    with OpenAI(api_key=tokens.openai_api_key) as openai, TumblrClient(tokens) as tumblr:
+    with OpenAI(api_key=tokens.openai.api_key.get_secret_value()) as openai, TumblrClient(tokens) as tumblr:
         start_flow(openai, tumblr)
 
 

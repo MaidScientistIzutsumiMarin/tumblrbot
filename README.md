@@ -12,15 +12,12 @@
 [Examples]: tumblrbot/flow/examples.py
 [Fine-Tune]: tumblrbot/flow/fine_tune.py
 [Generate]: tumblrbot/flow/generate.py
-[Utils]: tumblrbot/utils/common.py
-[Models]: tumblrbot/utils/models.py
 [Settings]: tumblrbot/utils/settings.py
-[Tumblr]: tumblrbot/utils/tumblr.py
 [Main]: __main__.py
 [README.md]: README.md
 
 # tumblrbot
-[![PyPI](<https://img.shields.io/pypi/v/tumblrbot.svg?label=pypi%20(stable)>)](https://pypi.org/project/tumblrbot/)
+[![PyPI - Version](https://img.shields.io/pypi/v/tumblrbot)](https://python.org/pypi/tumblrbot)
 
 Description of original project:
 > 4tv-tumblrbot was a collaborative project I embarked on with my close friend Dima, who goes by @smoqueen on Tumblr. The aim of this endeavor was straightforward yet silly: to develop a Tumblr bot powered by a machine-learning model. This bot would be specifically trained on the content from a particular Tumblr blog or a selected set of blogs, allowing it to mimic the style, tone, and thematic essence of the original posts.
@@ -69,6 +66,8 @@ To-Do:
 - Add documentation.
 - Finish updating [README.md].
 - Look into places more-itertools can help.
+- Fix the inaccurate progress number when downloading posts.
+- Change the differences list to instead just be a list of features.
 
 
 **Please submit an issue or contact us for features you want to added/reimplemented.**
@@ -79,16 +78,14 @@ To-Do:
    - Linux (apt): `apt install python-pip`
    - Linux (pacman): `pacman install python-pip`
 1. Install the [pip] package: `pip install tumblrbot`
-   - On Linux, you will have to make a virtual environment.
    - Alternatively, you can install from this repository: `pip install git+https://github.com/MaidThatPrograms/tumblrbot.git`
+   - On Linux, you will have to make a virtual environment.
 
 ## Usage
-If you cloned the repo, either:
-   - Double-click `__main__.py` in the root directory.
-   - Run `python __main__.py` in the root directory.
+Run `tumblrbot` from anywhere. Run `tumblrbot --help` for command-line options.
 
-If you installed through [Pip]:
-   - Run `tumblrbot` from anywhere.
+## Obtaining Tokens
+> WIP
 
-## More Information
-   - WIP
+## Configuration
+> WIP

@@ -101,5 +101,5 @@ class FineTuner(UtilClass):
             Total tokens for [bold orange1]{self.config.expected_epochs}[/] epoch(s): {total_tokens:,}
             Expected cost when trained with [bold purple]{self.config.base_model}[/]: {cost_string}
             NOTE: Token values are approximate and may not be 100% accurate, please be aware of this when using the data.
-                    [italic red]Neither Amelia nor Mutsumi are responsible for any inaccuracies in the token count or estimated price.[/]
+                    [italic red]Amelia, Mutsumi, and Marin are not responsible for any inaccuracies in the token count or estimated price.[/]
         """)

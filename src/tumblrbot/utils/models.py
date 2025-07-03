@@ -22,7 +22,7 @@ class Post(FullyValidatedModel):
         text: str = ""
         blocks: set[int] = set()  # noqa: RUF012
 
-    tags: Annotated[set[str], PlainSerializer(",".join)] = set()  # noqa: RUF012
+    tags: Annotated[list[str], PlainSerializer(",".join)] = []  # noqa: RUF012
     content: SkipJsonSchema[list[Block]] = []  # noqa: RUF012
     layout: SkipJsonSchema[list[Block]] = []  # noqa: RUF012
     trail: SkipJsonSchema[list[Any]] = []  # noqa: RUF012

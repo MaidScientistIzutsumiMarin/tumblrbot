@@ -1,5 +1,6 @@
 [project]
 name = "tumblrbot"
+version = "1.0.0"
 description = "An updated bot that posts to Tumblr, based on your very own blog!"
 readme = "README.md"
 requires-python = ">= 3.13"
@@ -16,12 +17,14 @@ dependencies = [
   "tiktoken",
   "tomlkit",
 ]
-dynamic = ["version"]
 
 [project.urls]
 Issues = "https://github.com/MaidThatPrograms/tumblrbot/issues"
 Repository = "https://github.com/MaidThatPrograms/tumblrbot"
 
+[project.scripts]
+tumblrbot = "tumblrbot.__main__:main"
+
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["flit_core >=3.11,<4"]
+build-backend = "flit_core.buildapi"

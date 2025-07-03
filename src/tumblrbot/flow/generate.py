@@ -8,7 +8,7 @@ from tumblrbot.utils.models import Post
 
 class DraftGenerator(UtilClass):
     def generate_tags(self, content: Post.Block) -> Post | None:
-        if random() < self.config.generation.tags_chance:  # noqa: S311
+        if random() < self.config.tags_chance:  # noqa: S311
             return self.openai.responses.parse(
                 input=content.text,
                 model=self.config.base_model,
@@ -23,7 +23,7 @@ class DraftGenerator(UtilClass):
         content = self.openai.responses.create(
             input=self.config.user_input,
             instructions=self.config.developer_message,
-            model=self.config.generation.fine_tuned_model,
+            model=self.config.fine_tuned_model,
         ).output_text
 
         return Post.Block(type="text", text=content)
@@ -36,16 +36,16 @@ class DraftGenerator(UtilClass):
         return post
 
     def create_drafts(self) -> None:
-        message = f"View drafts here: https://tumblr.com/blog/{self.config.generation.blog_name}/drafts"
+        message = f"View drafts here: https://tumblr.com/blog/{self.config.upload_blog_identifier}/drafts"
 
         with PreviewLive() as live:
-            for i in live.progress.track(range(self.config.generation.draft_count), description="Generating drafts..."):
+            for i in live.progress.track(range(self.config.draft_count), description="Generating drafts..."):
                 try:
                     post = self.generate_post()
-                    self.tumblr.create_draft_post(self.config.generation.blog_name, post)
+                    self.tumblr.create_draft_post(self.config.upload_blog_identifier, post)
                     live.custom_update(post)
                 except BaseException as exc:
                     exc.add_note(f"📉 An error occurred! Generated {i} draft(s) before failing. {message}")
                     raise
 
-        rich.print(f":chart_increasing: [bold green]Generated {self.config.generation.draft_count} draft(s).[/] {message}")
+        rich.print(f":chart_increasing: [bold green]Generated {self.config.draft_count} draft(s).[/] {message}")

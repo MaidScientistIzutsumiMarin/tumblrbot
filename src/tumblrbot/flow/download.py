@@ -30,16 +30,16 @@ class PostDownloader(UtilClass):
                 break
 
     def get_data_path(self, blog_name: str) -> Path:
-        return (self.config.training.data_directory / blog_name).with_suffix(".jsonl")
+        return (self.config.data_directory / blog_name).with_suffix(".jsonl")
 
     def get_data_paths(self) -> list[Path]:
-        return list(map(self.get_data_path, self.config.training.blog_names))
+        return list(map(self.get_data_path, self.config.download_blog_identifiers))
 
     def download(self) -> None:
-        self.config.training.data_directory.mkdir(parents=True, exist_ok=True)
+        self.config.data_directory.mkdir(parents=True, exist_ok=True)
 
         with PreviewLive() as live:
-            for blog_name in self.config.training.blog_names:
+            for blog_name in self.config.download_blog_identifiers:
                 data_path = self.get_data_path(blog_name)
                 lines = data_path.read_text("utf_8").splitlines() if data_path.exists() else []
 

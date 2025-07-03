@@ -24,22 +24,19 @@ class FineTuner(UtilClass):
                 Cost: {self.get_cost_string(job.trained_tokens)}
             """)
 
-        self.config.training.job_id = ""
-        self.config.model_post_init()
+        self.config.job_id = ""
 
         if job.status == "failed" and job.error is not None:
             raise RuntimeError(job.error.message)
 
         if job.fine_tuned_model:
-            self.config.generation.fine_tuned_model = job.fine_tuned_model or ""
-            self.config.model_post_init()
+            self.config.fine_tuned_model = job.fine_tuned_model or ""
 
     def poll_job_status(self) -> FineTuningJob:
-        job = self.openai.fine_tuning.jobs.retrieve(self.config.training.job_id)
+        job = self.openai.fine_tuning.jobs.retrieve(self.config.job_id)
 
-        if self.config.training.expected_epochs != job.hyperparameters.n_epochs and isinstance(job.hyperparameters.n_epochs, int):
-            self.config.training.expected_epochs = job.hyperparameters.n_epochs
-            self.config.model_post_init()
+        if self.config.expected_epochs != job.hyperparameters.n_epochs and isinstance(job.hyperparameters.n_epochs, int):
+            self.config.expected_epochs = job.hyperparameters.n_epochs
 
             self.dedent_print(f"""
                 The number of epochs has been updated to {job.hyperparameters.n_epochs}!
@@ -50,11 +47,11 @@ class FineTuner(UtilClass):
         return job
 
     def create_job(self) -> FineTuningJob:
-        if self.config.training.job_id:
+        if self.config.job_id:
             return self.poll_job_status()
 
         file = self.openai.files.create(
-            file=self.config.training.output_file,
+            file=self.config.examples_file,
             purpose="fine-tune",
         )
         job = self.openai.fine_tuning.jobs.create(
@@ -62,8 +59,7 @@ class FineTuner(UtilClass):
             training_file=file.id,
         )
 
-        self.config.training.job_id = job.id
-        self.config.model_post_init()
+        self.config.job_id = job.id
         return job
 
     def fine_tune(self) -> None:
@@ -94,15 +90,15 @@ class FineTuner(UtilClass):
         self.process_completed_job(job)
 
     def get_cost_string(self, total_tokens: int) -> str:
-        return f"${self.config.training.token_price / 1000000 * total_tokens:.2f}"
+        return f"${self.config.token_price / 1000000 * total_tokens:.2f}"
 
     def print_estimates(self) -> None:
-        total_tokens = self.config.training.expected_epochs * self.estimated_tokens
+        total_tokens = self.config.expected_epochs * self.estimated_tokens
         cost_string = self.get_cost_string(total_tokens)
 
         self.dedent_print(f"""
             Tokens {self.estimated_tokens:,}:
-            Total tokens for [bold orange1]{self.config.training.expected_epochs}[/] epoch(s): {total_tokens:,}
+            Total tokens for [bold orange1]{self.config.expected_epochs}[/] epoch(s): {total_tokens:,}
             Expected cost when trained with [bold purple]{self.config.base_model}[/]: {cost_string}
             NOTE: Token values are approximate and may not be 100% accurate, please be aware of this when using the data.
                     [italic red]Neither Amelia nor Mutsumi are responsible for any inaccuracies in the token count or estimated price.[/]

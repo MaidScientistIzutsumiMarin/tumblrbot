@@ -28,7 +28,7 @@ class ExamplesWriter(UtilClass):
             encoding = get_encoding("o200k_base")
             Console(stderr=True, style="logging.level.warning").print(f"[Warning] Using encoding '{encoding.name}': {''.join(error.args)}\n")
 
-        with self.config.training.output_file.open(encoding="utf_8") as fp:
+        with self.config.examples_file.open(encoding="utf_8") as fp:
             for line in fp:
                 example = Example.model_validate_json(line)
                 yield len(encoding.encode("assistant"))  # every reply is primed with <|start|>assistant<|message|>
@@ -77,8 +77,8 @@ class ExamplesWriter(UtilClass):
             yield from posts
 
     def write_examples(self) -> None:
-        self.config.training.output_file.parent.mkdir(parents=True, exist_ok=True)
-        with self.config.training.output_file.open("w", encoding="utf_8") as fp:
+        self.config.examples_file.parent.mkdir(parents=True, exist_ok=True)
+        with self.config.examples_file.open("w", encoding="utf_8") as fp:
             for post in self.get_filtered_posts():
                 example = Example(
                     messages=[
@@ -89,4 +89,4 @@ class ExamplesWriter(UtilClass):
                 )
                 fp.write(f"{example.model_dump_json()}\n")
 
-        rich.print(f"[bold]The examples file can be found at: '{self.config.training.output_file}'\n")
+        rich.print(f"[bold]The examples file can be found at: '{self.config.examples_file}'\n")

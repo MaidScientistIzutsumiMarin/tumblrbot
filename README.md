@@ -20,7 +20,7 @@
 [README.md]: README.md
 
 # tumblrbot
-![PyPI](https://img.shields.io/pypi/v/tumblrbot)
+[![PyPI](<https://img.shields.io/pypi/v/tumblrbot.svg?label=pypi%20(stable)>)](https://pypi.org/project/tumblrbot/)
 
 Description of original project:
 > 4tv-tumblrbot was a collaborative project I embarked on with my close friend Dima, who goes by @smoqueen on Tumblr. The aim of this endeavor was straightforward yet silly: to develop a Tumblr bot powered by a machine-learning model. This bot would be specifically trained on the content from a particular Tumblr blog or a selected set of blogs, allowing it to mimic the style, tone, and thematic essence of the original posts.

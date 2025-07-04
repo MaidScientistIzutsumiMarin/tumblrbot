@@ -2,10 +2,7 @@
 name = "tumblrbot"
 version = "1.1.1"
 description = "An updated bot that posts to Tumblr, based on your very own blog!"
-readme = "README.md"
 requires-python = ">= 3.13"
-license = "Unlicense"
-license-files = ["UNLICENSE"]
 dependencies = [
   "more-itertools",
   "openai",
@@ -19,12 +16,11 @@ dependencies = [
 ]
 
 [project.urls]
-Issues = "https://github.com/MaidThatPrograms/tumblrbot/issues"
-Repository = "https://github.com/MaidThatPrograms/tumblrbot"
+Source = "https://github.com/MaidThatPrograms/tumblrbot"
 
 [project.scripts]
 tumblrbot = "tumblrbot.__main__:main"
 
 [build-system]
-requires = ["flit_core"]
-build-backend = "flit_core.buildapi"
+requires = ["hatchling"]
+build-backend = "hatchling.build"

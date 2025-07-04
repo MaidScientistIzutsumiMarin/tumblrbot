@@ -1,5 +1,3 @@
-import sys
-
 from openai import OpenAI
 from rich.prompt import Confirm
 from rich.traceback import install
@@ -8,8 +6,8 @@ from tumblrbot.flow.download import PostDownloader
 from tumblrbot.flow.examples import ExamplesWriter
 from tumblrbot.flow.fine_tune import FineTuner
 from tumblrbot.flow.generate import DraftGenerator
+from tumblrbot.utils.common import TumblrClient
 from tumblrbot.utils.settings import Tokens
-from tumblrbot.utils.tumblr import TumblrClient
 
 
 def main() -> None:
@@ -33,7 +31,3 @@ def main() -> None:
 
         if Confirm.ask("Generate drafts?", default=False):
             DraftGenerator(openai, tumblr).create_drafts()
-
-
-if __name__ == "__main__":
-    sys.exit(main())

@@ -7,7 +7,7 @@ from openai.types import ChatModel
 from pydantic import Field, PositiveFloat, PositiveInt, Secret, model_validator
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict, TomlConfigSettingsSource
 from rich.prompt import Prompt
-from tomlkit import comment, document, dumps
+from tomlkit import comment, document, dumps  # pyright: ignore[reportUnknownVariableType]
 
 if TYPE_CHECKING:
     from _typeshed import StrPath

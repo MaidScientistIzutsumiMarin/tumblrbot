@@ -68,17 +68,16 @@ class TumblrClient(OAuth2Session):
                 error.add_note(str(json))
             raise
 
-    def create_draft_post(self, blog_name: str, post: Post) -> Response:
-        return self.post(
-            f"https://api.tumblr.com/v2/blog/{blog_name}/posts",
-            json=post.model_dump(mode="json"),
-        )
-
-    def retrieve_published_posts(self, blog_name: str, before: int) -> Response:
+    def retrieve_published_posts(self, blog_identifier: str, before: int) -> Response:
         return self.get(
-            f"https://api.tumblr.com/v2/blog/{blog_name}/posts",
+            f"https://api.tumblr.com/v2/blog/{blog_identifier}/posts",
             params={
                 "before": before,
                 "npf": True,
             },
+        )
+    def create_post(self, blog_identifier: str, post: Post) -> Response:
+        return self.post(
+            f"https://api.tumblr.com/v2/blog/{blog_identifier}/posts",
+            json=post.model_dump(mode="json"),
         )

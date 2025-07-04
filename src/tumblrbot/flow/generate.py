@@ -42,7 +42,7 @@ class DraftGenerator(UtilClass):
             for i in live.progress.track(range(self.config.draft_count), description="Generating drafts..."):
                 try:
                     post = self.generate_post()
-                    self.tumblr.create_draft_post(self.config.upload_blog_identifier, post)
+                    self.tumblr.create_post(self.config.upload_blog_identifier, post)
                     live.custom_update(post)
                 except BaseException as exc:
                     exc.add_note(f"📉 An error occurred! Generated {i} draft(s) before failing. {message}")

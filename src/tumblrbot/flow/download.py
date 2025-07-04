@@ -9,11 +9,11 @@ from tumblrbot.utils.models import Post
 
 
 class PostDownloader(UtilClass):
-    def paginate_posts(self, blog_name: str, before: int, completed: int, fp: TextIOBase, live: PreviewLive) -> None:
-        task_id = live.progress.add_task(f"Downloading posts from '{blog_name}'...", total=None, completed=completed)
+    def paginate_posts(self, blog_identifier: str, before: int, completed: int, fp: TextIOBase, live: PreviewLive) -> None:
+        task_id = live.progress.add_task(f"Downloading posts from '{blog_identifier}'...", total=None, completed=completed)
 
         while True:
-            response = self.tumblr.retrieve_published_posts(blog_name, before).json()["response"]
+            response = self.tumblr.retrieve_published_posts(blog_identifier, before).json()["response"]
             live.progress.update(task_id, total=response["blog"]["posts"])
 
             if posts := response["posts"]:
@@ -29,8 +29,8 @@ class PostDownloader(UtilClass):
             else:
                 break
 
-    def get_data_path(self, blog_name: str) -> Path:
-        return (self.config.data_directory / blog_name).with_suffix(".jsonl")
+    def get_data_path(self, blog_identifier: str) -> Path:
+        return (self.config.data_directory / blog_identifier).with_suffix(".jsonl")
 
     def get_data_paths(self) -> list[Path]:
         return list(map(self.get_data_path, self.config.download_blog_identifiers))
@@ -39,13 +39,13 @@ class PostDownloader(UtilClass):
         self.config.data_directory.mkdir(parents=True, exist_ok=True)
 
         with PreviewLive() as live:
-            for blog_name in self.config.download_blog_identifiers:
-                data_path = self.get_data_path(blog_name)
+            for blog_identifier in self.config.download_blog_identifiers:
+                data_path = self.get_data_path(blog_identifier)
                 lines = data_path.read_text("utf_8").splitlines() if data_path.exists() else []
 
                 with data_path.open("a", encoding="utf_8") as fp:
                     self.paginate_posts(
-                        blog_name,
+                        blog_identifier,
                         Post.model_validate_json(last(lines, "{}")).timestamp,
                         len(lines),
                         fp,

@@ -82,7 +82,7 @@ class FineTuner(UtilClass):
 
                 live.progress.update(
                     task_id,
-                    description=f"Fine-tuning: {job.status}...",
+                    description=f"Fine-tuning: [italic]{job.status.replace('_', ' ').title()}[/]...",
                 )
 
                 sleep(1)

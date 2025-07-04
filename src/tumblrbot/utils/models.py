@@ -18,15 +18,15 @@ class FullyValidatedModel(BaseModel):
 
 class Post(FullyValidatedModel):
     class Block(FullyValidatedModel):
-        type: str = "text"
+        type: str = ""
         text: str = ""
-        blocks: set[int] = set()  # noqa: RUF012
+        blocks: list[int] = []  # noqa: RUF012
 
     tags: Annotated[list[str], PlainSerializer(",".join)] = []  # noqa: RUF012
     content: SkipJsonSchema[list[Block]] = []  # noqa: RUF012
     layout: SkipJsonSchema[list[Block]] = []  # noqa: RUF012
     trail: SkipJsonSchema[list[Any]] = []  # noqa: RUF012
-    state: SkipJsonSchema[Literal["published", "queued", "draft", "private", "unapproved"]] = "draft"
+    state: SkipJsonSchema[Literal["published", "queued", "draft", "private", "unapproved"]] = "published"
     timestamp: SkipJsonSchema[int] = 0
     is_submission: SkipJsonSchema[bool] = False
 
@@ -45,7 +45,7 @@ class Post(FullyValidatedModel):
         indices: set[int] = set()
         for block in self.layout:
             if block.type == "ask":
-                indices |= block.blocks
+                indices.update(block.blocks)
 
         self.content = [block for i, block in enumerate(self.content) if i not in indices and block.type == "text"]
 
@@ -55,7 +55,7 @@ class Post(FullyValidatedModel):
 
 class Example(FullyValidatedModel):
     class Message(FullyValidatedModel):
-        role: str
+        role: Literal["developer", "user", "assistant"]
         content: str
 
     messages: list[Message]

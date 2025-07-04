@@ -30,7 +30,10 @@ class DraftGenerator(UtilClass):
 
     def generate_post(self) -> Post:
         content = self.generate_content()
-        post = Post(content=[content])
+        post = Post(
+            content=[content],
+            state="draft",
+        )
         if tags := self.generate_tags(content):
             post.tags = tags.tags
         return post

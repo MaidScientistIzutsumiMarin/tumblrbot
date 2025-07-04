@@ -76,6 +76,7 @@ class TumblrClient(OAuth2Session):
                 "npf": True,
             },
         )
+
     def create_post(self, blog_identifier: str, post: Post) -> Response:
         return self.post(
             f"https://api.tumblr.com/v2/blog/{blog_identifier}/posts",

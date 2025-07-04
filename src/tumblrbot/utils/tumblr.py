@@ -68,11 +68,12 @@ class TumblrClient(OAuth2Session):
                 error.add_note(str(json))
             raise
 
-    def retrieve_published_posts(self, blog_identifier: str, before: int) -> Response:
+    def retrieve_published_posts(self, blog_identifier: str, offset: int) -> Response:
         return self.get(
             f"https://api.tumblr.com/v2/blog/{blog_identifier}/posts",
             params={
-                "before": before,
+                "offset": offset,
+                "sort": "asc",
                 "npf": True,
             },
         )

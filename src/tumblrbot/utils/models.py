@@ -27,7 +27,6 @@ class Post(FullyValidatedModel):
     layout: SkipJsonSchema[list[Block]] = []  # noqa: RUF012
     trail: SkipJsonSchema[list[Any]] = []  # noqa: RUF012
     state: SkipJsonSchema[Literal["published", "queued", "draft", "private", "unapproved"]] = "published"
-    timestamp: SkipJsonSchema[int] = 0
     is_submission: SkipJsonSchema[bool] = False
 
     def __rich__(self) -> Panel:

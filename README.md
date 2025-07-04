@@ -66,7 +66,6 @@ To-Do:
 - Add documentation.
 - Finish updating [README.md].
 - Look into places more-itertools can help.
-- Fix the inaccurate progress number when downloading posts.
 - Change the differences list to instead just be a list of features.
 
 

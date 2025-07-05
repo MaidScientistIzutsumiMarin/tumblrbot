@@ -19,7 +19,6 @@ class TumblrClient(OAuth2Session):
             auto_refresh_kwargs={
                 "client_id": self.tokens.tumblr_client_id.get_secret_value(),
                 "client_secret": self.tokens.tumblr_client_secret.get_secret_value(),
-                "token": self.tokens.tumblr_token.get_secret_value(),
             },
             token=self.tokens.tumblr_token.get_secret_value(),
             token_updater=self.token_updater,

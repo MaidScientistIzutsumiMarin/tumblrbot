@@ -1,8 +1,10 @@
 from collections.abc import Generator
 from dataclasses import dataclass
+from json import loads
 from math import ceil
 from pathlib import Path
 from re import search
+from typing import IO
 
 import rich
 from more_itertools import chunked
@@ -76,17 +78,40 @@ class ExamplesWriter(UtilClass):
         else:
             yield from posts
 
+    def get_custom_prompts(self) -> Generator[tuple[str, str]]:
+        if self.config.custom_prompts_file.exists():
+            text = self.config.custom_prompts_file.read_text(encoding="utf_8")
+            yield from loads(text).items()
+
     def write_examples(self) -> None:
         self.config.examples_file.parent.mkdir(parents=True, exist_ok=True)
+
         with self.config.examples_file.open("w", encoding="utf_8") as fp:
             for post in self.get_filtered_posts():
-                example = Example(
-                    messages=[
-                        Example.Message(role="developer", content=self.config.developer_message),
-                        Example.Message(role="user", content=self.config.user_input),
-                        Example.Message(role="assistant", content=post.get_text_content()),
-                    ],
+                self.write_example(
+                    None,
+                    post.get_text_content(),
+                    fp,
                 )
-                fp.write(f"{example.model_dump_json()}\n")
+
+            for user_message, assistant_response in self.get_custom_prompts():
+                self.write_example(
+                    user_message,
+                    assistant_response,
+                    fp,
+                )
 
         rich.print(f"[bold]The examples file can be found at: '{self.config.examples_file}'\n")
+
+    def write_example(self, user_input: str | None, assistant_message: str, fp: IO[str]) -> None:
+        example = Example(
+            messages=[
+                Example.Message(role="developer", content=self.config.developer_message),
+                Example.Message(role="assistant", content=assistant_message),
+            ],
+        )
+
+        if user_input:
+            example.messages.insert(1, Example.Message(role="user", content=user_input))
+
+        fp.write(f"{example.model_dump_json()}\n")

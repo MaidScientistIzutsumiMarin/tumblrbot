@@ -21,7 +21,7 @@ class DraftGenerator(UtilClass):
 
     def generate_content(self) -> Post.Block:
         content = self.openai.responses.create(
-            input=self.config.user_input,
+            input=self.config.user_message,
             instructions=self.config.developer_message,
             model=self.config.fine_tuned_model,
         ).output_text

@@ -42,6 +42,7 @@ class Config(BaseSettings):
         description="The identifiers of the blogs which post data will be downloaded from. These must be blogs associated with the same account as the configured Tumblr secret tokens.",
     )
     data_directory: Path = Field(Path("data"), description="Where to store downloaded post data.")
+    custom_prompts_file: Path = Field(Path("custom_prompts.json"), description="Where to read in custom prompts from.")
     examples_file: Path = Field(Path("examples.jsonl"), description="Where to output the examples that will be used to fine-tune the model.")
     job_id: str = Field("", description="The fine-tuning job ID that will be polled on next run.")
     expected_epochs: PositiveInt = Field(3, description="The expected number of epochs fine-tuning will be run for. This will be updated during fine-tuning.")
@@ -49,7 +50,7 @@ class Config(BaseSettings):
 
     base_model: ChatModel = Field("gpt-4.1-nano-2025-04-14", description="The name of the model that will be fine-tuned by the generated training data.")
     developer_message: str = Field("You are a Tumblr post bot. Please generate a Tumblr post in accordance with the user's request.", description="The developer message used by the OpenAI API to generate drafts.")
-    user_input: str = Field("Please write a comical Tumblr post.", description="The user input used by the OpenAI API to generate drafts.")
+    user_message: str = Field("Please write a comical Tumblr post.", description="The user input used by the OpenAI API to generate drafts.")
 
     @override
     @classmethod

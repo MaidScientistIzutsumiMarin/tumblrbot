@@ -39,7 +39,6 @@ class TumblrClient(OAuth2Session):
 
             rich.print(f"Please go to {authorization_url} and authorize access.")
             authorization_response = Prompt.ask("Enter the full callback URL")
-            rich.print("\n")
 
             self.token_saver(
                 self.fetch_token(  # pyright: ignore[reportUnknownMemberType]
@@ -58,21 +57,14 @@ class TumblrClient(OAuth2Session):
         try:
             response.raise_for_status()
         except HTTPError as error:
-            json = response.json()
-            if error_description := json.get("error_description", None):
-                error.add_note(error_description)
-            elif errors := json.get("errors", None):
-                for suberror in errors:
-                    error.add_note(f"{suberror['title']} ({suberror['code']}): {suberror['detail']}")
-            else:
-                error.add_note(str(json))
+            error.add_note(response.text)
             raise
 
-    def retrieve_published_posts(self, blog_identifier: str, offset: int) -> Response:
+    def retrieve_published_posts(self, blog_identifier: str, after: int) -> Response:
         return self.get(
             f"https://api.tumblr.com/v2/blog/{blog_identifier}/posts",
             params={
-                "offset": offset,
+                "after": after,
                 "sort": "asc",
                 "npf": True,
             },

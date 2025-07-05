@@ -1,7 +1,7 @@
-from typing import Any, Literal, override
+from typing import Annotated, Any, Literal, override
 
 from openai import BaseModel
-from pydantic import ConfigDict
+from pydantic import ConfigDict, PlainSerializer
 from pydantic.json_schema import SkipJsonSchema
 from rich.panel import Panel
 
@@ -23,7 +23,7 @@ class Post(FullyValidatedModel):
         blocks: list[int] = []  # noqa: RUF012
 
     timestamp: SkipJsonSchema[int] = 0
-    tags: list[str] = []  # noqa: RUF012
+    tags: Annotated[SkipJsonSchema[list[str]], PlainSerializer(",".join)] = []  # noqa: RUF012
     state: SkipJsonSchema[Literal["published", "queued", "draft", "private", "unapproved"]] = "published"
 
     content: SkipJsonSchema[list[Block]] = []  # noqa: RUF012

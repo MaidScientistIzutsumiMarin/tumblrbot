@@ -1,63 +1,28 @@
+import json
 from collections.abc import Generator, Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Self, override
+from typing import TYPE_CHECKING, Any, ClassVar, Self, override
 
 import rich
+import tomlkit
+from keyring import get_password, set_password
 from openai.types import ChatModel
 from pydantic import Field, PositiveFloat, PositiveInt, Secret, model_validator
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict, TomlConfigSettingsSource
-from rich.prompt import Prompt
-from tomlkit import comment, document, dumps  # pyright: ignore[reportUnknownVariableType]
+from requests_oauthlib import OAuth2Session
+from rich.prompt import Confirm, Prompt
+from tomlkit import comment, document
 
 if TYPE_CHECKING:
     from _typeshed import StrPath
 
 
-class TOMLSettings(BaseSettings):
+class Config(BaseSettings):
     model_config = SettingsConfigDict(
         extra="ignore",
         validate_assignment=True,
         validate_return=True,
         validate_by_name=True,
-    )
-
-    @override
-    @classmethod
-    def settings_customise_sources(cls, settings_cls: type[BaseSettings], *args: PydanticBaseSettingsSource, **kwargs: PydanticBaseSettingsSource) -> tuple[PydanticBaseSettingsSource, ...]:
-        return (TomlConfigSettingsSource(settings_cls),)
-
-    @model_validator(mode="after")
-    def write_to_file(self) -> Self:
-        # Make sure to call this if updating values in nested models.
-        toml_files = self.model_config.get("toml_file")
-        if isinstance(toml_files, (Path, str)):
-            self.dump_toml(toml_files)
-        elif isinstance(toml_files, Sequence):
-            for toml_file in toml_files:
-                self.dump_toml(toml_file)
-
-        return self
-
-    def dump_toml(self, toml_file: "StrPath") -> None:
-        toml_table = document()
-
-        dumped_model = self.model_dump(mode="json")
-        for name, field in self.__class__.model_fields.items():
-            if field.description:
-                for line in field.description.split(". "):
-                    toml_table.add(comment(f"{line.removesuffix('.')}."))
-
-            value = getattr(self, name)
-            toml_table[name] = value.get_secret_value() if isinstance(value, Secret) else dumped_model[name]
-
-        Path(toml_file).write_text(
-            dumps(toml_table),
-            encoding="utf_8",
-        )
-
-
-class Config(TOMLSettings):
-    model_config = SettingsConfigDict(
         cli_parse_args=True,
         cli_avoid_json=True,
         cli_kebab_case=True,
@@ -87,9 +52,12 @@ class Config(TOMLSettings):
     user_input: str = Field("Please write a comical Tumblr post.", description="The user input used by the OpenAI API to generate drafts.")
 
     @override
-    def model_post_init(self, context: object) -> None:
-        super().model_post_init(context)
+    @classmethod
+    def settings_customise_sources(cls, settings_cls: type[BaseSettings], *args: PydanticBaseSettingsSource, **kwargs: PydanticBaseSettingsSource) -> tuple[PydanticBaseSettingsSource, ...]:
+        return (TomlConfigSettingsSource(settings_cls),)
 
+    @model_validator(mode="after")
+    def write_to_file(self) -> Self:
         if not self.download_blog_identifiers:
             rich.print("Enter the [cyan]identifiers of your blogs[/] that data should be [bold purple]downloaded[/] from, separated by commas.")
             self.download_blog_identifiers = list(map(str.strip, Prompt.ask("[bold]Example: staff.tumblr.com,changes").split(",")))
@@ -98,12 +66,38 @@ class Config(TOMLSettings):
             rich.print("Enter the [cyan]identifier of your blog[/] that drafts should be [bold purple]uploaded[/] to.")
             self.upload_blog_identifier = Prompt.ask("[bold]Examples: staff.tumblr.com or changes").strip()
 
+        toml_files = self.model_config.get("toml_file")
+        if isinstance(toml_files, (Path, str)):
+            self.dump_toml(toml_files)
+        elif isinstance(toml_files, Sequence):
+            for toml_file in toml_files:
+                self.dump_toml(toml_file)
 
-class Tokens(TOMLSettings):
+        return self
+
+    def dump_toml(self, toml_file: "StrPath") -> None:
+        toml_table = document()
+
+        dumped_model = self.model_dump(mode="json")
+        for name, field in self.__class__.model_fields.items():
+            if field.description:
+                for line in field.description.split(". "):
+                    toml_table.add(comment(f"{line.removesuffix('.')}."))
+
+            value = getattr(self, name)
+            toml_table[name] = value.get_secret_value() if isinstance(value, Secret) else dumped_model[name]
+
+        Path(toml_file).write_text(
+            tomlkit.dumps(toml_table),  # pyright: ignore[reportUnknownMemberType]
+            encoding="utf_8",
+        )
+
+
+class Tokens(BaseSettings):
+    service_name: ClassVar = "tumblrbot"
     model_config = SettingsConfigDict(toml_file="env.toml")
 
     openai_api_key: Secret[str] = Secret("")
-
     tumblr_client_id: Secret[str] = Secret("")
     tumblr_client_secret: Secret[str] = Secret("")
     tumblr_token: Secret[Any] = Secret({})
@@ -124,8 +118,43 @@ class Tokens(TOMLSettings):
     def model_post_init(self, context: object) -> None:
         super().model_post_init(context)
 
-        if not self.openai_api_key.get_secret_value():
+        for name, _ in self:
+            if value := get_password(self.service_name, name):
+                setattr(self, name, Secret(json.loads(value)))
+
+    @model_validator(mode="after")
+    def write_to_keyring(self) -> Self:
+        if not self.openai_api_key.get_secret_value() or Confirm.ask("Reset OpenAI API key?", default=False):
             (self.openai_api_key,) = self.online_token_prompt("https://platform.openai.com/api-keys", "API key")
 
-        if not (self.tumblr_client_id.get_secret_value() and self.tumblr_client_secret.get_secret_value()):
+        if not all(
+            map(
+                Secret[Any].get_secret_value,
+                [
+                    self.tumblr_client_id,
+                    self.tumblr_client_secret,
+                    self.tumblr_token,
+                ],
+            ),
+        ) or Confirm.ask("Reset Tumblr API tokens?", default=False):
             self.tumblr_client_id, self.tumblr_client_secret = self.online_token_prompt("https://tumblr.com/oauth/apps", "consumer key", "consumer secret")
+
+            oauth = OAuth2Session(
+                self.tumblr_client_id.get_secret_value(),
+                scope=["basic", "write", "offline_access"],
+            )
+            authorization_url, _ = oauth.authorization_url("https://tumblr.com/oauth2/authorize")  # pyright: ignore[reportUnknownMemberType]
+            rich.print(f"Please go to {authorization_url} and authorize access.")
+            self.tumblr_token = Secret(
+                oauth.fetch_token(  # pyright: ignore[reportUnknownMemberType]
+                    "https://api.tumblr.com/v2/oauth2/token",
+                    authorization_response=Prompt.ask("Enter the full callback URL"),
+                    client_secret=self.tumblr_client_secret.get_secret_value(),
+                ),
+            )
+
+        for name, value in self:
+            if isinstance(value, Secret):
+                set_password(self.service_name, name, json.dumps(value.get_secret_value()))
+
+        return self

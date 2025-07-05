@@ -65,8 +65,8 @@ This fork is largely a rewrite of the source code with similarities in its struc
 To-Do:
 - Add documentation.
 - Finish updating [README.md].
-- Look into places more-itertools can help.
 - Change the differences list to instead just be a list of features.
+- Allow adding arbitrary data to examples.
 
 
 **Please submit an issue or contact us for features you want to added/reimplemented.**

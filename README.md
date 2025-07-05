@@ -44,6 +44,7 @@ This fork is largely a rewrite of the source code with similarities in its struc
       - Added the option to [Download] the latest posts from the [specified blogs][Settings].
       - Added the option to remove posts flagged by the [Moderation API].
       - Added the option to automatically [Fine-Tune] the examples on the [specified base model][Settings].
+      - Added the ability to add custom prompts and responses to the example data.
       - Changed to now escape examples automatically.
       - Set encoding for reading post data to `UTF-8` to fix decoding errors.
       - Added newlines between paragraphs.
@@ -66,7 +67,6 @@ To-Do:
 - Add documentation.
 - Finish updating [README.md].
 - Change the differences list to instead just be a list of features.
-- Allow adding arbitrary data to examples.
 
 
 **Please submit an issue or contact us for features you want to added/reimplemented.**

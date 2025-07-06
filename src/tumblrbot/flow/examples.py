@@ -8,7 +8,7 @@ from typing import IO
 
 import rich
 from more_itertools import chunked
-from openai import BadRequestError
+from openai import BadRequestError, OpenAI
 from rich.console import Console
 from rich.prompt import Confirm
 from tiktoken import encoding_for_model, get_encoding
@@ -53,7 +53,7 @@ class ExamplesWriter(FlowClass):
             with data_path.open(encoding="utf_8") as fp:
                 for line in fp:
                     post = Post.model_validate_json(line)
-                    if post.get_text_content() and not (post.is_submission or post.trail):
+                    if not (post.is_submission or post.trail) and post.only_text_blocks() and post.get_response_content():
                         yield post
 
     def get_filtered_posts(self) -> Generator[Post]:
@@ -68,7 +68,7 @@ class ExamplesWriter(FlowClass):
                     ceil(len(posts) / chunk_size),
                     description="Removing flagged posts...",
                 ):
-                    response = self.openai.moderations.create(input=list(map(Post.get_text_content, chunk)))
+                    response = self.openai.moderations.create(input=["\n".join(post.get_text_content()) for post in chunk])
                     for post, moderation in zip(chunk, response.results, strict=True):
                         if moderation.flagged:
                             removed += 1
@@ -89,9 +89,11 @@ class ExamplesWriter(FlowClass):
 
         with self.config.examples_file.open("w", encoding="utf_8") as fp:
             for post in self.get_filtered_posts():
+                ask_content, response_content = post.get_text_content()
+
                 self.write_example(
-                    None,
-                    post.get_text_content(),
+                    ask_content or self.config.user_message,
+                    response_content,
                     fp,
                 )
 
@@ -104,15 +106,12 @@ class ExamplesWriter(FlowClass):
 
         rich.print(f"[bold]The examples file can be found at: '{self.config.examples_file}'\n")
 
-    def write_example(self, user_input: str | None, assistant_message: str, fp: IO[str]) -> None:
+    def write_example(self, user_message: str, assistant_message: str, fp: IO[str]) -> None:
         example = Example(
             messages=[
                 Example.Message(role="developer", content=self.config.developer_message),
+                Example.Message(role="user", content=user_message),
                 Example.Message(role="assistant", content=assistant_message),
             ],
         )
-
-        if user_input:
-            example.messages.insert(1, Example.Message(role="user", content=user_input))
-
         fp.write(f"{example.model_dump_json()}\n")

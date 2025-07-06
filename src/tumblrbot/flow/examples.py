@@ -13,12 +13,13 @@ from rich.console import Console
 from rich.prompt import Confirm
 from tiktoken import encoding_for_model, get_encoding
 
-from tumblrbot.utils.common import PreviewLive, UtilClass
+from tumblrbot.utils.common import FlowClass, PreviewLive
 from tumblrbot.utils.models import Example, Post
 
 
 @dataclass
-class ExamplesWriter(UtilClass):
+class ExamplesWriter(FlowClass):
+    openai: OpenAI
     data_paths: list[Path]
 
     def count_tokens(self) -> Generator[int]:

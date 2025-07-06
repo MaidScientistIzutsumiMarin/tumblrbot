@@ -2,11 +2,11 @@ from io import TextIOBase
 from json import dump
 from pathlib import Path
 
-from tumblrbot.utils.common import PreviewLive, UtilClass
+from tumblrbot.utils.common import FlowClass, PreviewLive
 from tumblrbot.utils.models import Post
 
 
-class PostDownloader(UtilClass):
+class PostDownloader(FlowClass):
     def paginate_posts(self, blog_identifier: str, completed: int, after: int, fp: TextIOBase, live: PreviewLive) -> None:
         task_id = live.progress.add_task(f"Downloading posts from '{blog_identifier}'...", total=None, completed=completed)
 

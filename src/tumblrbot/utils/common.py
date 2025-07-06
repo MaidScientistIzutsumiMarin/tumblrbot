@@ -9,7 +9,7 @@ from rich.live import Live
 from rich.progress import MofNCompleteColumn, Progress, SpinnerColumn, TimeElapsedColumn
 from rich.table import Table
 
-from tumblrbot.utils.settings import Config
+from tumblrbot.utils.config import Config
 from tumblrbot.utils.tumblr import TumblrClient
 
 
@@ -41,7 +41,7 @@ class PreviewLive(Live):
 
 
 @dataclass
-class UtilClass:
+class FlowClass:
     config: ClassVar = Config()  # pyright: ignore[reportCallIssue]
 
     openai: OpenAI

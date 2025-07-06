@@ -39,7 +39,6 @@ Features:
       - Filters out posts that contain more than just text data.
       - Filters out any posts flagged by the [OpenAI] [Moderation API] (optional).
          - Shows progress and previews the current post.
-      - Formats asks as the user message and the responses as the assistant response.
       - Adds custom user messages and assistant responses to the dataset from the [configured][config] file.
    1. Provides cost estimates if the currently saved examples are used to fine-tune the [configured][config] model.
    1. [Uploads examples][Fine-Tune] to [OpenAI] and begins the fine-tuning process.

@@ -24,7 +24,6 @@ Description of original project:
 
 This fork is largely a rewrite of the source code with similarities in its structure and process:
 - Updates:
-   - Updated to [OAuth 2.0].
    - Updated to the [New Post Format].
    - Updated to the latest version of [OpenAI].
    - Updated the [base model version][Settings] to [gpt-4.1-nano-2025-04-14].

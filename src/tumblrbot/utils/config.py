@@ -1,16 +1,13 @@
-import json
-from collections.abc import Generator, Sequence
+from collections.abc import Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Self, override
+from typing import TYPE_CHECKING, Self, override
 
 import rich
 import tomlkit
-from keyring import get_password, set_password
 from openai.types import ChatModel
 from pydantic import Field, PositiveFloat, PositiveInt, Secret, model_validator
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict, TomlConfigSettingsSource
-from requests_oauthlib import OAuth2Session
-from rich.prompt import Confirm, Prompt
+from rich.prompt import Prompt
 from tomlkit import comment, document
 
 if TYPE_CHECKING:
@@ -92,70 +89,3 @@ class Config(BaseSettings):
             tomlkit.dumps(toml_table),  # pyright: ignore[reportUnknownMemberType]
             encoding="utf_8",
         )
-
-
-class Tokens(BaseSettings):
-    service_name: ClassVar = "tumblrbot"
-    model_config = SettingsConfigDict(toml_file="env.toml")
-
-    openai_api_key: Secret[str] = Secret("")
-    tumblr_client_id: Secret[str] = Secret("")
-    tumblr_client_secret: Secret[str] = Secret("")
-    tumblr_token: Secret[Any] = Secret({})
-
-    @staticmethod
-    def online_token_prompt(url: str, *tokens: str) -> Generator[Secret[str]]:
-        formatted_tokens = [f"[cyan]{token}[/]" for token in tokens]
-        formatted_token_string = " and ".join(formatted_tokens)
-
-        rich.print(f"Retrieve your {formatted_token_string} from: {url}")
-        for token in formatted_tokens:
-            prompt = f"Enter your {token} [yellow](hidden)"
-            yield Secret(Prompt.ask(prompt, password=True).strip())
-
-        rich.print()
-
-    @override
-    def model_post_init(self, context: object) -> None:
-        super().model_post_init(context)
-
-        for name, _ in self:
-            if value := get_password(self.service_name, name):
-                setattr(self, name, Secret(json.loads(value)))
-
-    @model_validator(mode="after")
-    def write_to_keyring(self) -> Self:
-        if not self.openai_api_key.get_secret_value() or Confirm.ask("Reset OpenAI API key?", default=False):
-            (self.openai_api_key,) = self.online_token_prompt("https://platform.openai.com/api-keys", "API key")
-
-        if not all(
-            map(
-                Secret[Any].get_secret_value,
-                [
-                    self.tumblr_client_id,
-                    self.tumblr_client_secret,
-                    self.tumblr_token,
-                ],
-            ),
-        ) or Confirm.ask("Reset Tumblr API tokens?", default=False):
-            self.tumblr_client_id, self.tumblr_client_secret = self.online_token_prompt("https://tumblr.com/oauth/apps", "consumer key", "consumer secret")
-
-            oauth = OAuth2Session(
-                self.tumblr_client_id.get_secret_value(),
-                scope=["basic", "write", "offline_access"],
-            )
-            authorization_url, _ = oauth.authorization_url("https://tumblr.com/oauth2/authorize")  # pyright: ignore[reportUnknownMemberType]
-            rich.print(f"Please go to {authorization_url} and authorize access.")
-            self.tumblr_token = Secret(
-                oauth.fetch_token(  # pyright: ignore[reportUnknownMemberType]
-                    "https://api.tumblr.com/v2/oauth2/token",
-                    authorization_response=Prompt.ask("Enter the full callback URL"),
-                    client_secret=self.tumblr_client_secret.get_secret_value(),
-                ),
-            )
-
-        for name, value in self:
-            if isinstance(value, Secret):
-                set_password(self.service_name, name, json.dumps(value.get_secret_value()))
-
-        return self

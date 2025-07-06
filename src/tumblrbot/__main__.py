@@ -6,14 +6,15 @@ from tumblrbot.flow.download import PostDownloader
 from tumblrbot.flow.examples import ExamplesWriter
 from tumblrbot.flow.fine_tune import FineTuner
 from tumblrbot.flow.generate import DraftGenerator
-from tumblrbot.utils.common import TumblrClient
-from tumblrbot.utils.settings import Tokens
+from tumblrbot.utils.models import Tokens
+from tumblrbot.utils.tumblr import TumblrClient
 
 
 def main() -> None:
     install()
+
     tokens = Tokens()
-    with OpenAI(api_key=tokens.openai_api_key.get_secret_value()) as openai, TumblrClient(tokens) as tumblr:
+    with OpenAI(api_key=tokens.openai_api_key.get_secret_value()) as openai, TumblrClient(tokens=tokens) as tumblr:
         post_downloader = PostDownloader(openai, tumblr)
         if Confirm.ask("Download latest posts?", default=False):
             post_downloader.download()

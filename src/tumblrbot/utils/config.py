@@ -43,9 +43,9 @@ class Config(BaseSettings):
     examples_file: Path = Field(Path("examples.jsonl"), description="Where to output the examples that will be used to fine-tune the model.")
     job_id: str = Field("", description="The fine-tuning job ID that will be polled on next run.")
     expected_epochs: PositiveInt = Field(3, description="The expected number of epochs fine-tuning will be run for. This will be updated during fine-tuning.")
-    token_price: PositiveFloat = Field(1.50, description="The expected price in USD per million tokens during fine-tuning for the current model.")
+    token_price: PositiveFloat = Field(3, description="The expected price in USD per million tokens during fine-tuning for the current model.")
 
-    base_model: ChatModel = Field("gpt-4.1-nano-2025-04-14", description="The name of the model that will be fine-tuned by the generated training data.")
+    base_model: ChatModel = Field("gpt-4o-mini-2024-07-18", description="The name of the model that will be fine-tuned by the generated training data.")
     developer_message: str = Field("You are a Tumblr post bot. Please generate a Tumblr post in accordance with the user's request.", description="The developer message used by the OpenAI API to generate drafts.")
     user_message: str = Field("Please write a comical Tumblr post.", description="The user input used by the OpenAI API to generate drafts.")
 

@@ -102,25 +102,22 @@ class Post(FullyValidatedModel):
 
     def __rich__(self) -> Panel:
         return Panel(
-            self.get_text_content(),
+            self.get_content_text(),
             title="Preview",
             subtitle=" ".join(f"#{tag}" for tag in self.tags),
             subtitle_align="left",
         )
 
-    @override
-    def model_post_init(self, context: object) -> None:
-        super().model_post_init(context)
+    def only_text_blocks(self) -> bool:
+        return all(block.type == "text" for block in self.content)
 
-        indices: set[int] = set()
+    def get_content_text(self) -> str:
+        blocks = dict(enumerate(block.text for block in self.content))
         for block in self.layout:
             if block.type == "ask":
-                indices.update(block.blocks)
-
-        self.content = [block for i, block in enumerate(self.content) if i not in indices and block.type == "text"]
-
-    def get_text_content(self) -> str:
-        return "\n\n".join(block.text for block in self.content)
+                for i in block.blocks:
+                    del blocks[i]
+        return "\n\n".join(blocks.values())
 
 
 class Example(FullyValidatedModel):

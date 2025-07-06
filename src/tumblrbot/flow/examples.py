@@ -53,7 +53,7 @@ class ExamplesWriter(FlowClass):
             with data_path.open(encoding="utf_8") as fp:
                 for line in fp:
                     post = Post.model_validate_json(line)
-                    if not (post.is_submission or post.trail) and post.only_text_blocks() and post.get_response_content():
+                    if not (post.is_submission or post.trail) and post.only_text_blocks() and post.get_content_text():
                         yield post
 
     def get_filtered_posts(self) -> Generator[Post]:
@@ -68,7 +68,7 @@ class ExamplesWriter(FlowClass):
                     ceil(len(posts) / chunk_size),
                     description="Removing flagged posts...",
                 ):
-                    response = self.openai.moderations.create(input=["\n".join(post.get_text_content()) for post in chunk])
+                    response = self.openai.moderations.create(input=list(map(Post.get_content_text, chunk)))
                     for post, moderation in zip(chunk, response.results, strict=True):
                         if moderation.flagged:
                             removed += 1
@@ -89,11 +89,9 @@ class ExamplesWriter(FlowClass):
 
         with self.config.examples_file.open("w", encoding="utf_8") as fp:
             for post in self.get_filtered_posts():
-                ask_content, response_content = post.get_text_content()
-
                 self.write_example(
-                    ask_content or self.config.user_message,
-                    response_content,
+                    self.config.user_message,
+                    post.get_content_text(),
                     fp,
                 )
 

@@ -1,20 +1,22 @@
+[OAuth]: https://oauth.net/1
 [OpenAI]: https://pypi.org/project/openai
 [Python]: https://python.org/download
+[Tumblr]: https://tumblr.com
+
+[keyring]: https://pypi.org/project/keyring
 [Rich]: https://pypi.org/project/rich
 
-[gpt-4.1-nano-2025-04-14]: https://platform.openai.com/docs/models/gpt-4.1-nano
 [Moderation API]: https://platform.openai.com/docs/api-reference/moderations
-[New Post Format]: https://tumblr.com/docs/npf
-[OAuth 2.0]: https://www.tumblr.com/docs/en/api/v2#oauth2-authorization
 [pip]: https://pypi.org
 
-[Download]: tumblrbot/flow/download.py
-[Examples]: tumblrbot/flow/examples.py
-[Fine-Tune]: tumblrbot/flow/fine_tune.py
-[Generate]: tumblrbot/flow/generate.py
-[Settings]: tumblrbot/utils/settings.py
-[Main]: __main__.py
+[Download]: src/tumblrbot/flow/download.py
+[Examples]: src/tumblrbot/flow/examples.py
+[Fine-Tune]: src/tumblrbot/flow/fine_tune.py
+[Generate]: src/tumblrbot/flow/generate.py
+[Main]: src/tumblrbot/__main__.py
 [README.md]: README.md
+
+[config]: #configuration
 
 # tumblrbot
 [![PyPI - Version](https://img.shields.io/pypi/v/tumblrbot)](https://python.org/pypi/tumblrbot)
@@ -22,53 +24,40 @@
 Description of original project:
 > 4tv-tumblrbot was a collaborative project I embarked on with my close friend Dima, who goes by @smoqueen on Tumblr. The aim of this endeavor was straightforward yet silly: to develop a Tumblr bot powered by a machine-learning model. This bot would be specifically trained on the content from a particular Tumblr blog or a selected set of blogs, allowing it to mimic the style, tone, and thematic essence of the original posts.
 
-This fork is largely a rewrite of the source code with similarities in its structure and process:
-- Updates:
-   - Updated to the [New Post Format].
-   - Updated to the latest version of [OpenAI].
-   - Updated the [base model version][Settings] to [gpt-4.1-nano-2025-04-14].
-- Removed features:
-   - [Generation][Generate]:
-      - Removed clearing drafts behavior.
-   - [Training][Examples]:
-      - Removed exports that had HTML or reblogs.
-      - Removed special word-replacement behavior.
-      - Removed filtering by year.
-   - Removed setup and related files.
-- Changed/Added features:
-   - [Generation][Generate]:
-      - Added a link to the blog's draft page.
-      - Added error checking for uploading drafts.
-   - [Training][Examples]:
-      - Added the option to [Download] the latest posts from the [specified blogs][Settings].
-      - Added the option to remove posts flagged by the [Moderation API].
-      - Added the option to automatically [Fine-Tune] the examples on the [specified base model][Settings].
-      - Added the ability to add custom prompts and responses to the example data.
-      - Changed to now escape examples automatically.
-      - Set encoding for reading post data to `UTF-8` to fix decoding errors.
-      - Added newlines between paragraphs.
-      - Removed "ALT", submission, ask, and poll text from posts.
-      - Improved the estimated token counts and costs.
-   - Changed to [Rich] for output.
-      - Added progress bars.
-      - Added post previews.
-      - Added color, formatting, and more information to output.
-   - Created a [guided utility][Main] for every step of building your bot blog.
-   - Maid scripts wait for user input before the console closes.
-   - Added comand-line options to override [Settings] options.
-   - Added behavior to regenerate the default [config.toml][Settings] and [env.toml][Settings] if missing.
-   - Renamed several files.
-   - Renamed several [Settings] options.
-   - Changed the value of several [Settings] options.
-   - Added full type-checking coverage (fully importable from third-party scripts).
+This fork is largely a rewrite of the source code with similarities in its structure and process.
 
-To-Do:
+Features:
+- An [interactive console][Main] for all steps of generating posts for the blog:
+   1. Asks for [OpenAI] and [Tumblr] tokens.
+      - Stores API tokens using [keyring].
+      - Prevents API tokens from printing to the console.
+   1. Retrieves [Tumblr] [OAuth] tokens.
+   1. [Downloads posts][Download] from the [configured][config] [Tumblr] blogs.
+      - Skips redownloading already downloaded posts.
+      - Shows progress and previews the current post.
+   1. [Creates examples][Examples] to fine-tune the model from your posts.
+      - Filters out posts that contain more than just text data.
+      - Filters out any posts flagged by the [OpenAI] [Moderation API] (optional).
+         - Shows progress and previews the current post.
+      - Formats asks as the user message and the responses as the assistant response.
+      - Adds custom user messages and assistant responses to the dataset from the [configured][config] file.
+   1. Provides cost estimates if the currently saved examples are used to fine-tune the [configured][config] model.
+   1. [Uploads examples][Fine-Tune] to [OpenAI] and begins the fine-tuning process.
+      - Resumes monitoring the same fine-tuning process when restarted.
+      - Stores the output model automatically when fine-tuning is completed.
+   1. [Generates and uploads posts][Generate] to the [configured][config] [Tumblr] blog using the [configured][config] fine-tuned model.
+      - Creates tags by extracting keywords at the [configured][config] frequency using the [configured][config] model.
+      - Uploads posts as drafts to the [configured][config] [Tumblr] blog.
+      - Shows progress and previews the current post.
+- Colorful output, progress bars, and post previews using [rich].
+- Automatically keeps the [config] file up-to-date and recreates it if missing.
+
+**To-Do:**
 - Add documentation.
 - Finish updating [README.md].
-- Change the differences list to instead just be a list of features.
 
 
-**Please submit an issue or contact us for features you want to added/reimplemented.**
+**Please submit an issue or contact us for features you want added/reimplemented.**
 
 ## Installation
 1. Install the latest version of [Python]:
@@ -80,10 +69,27 @@ To-Do:
    - On Linux, you will have to make a virtual environment.
 
 ## Usage
-Run `tumblrbot` from anywhere. Run `tumblrbot --help` for command-line options.
+Run `tumblrbot` from anywhere. Run `tumblrbot --help` for command-line options. Every command-line option corresponds to a value from the [config](#configuration).
 
 ## Obtaining Tokens
-> WIP
+- The [OpenAI] API token can be created [here](https://platform.openai.com/settings/organization/api-keys).
+   1. Leave everything at the defaults and set `Project` to `Default Project`.
+   1. Press `Create secret key`.
+   1. Press `Copy` to copy the API token to your clipboard.
+- The [Tumblr] API tokens can be created [here](https://tumblr.com/oauth/apps).
+   1. Press `+ Register Application`.
+   1. Enter anything for `Application Name` and `Application Description`.
+   1. Enter any URL for `Application Website` and `Default callback URL`, like `https://example.com`.
+   1. Enter any email address for `Administrative contact email`. It probably doesn't need to be one you have access to.
+   1. Press the checkbox next to `I'm not a robot` and complete the CAPTCHA.
+   1. Press `Register`.
+   1. You now have access to your `consumer key` next to `Oauth Consumer Key`.
+   1. Press `Show secret key` to see your `Consumer Secret`.
+
+When running this program, you will be prompted to enter all of these tokens. **The fields are password-protected, so there will be no output to the console.** If something goes wrong while entering the tokens, you can always reset them by running the program again and answering `y` to the relevant prompt.
+
+After inputting the [Tumblr] tokens, you will be given a URL that you need to open in your browser. Press `Allow`, then copy and paste the URL of the page you are redirected to into the console.
 
 ## Configuration
-> WIP
+All config options can be found in `config.toml` after running the program once. This will be kept up-to-date if there are changes to the config's format in a future update. This also means it may be worthwhile to double-check the config file after an update. Any changes to the config should be in the changelog for a given version.
+> WIP: There will be more information about the config options soon.

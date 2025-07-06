@@ -46,14 +46,16 @@ class FineTuner(FlowClass):
 
         return job
 
-    def create_job(self) -> FineTuningJob:
+    def create_job(self, live: PreviewLive) -> FineTuningJob:
         if self.config.job_id:
             return self.poll_job_status()
 
-        file = self.openai.files.create(
-            file=self.config.examples_file,
-            purpose="fine-tune",
-        )
+        with live.progress.open(self.config.examples_file, "rb", description=f"Uploading {self.config.examples_file}...") as fp:
+            file = self.openai.files.create(
+                file=fp,
+                purpose="fine-tune",
+            )
+
         job = self.openai.fine_tuning.jobs.create(
             model=self.config.base_model,
             training_file=file.id,
@@ -63,18 +65,18 @@ class FineTuner(FlowClass):
         return job
 
     def fine_tune(self) -> None:
-        job = self.create_job()
-
-        self.dedent_print(f"""
-            [bold]Fine-tuning is starting...[/]
-            View it online at: https://platform.openai.com/finetune/{job.id}
-                Created at: {datetime.fromtimestamp(job.created_at)}
-                Base Model: {job.model}
-
-            [italic dim]Closing this terminal will not stop the fine-tuning. This will take a while...
-        """)  # noqa: DTZ006
-
         with PreviewLive() as live:
+            job = self.create_job(live)
+
+            self.dedent_print(f"""
+                [bold]Fine-tuning is starting...[/]
+                View it online at: https://platform.openai.com/finetune/{job.id}
+                    Created at: {datetime.fromtimestamp(job.created_at)}
+                    Base Model: {job.model}
+
+                [italic dim]Closing this terminal will not stop the fine-tuning. This will take a while...
+            """)  # noqa: DTZ006
+
             task_id = live.progress.add_task("", total=None)
 
             while job.status not in {"succeeded", "failed", "cancelled"}:

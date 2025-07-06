@@ -109,15 +109,10 @@ class Post(FullyValidatedModel):
         )
 
     def only_text_blocks(self) -> bool:
-        return all(block.type == "text" for block in self.content)
+        return all(block.type == "text" for block in self.content) and not any(block.type == "ask" for block in self.layout)
 
     def get_content_text(self) -> str:
-        blocks = dict(enumerate(block.text for block in self.content))
-        for block in self.layout:
-            if block.type == "ask":
-                for i in block.blocks:
-                    del blocks[i]
-        return "\n\n".join(blocks.values())
+        return "\n\n".join(block.text for block in self.content)
 
 
 class Example(FullyValidatedModel):

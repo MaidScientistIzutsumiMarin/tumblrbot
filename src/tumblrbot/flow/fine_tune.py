@@ -96,6 +96,7 @@ class FineTuner(FlowClass):
 
                 live.progress.update(
                     task_id,
+                    total=job.estimated_finish,
                     description=f"Fine-tuning: [italic]{job.status.replace('_', ' ').title()}[/]...",
                 )
 

@@ -71,11 +71,14 @@ Features:
 Run `tumblrbot` from anywhere. Run `tumblrbot --help` for command-line options. Every command-line option corresponds to a value from the [config](#configuration).
 
 ## Obtaining Tokens
-- The [OpenAI] API token can be created [here](https://platform.openai.com/settings/organization/api-keys).
+### OpenAI
+API token can be created [here](https://platform.openai.com/settings/organization/api-keys).
    1. Leave everything at the defaults and set `Project` to `Default Project`.
    1. Press `Create secret key`.
    1. Press `Copy` to copy the API token to your clipboard.
-- The [Tumblr] API tokens can be created [here](https://tumblr.com/oauth/apps).
+
+### Tumblr
+API tokens can be created [here](https://tumblr.com/oauth/apps).
    1. Press `+ Register Application`.
    1. Enter anything for `Application Name` and `Application Description`.
    1. Enter any URL for `Application Website` and `Default callback URL`, like `https://example.com`.

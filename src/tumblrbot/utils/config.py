@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Self, override
 import rich
 import tomlkit
 from openai.types import ChatModel
-from pydantic import Field, PositiveFloat, PositiveInt, Secret, model_validator
+from pydantic import Field, NonNegativeFloat, PositiveFloat, PositiveInt, Secret, model_validator
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict, TomlConfigSettingsSource
 from rich.prompt import Prompt
 from tomlkit import comment, document
@@ -32,7 +32,7 @@ class Config(BaseSettings):
         description="The identifier of the blog which generated drafts will be uploaded to. This must be a blog associated with the same account as the configured Tumblr secret tokens.",
     )
     draft_count: PositiveInt = Field(150, description="The number of drafts to process. This will affect the number of tokens used with OpenAI")
-    tags_chance: float = Field(0.1, description="The chance to generate tags for any given post. This will incur extra calls to OpenAI.")
+    tags_chance: NonNegativeFloat = Field(0.1, description="The chance to generate tags for any given post. This will incur extra calls to OpenAI.")
 
     download_blog_identifiers: list[str] = Field(
         [],

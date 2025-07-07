@@ -4,10 +4,7 @@ from textwrap import dedent
 from time import sleep
 
 import rich
-from openai import BadRequestError
-from openai.types import FileObject
 from openai.types.fine_tuning import FineTuningJob
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed, wait_random
 
 from tumblrbot.utils.common import FlowClass, PreviewLive
 
@@ -49,18 +46,6 @@ class FineTuner(FlowClass):
 
         return job
 
-    @retry(
-        stop=stop_after_attempt(5),
-        wait=wait_fixed(1.5) + wait_random(),
-        retry=retry_if_exception_type(BadRequestError),
-        reraise=True,
-    )
-    def attempt_submit_job(self, file: FileObject) -> FineTuningJob:
-        return self.openai.fine_tuning.jobs.create(
-            model=self.config.base_model,
-            training_file=file.id,
-        )
-
     def create_job(self, live: PreviewLive) -> FineTuningJob:
         if self.config.job_id:
             return self.poll_job_status()
@@ -71,7 +56,10 @@ class FineTuner(FlowClass):
                 purpose="fine-tune",
             )
 
-        job = self.attempt_submit_job(file)
+        job = self.openai.fine_tuning.jobs.create(
+            model=self.config.base_model,
+            training_file=file.id,
+        )
 
         self.config.job_id = job.id
         return job

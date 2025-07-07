@@ -13,7 +13,6 @@ dependencies = [
   "requests",
   "requests-oauthlib",
   "rich",
-  "tenacity",
   "tiktoken",
   "tomlkit",
 ]

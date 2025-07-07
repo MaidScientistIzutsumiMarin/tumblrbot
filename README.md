@@ -54,7 +54,6 @@ Features:
 **To-Do:**
 - Add documentation.
 - Finish updating [README.md].
-- Possibly switch to a local LLM.
 
 
 **Please submit an issue or contact us for features you want added/reimplemented.**

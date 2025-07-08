@@ -59,7 +59,7 @@ class ExamplesWriter(FlowClass):
     def get_filtered_posts(self) -> Generator[Post]:
         posts = list(self.get_valid_posts())
 
-        if Confirm.ask("Remove posts flagged by the OpenAI moderation? This can sometimes resolve errors with fine-tuning validation, but is slow.", default=False):
+        if Confirm.ask("[gray62]Remove posts flagged by the OpenAI moderation? This can sometimes resolve errors with fine-tuning validation, but is slow.", default=False):
             removed = 0
             chunk_size = self.get_moderation_chunk_limit()
             with PreviewLive() as live:

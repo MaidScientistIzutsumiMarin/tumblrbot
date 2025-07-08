@@ -13,6 +13,14 @@ from tumblrbot.utils.config import Config
 from tumblrbot.utils.tumblr import TumblrClient
 
 
+@dataclass
+class FlowClass:
+    config: ClassVar = Config()  # pyright: ignore[reportCallIssue]
+
+    openai: OpenAI
+    tumblr: TumblrClient
+
+
 class PreviewLive(Live):
     def __init__(self) -> None:
         super().__init__()
@@ -38,11 +46,3 @@ class PreviewLive(Live):
         table.add_row(self.progress)
         table.add_row(*renderables)
         self.update(table)
-
-
-@dataclass
-class FlowClass:
-    config: ClassVar = Config()  # pyright: ignore[reportCallIssue]
-
-    openai: OpenAI
-    tumblr: TumblrClient

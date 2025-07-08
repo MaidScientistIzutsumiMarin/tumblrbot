@@ -7,32 +7,6 @@ from tumblrbot.utils.models import Post
 
 
 class PostDownloader(FlowClass):
-    def paginate_posts(self, blog_identifier: str, completed: int, after: int, fp: TextIOBase, live: PreviewLive) -> None:
-        task_id = live.progress.add_task(f"Downloading posts from '{blog_identifier}'...", total=None, completed=completed)
-
-        while True:
-            response = self.tumblr.retrieve_published_posts(blog_identifier, after=after).json()["response"]
-            live.progress.update(task_id, total=response["blog"]["posts"], completed=completed)
-
-            if posts := response["posts"]:
-                for post in posts:
-                    dump(post, fp)
-                    fp.write("\n")
-
-                    model = Post.model_validate(post)
-                    after = model.timestamp
-                    live.custom_update(model)
-
-                completed += len(posts)
-            else:
-                return
-
-    def get_data_path(self, blog_identifier: str) -> Path:
-        return (self.config.data_directory / blog_identifier).with_suffix(".jsonl")
-
-    def get_data_paths(self) -> list[Path]:
-        return list(map(self.get_data_path, self.config.download_blog_identifiers))
-
     def download(self) -> None:
         self.config.data_directory.mkdir(parents=True, exist_ok=True)
 
@@ -56,3 +30,29 @@ class PostDownloader(FlowClass):
                         fp,
                         live,
                     )
+
+    def paginate_posts(self, blog_identifier: str, completed: int, after: int, fp: TextIOBase, live: PreviewLive) -> None:
+        task_id = live.progress.add_task(f"Downloading posts from '{blog_identifier}'...", total=None, completed=completed)
+
+        while True:
+            response = self.tumblr.retrieve_published_posts(blog_identifier, after=after).json()["response"]
+            live.progress.update(task_id, total=response["blog"]["posts"], completed=completed)
+
+            if posts := response["posts"]:
+                for post in posts:
+                    dump(post, fp)
+                    fp.write("\n")
+
+                    model = Post.model_validate(post)
+                    after = model.timestamp
+                    live.custom_update(model)
+
+                completed += len(posts)
+            else:
+                return
+
+    def get_data_paths(self) -> list[Path]:
+        return list(map(self.get_data_path, self.config.download_blog_identifiers))
+
+    def get_data_path(self, blog_identifier: str) -> Path:
+        return (self.config.data_directory / blog_identifier).with_suffix(".jsonl")

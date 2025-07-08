@@ -13,7 +13,7 @@ from tumblrbot.utils.tumblr import TumblrClient
 def main() -> None:
     install()
 
-    tokens = Tokens()
+    tokens = Tokens.read_from_keyring()
     with (
         OpenAI(api_key=tokens.openai_api_key.get_secret_value(), http_client=DefaultHttpxClient(http2=True)) as openai,
         TumblrClient(tokens=tokens) as tumblr,

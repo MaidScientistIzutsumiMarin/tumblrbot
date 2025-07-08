@@ -16,7 +16,7 @@ class TumblrClient(Session, CacheMixin):  # pyright: ignore[reportIncompatibleMe
         super().__init__(happy_eyeballs=True)
         CacheMixin.__init__(self, use_cache_dir=True)
 
-        self.auth = OAuth1(*self.tokens.get_tumblr_tokens())
+        self.auth = OAuth1(**self.tokens.tumblr.model_dump(mode="json"))
         self.hooks["response"].append(self.response_hook)
 
     def __enter__(self) -> Self:

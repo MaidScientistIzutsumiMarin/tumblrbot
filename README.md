@@ -53,6 +53,8 @@ Features:
 
 **To-Do:**
 - Add code documentation.
+- Fix inaccurate post counts when downloading posts.
+- Fix file not found error when starting fine-tuning.
 
 
 **Please submit an issue or contact us for features you want added/reimplemented.**

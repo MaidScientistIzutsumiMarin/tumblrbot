@@ -63,11 +63,11 @@ class Config(BaseSettings):
     def write_to_file(self) -> Self:
         if not self.download_blog_identifiers:
             rich.print("Enter the [cyan]identifiers of your blogs[/] that data should be [bold purple]downloaded[/] from, separated by commas.")
-            self.download_blog_identifiers = list(map(str.strip, Prompt.ask("[bold]Example: staff.tumblr.com,changes").split(",")))
+            self.download_blog_identifiers = list(map(str.strip, Prompt.ask("[bold][Example] [dim]staff.tumblr.com,changes").split(",")))
 
         if not self.upload_blog_identifier:
             rich.print("Enter the [cyan]identifier of your blog[/] that drafts should be [bold purple]uploaded[/] to.")
-            self.upload_blog_identifier = Prompt.ask("[bold]Examples: staff.tumblr.com or changes").strip()
+            self.upload_blog_identifier = Prompt.ask("[bold][Example] [dim]staff.tumblr.com or changes").strip()
 
         toml_files = self.model_config.get("toml_file")
         if isinstance(toml_files, (Path, str)):

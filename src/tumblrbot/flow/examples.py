@@ -8,7 +8,7 @@ from typing import IO
 
 import rich
 from more_itertools import chunked
-from openai import BadRequestError, OpenAI
+from openai import BadRequestError
 from rich.console import Console
 from rich.prompt import Confirm
 from tiktoken import encoding_for_model, get_encoding
@@ -19,7 +19,6 @@ from tumblrbot.utils.models import Example, Post
 
 @dataclass
 class ExamplesWriter(FlowClass):
-    openai: OpenAI
     data_paths: list[Path]
 
     def write_examples(self) -> None:

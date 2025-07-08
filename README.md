@@ -66,7 +66,8 @@ Features:
    - Linux (pacman): `pacman install python-pip`
 1. Install the [pip] package: `pip install tumblrbot`
    - Alternatively, you can install from this repository: `pip install git+https://github.com/MaidThatPrograms/tumblrbot.git`
-   - On Linux, you will have to make a virtual environment.
+   - On Linux, you will have to make a virtual environment or use the flag to install packages system-wide.
+   - See [keyring] for additional requirements if you are not on Windows.
 
 ## Usage
 Run `tumblrbot` from anywhere. Run `tumblrbot --help` for command-line options. Every command-line option corresponds to a value from the [config](#configuration).

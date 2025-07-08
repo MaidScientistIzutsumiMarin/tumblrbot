@@ -52,8 +52,7 @@ Features:
 - Automatically keeps the [config] file up-to-date and recreates it if missing.
 
 **To-Do:**
-- Add documentation.
-- Finish updating [README.md].
+- Add code documentation.
 
 
 **Please submit an issue or contact us for features you want added/reimplemented.**

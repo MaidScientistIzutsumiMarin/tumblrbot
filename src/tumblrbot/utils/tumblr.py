@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from cachecontrol import CacheControl
 from requests import HTTPError, Response
 from requests_oauthlib import OAuth1Session
 
@@ -14,6 +15,8 @@ class TumblrClient(OAuth1Session):
         super().__init__(*self.tokens.get_tumblr_tokens())
         self.hooks["response"].append(self.response_hook)
 
+        CacheControl(self)
+
     def response_hook(self, response: Response, **_: object) -> None:
         try:
             response.raise_for_status()
@@ -24,11 +27,13 @@ class TumblrClient(OAuth1Session):
     def retrieve_published_posts(self, blog_identifier: str, after: int) -> Response:
         return self.get(
             f"https://api.tumblr.com/v2/blog/{blog_identifier}/posts",
-            params={
-                "after": after,
-                "sort": "asc",
-                "npf": True,
-            },
+            params=sorted(
+                {
+                    "after": after,
+                    "sort": "asc",
+                    "npf": True,
+                }.items(),
+            ),
         )
 
     def create_post(self, blog_identifier: str, post: Post) -> Response:

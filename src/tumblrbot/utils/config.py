@@ -26,28 +26,33 @@ class Config(BaseSettings):
         toml_file="config.toml",
     )
 
-    fine_tuned_model: str = Field("", description="The name of the OpenAI model that was fine-tuned with your posts.")
-    upload_blog_identifier: str = Field(
-        "",
-        description="The identifier of the blog which generated drafts will be uploaded to. This must be a blog associated with the same account as the configured Tumblr secret tokens.",
-    )
-    draft_count: PositiveInt = Field(150, description="The number of drafts to process. This will affect the number of tokens used with OpenAI")
-    tags_chance: NonNegativeFloat = Field(0.1, description="The chance to generate tags for any given post. This will incur extra calls to OpenAI.")
-
-    download_blog_identifiers: list[str] = Field(
-        [],
-        description="The identifiers of the blogs which post data will be downloaded from. These must be blogs associated with the same account as the configured Tumblr secret tokens.",
-    )
+    # Downloading Posts & Writing Examples
+    download_blog_identifiers: list[str] = Field([], description="The identifiers of the blogs which post data will be downloaded from. These must be blogs associated with the same account as the configured Tumblr secret tokens.")
     data_directory: Path = Field(Path("data"), description="Where to store downloaded post data.")
-    custom_prompts_file: Path = Field(Path("custom_prompts.json"), description="Where to read in custom prompts from.")
-    examples_file: Path = Field(Path("examples.jsonl"), description="Where to output the examples that will be used to fine-tune the model.")
-    job_id: str = Field("", description="The fine-tuning job ID that will be polled on next run.")
-    expected_epochs: PositiveInt = Field(3, description="The expected number of epochs fine-tuning will be run for. This will be updated during fine-tuning.")
-    token_price: PositiveFloat = Field(3, description="The expected price in USD per million tokens during fine-tuning for the current model.")
 
-    base_model: ChatModel = Field("gpt-4o-mini-2024-07-18", description="The name of the model that will be fine-tuned by the generated training data.")
+    # Writing Examples
+    custom_prompts_file: Path = Field(Path("custom_prompts.json"), description="Where to read in custom prompts from.")
+
+    # Writing Examples & Fine-Tuning
+    examples_file: Path = Field(Path("examples.jsonl"), description="Where to output the examples that will be used to fine-tune the model.")
+
+    # Writing Examples & Generating
     developer_message: str = Field("You are a Tumblr post bot. Please generate a Tumblr post in accordance with the user's request.", description="The developer message used by the OpenAI API to generate drafts.")
     user_message: str = Field("Please write a comical Tumblr post.", description="The user input used by the OpenAI API to generate drafts.")
+
+    # Fine-Tuning
+    expected_epochs: PositiveInt = Field(3, description="The expected number of epochs fine-tuning will be run for. This will be updated during fine-tuning.")
+    token_price: PositiveFloat = Field(3, description="The expected price in USD per million tokens during fine-tuning for the current model.")
+    job_id: str = Field("", description="The fine-tuning job ID that will be polled on next run.")
+
+    # Fine-Tuning & Generating
+    base_model: ChatModel = Field("gpt-4o-mini-2024-07-18", description="The name of the model that will be fine-tuned by the generated training data.")
+    fine_tuned_model: str = Field("", description="The name of the OpenAI model that was fine-tuned with your posts.")
+
+    # Generating
+    upload_blog_identifier: str = Field("", description="The identifier of the blog which generated drafts will be uploaded to. This must be a blog associated with the same account as the configured Tumblr secret tokens.")
+    draft_count: PositiveInt = Field(150, description="The number of drafts to process. This will affect the number of tokens used with OpenAI")
+    tags_chance: NonNegativeFloat = Field(0.1, description="The chance to generate tags for any given post. This will incur extra calls to OpenAI.")
 
     @override
     @classmethod

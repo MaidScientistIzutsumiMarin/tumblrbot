@@ -86,6 +86,6 @@ class Config(BaseSettings):
             toml_table[name] = value.get_secret_value() if isinstance(value, Secret) else dumped_model[name]
 
         Path(toml_file).write_text(
-            tomlkit.dumps(toml_table),  # pyright: ignore[reportUnknownMemberType]
+            tomlkit.dumps(toml_table),
             encoding="utf_8",
         )

@@ -57,8 +57,8 @@ class Tokens(FullyValidatedModel):
             self.tumblr_client_key, self.tumblr_client_secret = self.online_token_prompt("https://tumblr.com/oauth/apps", "consumer key", "consumer secret")
 
             oauth_session = OAuth1Session(*self.get_tumblr_tokens()[:2])
-            fetch_response = oauth_session.fetch_request_token("http://tumblr.com/oauth/request_token")  # pyright: ignore[reportUnknownMemberType]
-            full_authorize_url = oauth_session.authorization_url("http://tumblr.com/oauth/authorize")  # pyright: ignore[reportUnknownMemberType]
+            fetch_response = oauth_session.fetch_request_token("http://tumblr.com/oauth/request_token")
+            full_authorize_url = oauth_session.authorization_url("http://tumblr.com/oauth/authorize")
             (redirect_response,) = self.online_token_prompt(full_authorize_url, "full redirect URL")
             oauth_response = oauth_session.parse_authorization_response(redirect_response.get_secret_value())
             oauth_session = OAuth1Session(
@@ -67,7 +67,7 @@ class Tokens(FullyValidatedModel):
                 fetch_response["oauth_token_secret"],
                 verifier=oauth_response["oauth_verifier"],
             )
-            oauth_tokens = oauth_session.fetch_access_token("http://tumblr.com/oauth/access_token")  # pyright: ignore[reportUnknownMemberType]
+            oauth_tokens = oauth_session.fetch_access_token("http://tumblr.com/oauth/access_token")
             self.tumblr_resource_owner_key = oauth_tokens["oauth_token"]
             self.tumblr_resource_owner_secret = oauth_tokens["oauth_token_secret"]
 

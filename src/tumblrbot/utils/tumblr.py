@@ -11,8 +11,7 @@ class TumblrClient(OAuth1Session):
     tokens: Tokens
 
     def __post_init__(self) -> None:
-        super().__init__(*self.tokens.get_tumblr_tokens())  # pyright: ignore[reportUnknownMemberType]
-
+        super().__init__(*self.tokens.get_tumblr_tokens())
         self.hooks["response"].append(self.response_hook)
 
     def response_hook(self, response: Response, **_: object) -> None:

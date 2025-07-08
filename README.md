@@ -94,4 +94,18 @@ After inputting the [Tumblr] tokens, you will be given a URL that you need to op
 
 ## Configuration
 All config options can be found in `config.toml` after running the program once. This will be kept up-to-date if there are changes to the config's format in a future update. This also means it may be worthwhile to double-check the config file after an update. Any changes to the config should be in the changelog for a given version.
-> WIP: There will be more information about the config options soon.
+
+All file options can include directories that will be created when the program is run.
+
+- `custom_prompts_file` You will have to create this file yourself. It should follow the following format:
+   ```json
+   {"user message 1": "assistant response 1",
+    "user message 2": "assistant response 2"}
+   ```
+- **`developer_message`** - This message is used in for fine-tuning the AI as well as generating prompts. If you change this, you will need to run the fine-tuning again with the new value before generating posts.
+- **`user_message`** - This message is used in the same way as `developer_message` and should be treated the same.
+- **`expected_epochs`** - The default value here is the default number of epochs for `base_model`. You may have to change this value if you change `base_model`. After running fine-tuning once, you will see the number of epochs used in the [fine-tuning portal](https://platform.openai.com/finetune) under *Hyperparameters*. This value will also be updated automatically if you run fine-tuning through this program.
+- **`token_price`** - The default value here is the default token price for `base_model`. You can find the up-to-date value [here](https://platform.openai.com/docs/pricing#fine-tuning), in the *Training* column.
+- **`job_id`** - If there is any value here, this program will resume monitoring the corresponding job, instead of starting a new one. This gets set when starting the fine-tuning and is cleared when it is completed. You can find job IDs in the [fine-tuning portal](https://platform.openai.com/finetune).
+- **`base_model`** - This value is used to choose the tokenizer for estimating fine-tuning costs. It is also the base model that will be fine-tuned and the model that is used to generate tags. You can find a list of options in the [fine-tuning portal](https://platform.openai.com/finetune) by pressing *+ Create* and opening the drop-down list for *Base Model*. Be sure to update `token_price` if you change this value.
+- **`tags_chance`** - This should be between 0 and 1. Setting it to 0 corresponds to a 0% chance (never) to add tags to a post. 1 corresponds to a 100% chance (always) to add tags to a post. Adding tags incurs a very small token cost.

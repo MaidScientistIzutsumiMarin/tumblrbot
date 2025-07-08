@@ -9,7 +9,7 @@ from tumblrbot.utils.models import Post, Tokens
 
 
 @dataclass
-class TumblrClient(Session, CacheMixin):  # pyright: ignore[reportIncompatibleMethodOverride, reportIncompatibleVariableOverride]
+class TumblrSession(Session, CacheMixin):  # pyright: ignore[reportIncompatibleMethodOverride, reportIncompatibleVariableOverride]
     tokens: Tokens
 
     def __post_init__(self) -> None:

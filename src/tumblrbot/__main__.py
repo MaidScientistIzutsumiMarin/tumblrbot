@@ -6,8 +6,9 @@ from tumblrbot.flow.download import PostDownloader
 from tumblrbot.flow.examples import ExamplesWriter
 from tumblrbot.flow.fine_tune import FineTuner
 from tumblrbot.flow.generate import DraftGenerator
+from tumblrbot.utils.common import FlowClass
 from tumblrbot.utils.models import Tokens
-from tumblrbot.utils.tumblr import TumblrClient
+from tumblrbot.utils.tumblr import TumblrSession
 
 
 def main() -> None:
@@ -16,7 +17,7 @@ def main() -> None:
     tokens = Tokens.read_from_keyring()
     with (
         OpenAI(api_key=tokens.openai_api_key.get_secret_value(), http_client=DefaultHttpxClient(http2=True)) as openai,
-        TumblrClient(tokens=tokens) as tumblr,
+        TumblrSession(tokens=tokens) as tumblr,
     ):
         post_downloader = PostDownloader(openai, tumblr)
         if Confirm.ask("Download latest posts?", default=False):

@@ -5,13 +5,14 @@ description = "An updated bot that posts to Tumblr, based on your very own blog!
 readme = "README.md"
 requires-python = ">= 3.13"
 dependencies = [
-  "CacheControl[filecache]",
+  "httpx[http2]",
   "keyring",
   "more-itertools",
+  "niquests[speedups,http3]",
   "openai",
   "pydantic",
   "pydantic-settings",
-  "requests",
+  "requests-cache",
   "requests-oauthlib",
   "rich",
   "tiktoken",

@@ -30,7 +30,9 @@ def main() -> None:
 
         fine_tuner = FineTuner(openai, tumblr, estimated_tokens)
         fine_tuner.print_estimates()
-        if Confirm.ask("Upload data to OpenAI for fine-tuning? [bold]You must do this to set the model to generate drafts from. Alternatively, manually enter a model into the config.", default=False):
+
+        message = "Resume monitoring the previous fine-tuning process?" if FlowClass.config.job_id else "Upload data to OpenAI for fine-tuning?"
+        if Confirm.ask(f"{message} [bold]You must do this to set the model to generate drafts from. Alternatively, manually enter a model into the config", default=False):
             fine_tuner.fine_tune()
 
         if Confirm.ask("Generate drafts?", default=False):

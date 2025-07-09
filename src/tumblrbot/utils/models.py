@@ -4,11 +4,12 @@ from typing import Annotated, Any, ClassVar, Literal, Self, override
 import rich
 from keyring import get_password, set_password
 from openai import BaseModel
+from pwinput import pwinput
 from pydantic import ConfigDict, PlainSerializer, SecretStr
 from pydantic.json_schema import SkipJsonSchema
 from requests_oauthlib import OAuth1Session
 from rich.panel import Panel
-from rich.prompt import Confirm, Prompt
+from rich.prompt import Confirm
 
 type SerializableSecretStr = Annotated[
     SecretStr,
@@ -44,13 +45,11 @@ class Tokens(FullyValidatedModel):
 
     @staticmethod
     def online_token_prompt(url: str, *tokens: str) -> Generator[SecretStr]:
-        formatted_tokens = [f"[cyan]{token}[/]" for token in tokens]
-        formatted_token_string = " and ".join(formatted_tokens)
+        formatted_token_string = " and ".join(f"[cyan]{token}[/]" for token in tokens)
 
         rich.print(f"Retrieve your {formatted_token_string} from: {url}")
-        for token in formatted_tokens:
-            prompt = f"Enter your {token} [yellow](hidden)"
-            yield SecretStr(Prompt.ask(prompt, password=True).strip())
+        for token in tokens:
+            yield SecretStr(pwinput(f"Enter your {token} (masked): ").strip())
 
         rich.print()
 

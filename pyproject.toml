@@ -10,6 +10,7 @@ dependencies = [
   "more-itertools",
   "niquests[speedups,http3]",
   "openai",
+  "pwinput",
   "pydantic",
   "pydantic-settings",
   "requests",

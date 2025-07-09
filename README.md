@@ -43,6 +43,7 @@ Features:
    1. Provides cost estimates if the currently saved examples are used to fine-tune the [configured][config] model.
    1. [Uploads examples][Fine-Tune] to [OpenAI] and begins the fine-tuning process.
       - Resumes monitoring the same fine-tuning process when restarted.
+      - Deletes the uploaded examples file if fine-tuning does not succeed (optional).
       - Stores the output model automatically when fine-tuning is completed.
    1. [Generates and uploads posts][Generate] to the [configured][config] [Tumblr] blog using the [configured][config] fine-tuned model.
       - Creates tags by extracting keywords at the [configured][config] frequency using the [configured][config] model.

@@ -5,6 +5,8 @@ from time import sleep
 
 import rich
 from openai.types.fine_tuning import FineTuningJob
+from rich import progress
+from rich.prompt import Confirm
 
 from tumblrbot.utils.common import FlowClass, PreviewLive
 
@@ -18,21 +20,21 @@ class FineTuner(FlowClass):
         rich.print(dedent(text).lstrip())
 
     def fine_tune(self) -> None:
+        job = self.create_job()
+
+        self.dedent_print(f"""
+            [bold]Fine-tuning is starting...[/]
+            View it online at: https://platform.openai.com/finetune/{job.id}
+                Created at: {datetime.fromtimestamp(job.created_at)}
+                Base Model: {job.model}
+
+            [italic dim]Closing this terminal will not stop the fine-tuning. This will take a while...\
+        """)  # noqa: DTZ006
+
         with PreviewLive() as live:
-            job = self.create_job(live)
-
-            self.dedent_print(f"""
-                [bold]Fine-tuning is starting...[/]
-                View it online at: https://platform.openai.com/finetune/{job.id}
-                    Created at: {datetime.fromtimestamp(job.created_at)}
-                    Base Model: {job.model}
-
-                [italic dim]Closing this terminal will not stop the fine-tuning. This will take a while...
-            """)  # noqa: DTZ006
-
             task_id = live.progress.add_task("", total=None)
 
-            while job.status not in {"succeeded", "failed", "cancelled"}:
+            while job.status in {"validating_files", "queued", "running"}:
                 job = self.poll_job_status()
 
                 live.progress.update(
@@ -45,15 +47,16 @@ class FineTuner(FlowClass):
 
         self.process_completed_job(job)
 
-    def create_job(self, live: PreviewLive) -> FineTuningJob:
+    def create_job(self) -> FineTuningJob:
         if self.config.job_id:
             return self.poll_job_status()
 
-        with live.progress.open(self.config.examples_file, "rb", description=f"Uploading {self.config.examples_file}...") as fp:
+        with progress.open(self.config.examples_file, "rb", description=f"Uploading [purple]{self.config.examples_file}[/]...") as fp:
             file = self.openai.files.create(
                 file=fp,
                 purpose="fine-tune",
             )
+        rich.print()
 
         job = self.openai.fine_tuning.jobs.create(
             model=self.config.base_model,
@@ -86,8 +89,13 @@ class FineTuner(FlowClass):
 
         self.config.job_id = ""
 
-        if job.status == "failed" and job.error is not None:
-            raise RuntimeError(job.error.message)
+        if job.status != "succeeded":
+            if Confirm.ask("[gray62]Delete uploaded examples file?", default=False):
+                self.openai.files.delete(job.training_file)
+                rich.print()
+
+            if job.status == "failed" and job.error is not None:
+                raise RuntimeError(job.error.message)
 
         if job.fine_tuned_model:
             self.config.fine_tuned_model = job.fine_tuned_model or ""

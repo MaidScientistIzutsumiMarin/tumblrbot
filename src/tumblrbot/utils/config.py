@@ -31,7 +31,7 @@ class Config(BaseSettings):
     data_directory: Path = Field(Path("data"), description="Where to store downloaded post data.")
 
     # Writing Examples
-    custom_prompts_file: Path = Field(Path("custom_prompts.json"), description="Where to read in custom prompts from.")
+    custom_prompts_file: Path = Field(Path("custom_prompts.jsonl"), description="Where to read in custom prompts from.")
 
     # Writing Examples & Fine-Tuning
     examples_file: Path = Field(Path("examples.jsonl"), description="Where to output the examples that will be used to fine-tune the model.")

@@ -52,9 +52,13 @@ class ExamplesWriter(FlowClass):
         fp.write(f"{example.model_dump_json()}\n")
 
     def get_custom_prompts(self) -> Generator[tuple[str, str]]:
-        if self.config.custom_prompts_file.exists():
-            text = self.config.custom_prompts_file.read_text(encoding="utf_8")
-            yield from loads(text).items()
+        self.config.custom_prompts_file.parent.mkdir(parents=True, exist_ok=True)
+        self.config.custom_prompts_file.touch(exist_ok=True)
+
+        with self.config.custom_prompts_file.open("r", encoding="utf_8") as fp:
+            for line in fp:
+                data: dict[str, str] = loads(line)
+                yield from data.items()
 
     def get_filtered_posts(self) -> Generator[Post]:
         posts = list(self.get_valid_posts())

@@ -1,9 +1,9 @@
 from collections.abc import Generator
 from typing import Annotated, Any, ClassVar, Literal, Self, override
 
-from niquests import Session
 import rich
 from keyring import get_password, set_password
+from niquests import Session
 from openai import BaseModel
 from pwinput import pwinput
 from pydantic import ConfigDict, PlainSerializer, SecretStr

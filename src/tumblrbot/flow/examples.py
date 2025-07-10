@@ -61,11 +61,13 @@ class ExamplesWriter(FlowClass):
                 yield from data.items()
 
     def get_filtered_posts(self) -> Generator[Post]:
-        posts = list(self.get_valid_posts())
+        posts = self.get_valid_posts()
 
         if Confirm.ask("[gray62]Remove posts flagged by the OpenAI moderation? This can sometimes resolve errors with fine-tuning validation, but is slow.", default=False):
-            removed = 0
             chunk_size = self.get_moderation_chunk_limit()
+            posts = list(posts)
+            removed = 0
+
             with PreviewLive() as live:
                 for chunk in live.progress.track(
                     chunked(posts, chunk_size),

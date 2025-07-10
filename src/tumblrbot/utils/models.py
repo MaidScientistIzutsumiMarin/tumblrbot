@@ -1,6 +1,7 @@
 from collections.abc import Generator
 from typing import Annotated, Any, ClassVar, Literal, Self, override
 
+from niquests import Session
 import rich
 from keyring import get_password, set_password
 from openai import BaseModel
@@ -68,6 +69,8 @@ class Tokens(FullyValidatedModel):
 
         if not all(self.tumblr.model_dump(mode="json").values()) or Confirm.ask("Reset Tumblr API tokens?", default=False):
             self.tumblr.client_key, self.tumblr.client_secret = self.online_token_prompt("https://tumblr.com/oauth/apps", "consumer key", "consumer secret")
+
+            OAuth1Session.__bases__ = (Session,)
 
             with OAuth1Session(
                 self.tumblr.client_key.get_secret_value(),

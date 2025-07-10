@@ -3,6 +3,9 @@
 [OAuth]: https://oauth.net/1
 [Python]: https://python.org/download
 
+[JSON Lines]: https://jsonlines.org
+[JSON Lines Validator]: https://jsonlines.org/validator
+
 [pip]: https://pypi.org
 [keyring]: https://pypi.org/project/keyring
 [Rich]: https://pypi.org/project/rich
@@ -117,12 +120,15 @@ All config options can be found in `config.toml` after running the program once.
 
 All file options can include directories that will be created when the program is run.
 
-- `custom_prompts_file` You will have to create this file yourself. It should follow the following format:
+- `custom_prompts_file` This file should follow the following file format:
 
    ```json
-   {"user message 1": "assistant response 1",
-    "user message 2": "assistant response 2"}
+   {"user message 1": "assistant response 1"}
+   {"user message 1": "assistant response 1"}
+   {"user message 2": "assistant response 2", "user message 3": "assistant response 3"}
    ```
+
+   To be specific, it should follow the [JSON Lines] file format with one collection of name/value pairs (a dictionary) per line. You can validate your file using the [JSON Lines Validator].
 
 - **`developer_message`** - This message is used in for fine-tuning the AI as well as generating prompts. If you change this, you will need to run the fine-tuning again with the new value before generating posts.
 - **`user_message`** - This message is used in the same way as `developer_message` and should be treated the same.

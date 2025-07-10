@@ -1,3 +1,5 @@
+# tumblrbot
+
 [OAuth]: https://oauth.net/1
 [Python]: https://python.org/download
 
@@ -22,8 +24,6 @@
 
 [Config]: #configuration
 [Fine-Tuning]: #manual-fine-tuning
-
-# tumblrbot
 [![PyPI - Version](https://img.shields.io/pypi/v/tumblrbot)](https://python.org/pypi/tumblrbot)
 
 Description of original project:
@@ -32,6 +32,7 @@ Description of original project:
 This fork is largely a rewrite of the source code with similarities in its structure and process.
 
 Features:
+
 - An [interactive console][Main] for all steps of generating posts for the blog:
    1. Asks for [OpenAI] and [Tumblr] tokens.
       - Stores API tokens using [keyring].
@@ -58,16 +59,18 @@ Features:
 - Automatically keeps the [config] file up-to-date and recreates it if missing.
 
 **To-Do:**
+
 - Add code documentation.
 
 **Known Issues:**
+
 - Sometimes, you will get an error about the training file not being found when starting fine-tuning. We do not currently have a fix or workaround for this. You should instead use the online portal for fine-tuning if this continues to happen. Read more in [fine-tuning].
 - Post counts are incorrect when downloading posts. We are not certain what the cause of this is, but our tests suggest this is a [Tumblr] API problem that is giving inaccurate numbers.
-
 
 **Please submit an issue or contact us for features you want added/reimplemented.**
 
 ## Installation
+
 1. Install the latest version of [Python]:
    - Windows: `winget install python3`
    - Linux (apt): `apt install python-pip`
@@ -78,17 +81,23 @@ Features:
    - See [keyring] for additional requirements if you are not on Windows.
 
 ## Usage
+
 Run `tumblrbot` from anywhere. Run `tumblrbot --help` for command-line options. Every command-line option corresponds to a value from the [config].
 
 ## Obtaining Tokens
+
 ### OpenAI
-API token can be created [here][OpenAI Tokens].
+
+API token can be created here: [OpenAI Tokens].
+
    1. Leave everything at the defaults and set `Project` to `Default Project`.
    1. Press `Create secret key`.
    1. Press `Copy` to copy the API token to your clipboard.
 
 ### Tumblr
-API tokens can be created [here][Tumblr Tokens].
+
+API tokens can be created here: [Tumblr Tokens].
+
    1. Press `+ Register Application`.
    1. Enter anything for `Application Name` and `Application Description`.
    1. Enter any URL for `Application Website` and `Default callback URL`, like `https://example.com`.
@@ -103,26 +112,31 @@ When running this program, you will be prompted to enter all of these tokens. **
 After inputting the [Tumblr] tokens, you will be given a URL that you need to open in your browser. Press `Allow`, then copy and paste the URL of the page you are redirected to into the console.
 
 ## Configuration
+
 All config options can be found in `config.toml` after running the program once. This will be kept up-to-date if there are changes to the config's format in a future update. This also means it may be worthwhile to double-check the config file after an update. Any changes to the config should be in the changelog for a given version.
 
 All file options can include directories that will be created when the program is run.
 
 - `custom_prompts_file` You will have to create this file yourself. It should follow the following format:
+
    ```json
    {"user message 1": "assistant response 1",
     "user message 2": "assistant response 2"}
    ```
+
 - **`developer_message`** - This message is used in for fine-tuning the AI as well as generating prompts. If you change this, you will need to run the fine-tuning again with the new value before generating posts.
 - **`user_message`** - This message is used in the same way as `developer_message` and should be treated the same.
 - **`expected_epochs`** - The default value here is the default number of epochs for `base_model`. You may have to change this value if you change `base_model`. After running fine-tuning once, you will see the number of epochs used in the [fine-tuning portal] under *Hyperparameters*. This value will also be updated automatically if you run fine-tuning through this program.
-- **`token_price`** - The default value here is the default token price for `base_model`. You can find the up-to-date value [here][OpenAI Pricing], in the *Training* column.
+- **`token_price`** - The default value here is the default token price for `base_model`. You can find the up-to-date value in [OpenAI Pricing], in the *Training* column.
 - **`job_id`** - If there is any value here, this program will resume monitoring the corresponding job, instead of starting a new one. This gets set when starting the fine-tuning and is cleared when it is completed. You can read more in [fine-tuning].
 - **`base_model`** - This value is used to choose the tokenizer for estimating fine-tuning costs. It is also the base model that will be fine-tuned and the model that is used to generate tags. You can find a list of options in the [fine-tuning portal] by pressing `+ Create` and opening the drop-down list for `Base Model`. Be sure to update `token_price` if you change this value.
 - **`fine_tuned_model`** - Set automatically after monitoring fine-tuning if the job has succeeded. You can read more in [fine-tuning].
 - **`tags_chance`** - This should be between 0 and 1. Setting it to 0 corresponds to a 0% chance (never) to add tags to a post. 1 corresponds to a 100% chance (always) to add tags to a post. Adding tags incurs a very small token cost.
 
 ## Manual Fine-Tuning
-You can manually upload the examples file to [OpenAI] and start the fine-tuning [here][fine-tuning portal].
+
+You can manually upload the examples file to [OpenAI] and start the fine-tuning here: [fine-tuning portal].
+
 1. Press `+ Create`.
 1. Select the desired `Base Model` from the dropdown. This should ideally match the model set in the [config].
 1. Upload the generated examples file to the section under `Training data`. You can find the path for this in the [config].

@@ -1,22 +1,27 @@
 [OAuth]: https://oauth.net/1
-[OpenAI]: https://pypi.org/project/openai
 [Python]: https://python.org/download
-[Tumblr]: https://tumblr.com
 
+[pip]: https://pypi.org
 [keyring]: https://pypi.org/project/keyring
 [Rich]: https://pypi.org/project/rich
 
+[OpenAI]: https://pypi.org/project/openai
+[OpenAI Pricing]: https://platform.openai.com/docs/pricing#fine-tuning
+[OpenAI Tokens]: https://platform.openai.com/settings/organization/api-keys
+[Fine-Tuning Portal]: https://platform.openai.com/finetune
 [Moderation API]: https://platform.openai.com/docs/api-reference/moderations
-[pip]: https://pypi.org
+
+[Tumblr]: https://tumblr.com
+[Tumblr Tokens]: https://tumblr.com/oauth/apps
 
 [Download]: src/tumblrbot/flow/download.py
 [Examples]: src/tumblrbot/flow/examples.py
 [Fine-Tune]: src/tumblrbot/flow/fine_tune.py
 [Generate]: src/tumblrbot/flow/generate.py
 [Main]: src/tumblrbot/__main__.py
-[README.md]: README.md
 
-[config]: #configuration
+[Config]: #configuration
+[Fine-Tuning]: #manual-fine-tuning
 
 # tumblrbot
 [![PyPI - Version](https://img.shields.io/pypi/v/tumblrbot)](https://python.org/pypi/tumblrbot)
@@ -54,7 +59,10 @@ Features:
 
 **To-Do:**
 - Add code documentation.
-- Fix file not found error when starting fine-tuning.
+
+**Known Issues:**
+- Sometimes, you will get an error about the training file not being found when starting fine-tuning. We do not currently have a fix or workaround for this. You should instead use the online portal for fine-tuning if this continues to happen. Read more in [fine-tuning].
+- Post counts are incorrect when downloading posts. We are not certain what the cause of this is, but our tests suggest this is a [Tumblr] API problem that is giving inaccurate numbers.
 
 
 **Please submit an issue or contact us for features you want added/reimplemented.**
@@ -70,17 +78,17 @@ Features:
    - See [keyring] for additional requirements if you are not on Windows.
 
 ## Usage
-Run `tumblrbot` from anywhere. Run `tumblrbot --help` for command-line options. Every command-line option corresponds to a value from the [config](#configuration).
+Run `tumblrbot` from anywhere. Run `tumblrbot --help` for command-line options. Every command-line option corresponds to a value from the [config].
 
 ## Obtaining Tokens
 ### OpenAI
-API token can be created [here](https://platform.openai.com/settings/organization/api-keys).
+API token can be created [here][OpenAI Tokens].
    1. Leave everything at the defaults and set `Project` to `Default Project`.
    1. Press `Create secret key`.
    1. Press `Copy` to copy the API token to your clipboard.
 
 ### Tumblr
-API tokens can be created [here](https://tumblr.com/oauth/apps).
+API tokens can be created [here][Tumblr Tokens].
    1. Press `+ Register Application`.
    1. Enter anything for `Application Name` and `Application Description`.
    1. Enter any URL for `Application Website` and `Default callback URL`, like `https://example.com`.
@@ -106,8 +114,18 @@ All file options can include directories that will be created when the program i
    ```
 - **`developer_message`** - This message is used in for fine-tuning the AI as well as generating prompts. If you change this, you will need to run the fine-tuning again with the new value before generating posts.
 - **`user_message`** - This message is used in the same way as `developer_message` and should be treated the same.
-- **`expected_epochs`** - The default value here is the default number of epochs for `base_model`. You may have to change this value if you change `base_model`. After running fine-tuning once, you will see the number of epochs used in the [fine-tuning portal](https://platform.openai.com/finetune) under *Hyperparameters*. This value will also be updated automatically if you run fine-tuning through this program.
-- **`token_price`** - The default value here is the default token price for `base_model`. You can find the up-to-date value [here](https://platform.openai.com/docs/pricing#fine-tuning), in the *Training* column.
-- **`job_id`** - If there is any value here, this program will resume monitoring the corresponding job, instead of starting a new one. This gets set when starting the fine-tuning and is cleared when it is completed. You can find job IDs in the [fine-tuning portal](https://platform.openai.com/finetune).
-- **`base_model`** - This value is used to choose the tokenizer for estimating fine-tuning costs. It is also the base model that will be fine-tuned and the model that is used to generate tags. You can find a list of options in the [fine-tuning portal](https://platform.openai.com/finetune) by pressing *+ Create* and opening the drop-down list for *Base Model*. Be sure to update `token_price` if you change this value.
+- **`expected_epochs`** - The default value here is the default number of epochs for `base_model`. You may have to change this value if you change `base_model`. After running fine-tuning once, you will see the number of epochs used in the [fine-tuning portal] under *Hyperparameters*. This value will also be updated automatically if you run fine-tuning through this program.
+- **`token_price`** - The default value here is the default token price for `base_model`. You can find the up-to-date value [here][OpenAI Pricing], in the *Training* column.
+- **`job_id`** - If there is any value here, this program will resume monitoring the corresponding job, instead of starting a new one. This gets set when starting the fine-tuning and is cleared when it is completed. You can read more in [fine-tuning].
+- **`base_model`** - This value is used to choose the tokenizer for estimating fine-tuning costs. It is also the base model that will be fine-tuned and the model that is used to generate tags. You can find a list of options in the [fine-tuning portal] by pressing `+ Create` and opening the drop-down list for `Base Model`. Be sure to update `token_price` if you change this value.
+- **`fine_tuned_model`** - Set automatically after monitoring fine-tuning if the job has succeeded. You can read more in [fine-tuning].
 - **`tags_chance`** - This should be between 0 and 1. Setting it to 0 corresponds to a 0% chance (never) to add tags to a post. 1 corresponds to a 100% chance (always) to add tags to a post. Adding tags incurs a very small token cost.
+
+## Manual Fine-Tuning
+You can manually upload the examples file to [OpenAI] and start the fine-tuning [here][fine-tuning portal].
+1. Press `+ Create`.
+1. Select the desired `Base Model` from the dropdown. This should ideally match the model set in the [config].
+1. Upload the generated examples file to the section under `Training data`. You can find the path for this in the [config].
+1. Press `Create`.
+1. (Optional) Copy the value next to `Job ID` and paste it into the [config] under `job_id`. You can then run the program and monitor its progress as usual.
+1. If you do not do the above, you will have to copy the value next to `Output model` once the job is complete and paste it into the [config] under `fine_tuned_model`.

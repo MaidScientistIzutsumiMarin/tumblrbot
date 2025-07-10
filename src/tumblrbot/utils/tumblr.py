@@ -1,21 +1,18 @@
 from dataclasses import dataclass
 from typing import Self
 
-from niquests import HTTPError, Session
-from requests import Response
-from requests_cache import CacheMixin
+from niquests import HTTPError, PreparedRequest, Response, Session
 from requests_oauthlib import OAuth1
 
 from tumblrbot.utils.models import Post, Tokens
 
 
 @dataclass
-class TumblrSession(CacheMixin, Session):  # pyright: ignore[reportIncompatibleMethodOverride, reportIncompatibleVariableOverride]
+class TumblrSession(Session):
     tokens: Tokens
 
     def __post_init__(self) -> None:
-        CacheMixin.__init__(self, use_cache_dir=True)
-        Session.__init__(self, happy_eyeballs=True)
+        super().__init__(multiplexed=True, happy_eyeballs=True)
 
         self.auth = OAuth1(**self.tokens.tumblr.model_dump(mode="json"))
         self.hooks["response"].append(self.response_hook)
@@ -24,21 +21,22 @@ class TumblrSession(CacheMixin, Session):  # pyright: ignore[reportIncompatibleM
         super().__enter__()
         return self
 
-    def response_hook(self, response: Response, **_: object) -> None:
-        try:
-            response.raise_for_status()
-        except HTTPError as error:
-            if response.text:
-                error.add_note(response.text)
-            raise
+    def response_hook(self, response: PreparedRequest | Response) -> None:
+        if isinstance(response, Response):
+            try:
+                response.raise_for_status()
+            except HTTPError as error:
+                if response.text:
+                    error.add_note(response.text)
+                raise
 
     def retrieve_published_posts(self, blog_identifier: str, after: int) -> Response:
         return self.get(
             f"https://api.tumblr.com/v2/blog/{blog_identifier}/posts",
             params={
-                "after": after,
+                "after": str(after),
                 "sort": "asc",
-                "npf": True,
+                "npf": str(True),
             },
         )
 

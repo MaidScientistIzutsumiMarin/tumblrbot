@@ -13,8 +13,6 @@ dependencies = [
   "pwinput",
   "pydantic",
   "pydantic-settings",
-  "requests",
-  "requests-cache",
   "requests-oauthlib",
   "rich",
   "tiktoken",

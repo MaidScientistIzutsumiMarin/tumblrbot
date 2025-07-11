@@ -98,13 +98,13 @@ class Tokens(FullyValidatedModel):
 
 class Post(FullyValidatedModel):
     class Block(FullyValidatedModel):
-        type: str = ""
+        type: str = "text"
         text: str = ""
         blocks: list[int] = []  # noqa: RUF012
 
     timestamp: SkipJsonSchema[int] = 0
     tags: Annotated[list[str], PlainSerializer(",".join)] = []  # noqa: RUF012
-    state: SkipJsonSchema[Literal["published", "queued", "draft", "private", "unapproved"]] = "published"
+    state: SkipJsonSchema[Literal["published", "queued", "draft", "private", "unapproved"]] = "draft"
 
     content: SkipJsonSchema[list[Block]] = []  # noqa: RUF012
     layout: SkipJsonSchema[list[Block]] = []  # noqa: RUF012

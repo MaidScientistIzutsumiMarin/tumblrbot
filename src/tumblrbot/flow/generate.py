@@ -24,10 +24,7 @@ class DraftGenerator(FlowClass):
 
     def generate_post(self) -> Post:
         content = self.generate_content()
-        post = Post(
-            content=[content],
-            state="draft",
-        )
+        post = Post(content=[content])
         if tags := self.generate_tags(content):
             post.tags = tags.tags
         return post
@@ -39,7 +36,7 @@ class DraftGenerator(FlowClass):
             model=self.config.fine_tuned_model,
         ).output_text
 
-        return Post.Block(type="text", text=content)
+        return Post.Block(text=content)
 
     def generate_tags(self, content: Post.Block) -> Post | None:
         if random() < self.config.tags_chance:  # noqa: S311

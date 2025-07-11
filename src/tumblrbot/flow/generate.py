@@ -42,10 +42,9 @@ class DraftGenerator(FlowClass):
         if random() < self.config.tags_chance:  # noqa: S311
             return self.openai.responses.parse(
                 text_format=Post,
-                input=f"Extract the most important subjects from the following text:\n\n{content.text}",
-                instructions="You are an advanced text summarization tool. You return the requested data to the user as a list of comma-separated strings.",
+                input=content.text,
+                instructions=self.config.tags_developer_message,
                 model=self.config.base_model,
-                temperature=0.5,
             ).output_parsed
 
         return None

@@ -111,8 +111,8 @@ class Post(FullyValidatedModel):
             subtitle_align="left",
         )
 
-    def only_text_blocks(self) -> bool:
-        return all(block.type == "text" for block in self.content) and not any(block.type == "ask" for block in self.layout)
+    def valid_text_post(self) -> bool:
+        return bool(self.content) and all(block.type == "text" for block in self.content) and not (self.is_submission or self.trail or any(block.type == "ask" for block in self.layout))
 
     def get_content_text(self) -> str:
         return "\n\n".join(block.text for block in self.content)

@@ -1,11 +1,11 @@
 from collections.abc import Generator
+from itertools import batched
 from json import loads
 from math import ceil
 from re import search
 from typing import IO, override
 
 import rich
-from more_itertools import chunked
 from openai import BadRequestError
 from rich.prompt import Confirm
 
@@ -58,18 +58,18 @@ class ExamplesWriter(FlowClass):
         posts = self.get_valid_posts()
 
         if Confirm.ask("[gray62]Remove posts flagged by the OpenAI moderation? This can sometimes resolve errors with fine-tuning validation, but is slow.", default=False):
-            chunk_size = self.get_moderation_chunk_limit()
+            batch_size = self.get_moderation_batch_size()
             posts = list(posts)
             removed = 0
 
             with PreviewLive() as live:
-                for chunk in live.progress.track(
-                    chunked(posts, chunk_size),
-                    ceil(len(posts) / chunk_size),
+                for batch in live.progress.track(
+                    batched(posts, batch_size, strict=False),
+                    ceil(len(posts) / batch_size),
                     description="Removing flagged posts...",
                 ):
-                    response = self.openai.moderations.create(input=list(map(Post.get_content_text, chunk)))
-                    for post, moderation in zip(chunk, response.results, strict=True):
+                    response = self.openai.moderations.create(input=list(map(Post.get_content_text, batch)))
+                    for post, moderation in zip(batch, response.results, strict=True):
                         if moderation.flagged:
                             removed += 1
                             live.custom_update(post)
@@ -84,10 +84,10 @@ class ExamplesWriter(FlowClass):
             with data_path.open(encoding="utf_8") as fp:
                 for line in fp:
                     post = Post.model_validate_json(line)
-                    if not (post.is_submission or post.trail) and post.only_text_blocks() and post.get_content_text():
+                    if post.valid_text_post():
                         yield post
 
-    def get_moderation_chunk_limit(self) -> int:
+    def get_moderation_batch_size(self) -> int:
         test_n = 1000
         try:
             self.openai.moderations.create(input=[""] * test_n)

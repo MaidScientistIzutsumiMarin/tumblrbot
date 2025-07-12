@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Self, override
 import rich
 import tomlkit
 from openai.types import ChatModel
-from pydantic import Field, NonNegativeFloat, PositiveFloat, PositiveInt, Secret, model_validator
+from pydantic import Field, NonNegativeFloat, PositiveFloat, PositiveInt, model_validator
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict, TomlConfigSettingsSource
 from rich.prompt import Prompt
 from tomlkit import comment, document
@@ -88,8 +88,7 @@ class Config(BaseSettings):
                 for line in field.description.split(". "):
                     toml_table.add(comment(f"{line.removesuffix('.')}."))
 
-            value = getattr(self, name)
-            toml_table[name] = value.get_secret_value() if isinstance(value, Secret) else dumped_model[name]
+            toml_table[name] = dumped_model[name]
 
         Path(toml_file).write_text(
             tomlkit.dumps(toml_table),

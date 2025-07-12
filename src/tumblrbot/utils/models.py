@@ -3,22 +3,13 @@ from typing import Annotated, Any, ClassVar, Literal, Self, override
 
 import rich
 from keyring import get_password, set_password
-from niquests import Session
 from openai import BaseModel
 from pwinput import pwinput
-from pydantic import ConfigDict, PlainSerializer, SecretStr
+from pydantic import ConfigDict, PlainSerializer
 from pydantic.json_schema import SkipJsonSchema
 from requests_oauthlib import OAuth1Session
 from rich.panel import Panel
 from rich.prompt import Confirm
-
-type SerializableSecretStr = Annotated[
-    SecretStr,
-    PlainSerializer(
-        SecretStr.get_secret_value,
-        when_used="json-unless-none",
-    ),
-]
 
 
 class FullyValidatedModel(BaseModel):
@@ -33,24 +24,28 @@ class FullyValidatedModel(BaseModel):
 
 class Tokens(FullyValidatedModel):
     class Tumblr(FullyValidatedModel):
-        client_key: SerializableSecretStr = SecretStr("")
-        client_secret: SerializableSecretStr = SecretStr("")
-        resource_owner_key: SerializableSecretStr = SecretStr("")
-        resource_owner_secret: SerializableSecretStr = SecretStr("")
+        client_key: str = ""
+        client_secret: str = ""
+        resource_owner_key: str = ""
+        resource_owner_secret: str = ""
 
     service_name: ClassVar = "tumblrbot"
     username: ClassVar = "tokens"
 
-    openai_api_key: SerializableSecretStr = SecretStr("")
+    openai_api_key: str = ""
     tumblr: Tumblr = Tumblr()
 
     @staticmethod
-    def online_token_prompt(url: str, *tokens: str) -> Generator[SecretStr]:
+    def get_oauth_tokens(token: dict[str, str]) -> tuple[str, str]:
+        return token["oauth_token"], token["oauth_token_secret"]
+
+    @staticmethod
+    def online_token_prompt(url: str, *tokens: str) -> Generator[str]:
         formatted_token_string = " and ".join(f"[cyan]{token}[/]" for token in tokens)
 
         rich.print(f"Retrieve your {formatted_token_string} from: {url}")
         for token in tokens:
-            yield SecretStr(pwinput(f"Enter your {token} (masked): ").strip())
+            yield pwinput(f"Enter your {token} (masked): ").strip()
 
         rich.print()
 
@@ -64,34 +59,30 @@ class Tokens(FullyValidatedModel):
     def model_post_init(self, context: object) -> None:
         super().model_post_init(context)
 
-        if not self.openai_api_key.get_secret_value() or Confirm.ask("Reset OpenAI API key?", default=False):
+        if not self.openai_api_key or Confirm.ask("Reset OpenAI API key?", default=False):
             (self.openai_api_key,) = self.online_token_prompt("https://platform.openai.com/api-keys", "API key")
 
-        if not all(self.tumblr.model_dump(mode="json").values()) or Confirm.ask("Reset Tumblr API tokens?", default=False):
+        if not all(self.tumblr.model_dump().values()) or Confirm.ask("Reset Tumblr API tokens?", default=False):
             self.tumblr.client_key, self.tumblr.client_secret = self.online_token_prompt("https://tumblr.com/oauth/apps", "consumer key", "consumer secret")
 
-            OAuth1Session.__bases__ = (Session,)
-
             with OAuth1Session(
-                self.tumblr.client_key.get_secret_value(),
-                self.tumblr.client_secret.get_secret_value(),
+                self.tumblr.client_key,
+                self.tumblr.client_secret,
             ) as oauth_session:
                 fetch_response = oauth_session.fetch_request_token("http://tumblr.com/oauth/request_token")
                 full_authorize_url = oauth_session.authorization_url("http://tumblr.com/oauth/authorize")
                 (redirect_response,) = self.online_token_prompt(full_authorize_url, "full redirect URL")
-                oauth_response = oauth_session.parse_authorization_response(redirect_response.get_secret_value())
+                oauth_response = oauth_session.parse_authorization_response(redirect_response)
 
             with OAuth1Session(
-                self.tumblr.client_key.get_secret_value(),
-                self.tumblr.client_secret.get_secret_value(),
-                fetch_response["oauth_token"],
-                fetch_response["oauth_token_secret"],
+                self.tumblr.client_key,
+                self.tumblr.client_secret,
+                *self.get_oauth_tokens(fetch_response),
                 verifier=oauth_response["oauth_verifier"],
             ) as oauth_session:
                 oauth_tokens = oauth_session.fetch_access_token("http://tumblr.com/oauth/access_token")
 
-            self.tumblr.resource_owner_key = oauth_tokens["oauth_token"]
-            self.tumblr.resource_owner_secret = oauth_tokens["oauth_token_secret"]
+            self.tumblr.resource_owner_key, self.tumblr.resource_owner_secret = self.get_oauth_tokens(oauth_tokens)
 
         set_password(self.service_name, self.username, self.model_dump_json())
 

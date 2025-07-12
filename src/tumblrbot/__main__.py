@@ -1,4 +1,4 @@
-from openai import DefaultHttpxClient, OpenAI
+from openai import OpenAI
 from rich.prompt import Confirm
 from rich.traceback import install
 
@@ -15,10 +15,7 @@ def main() -> None:
     install()
 
     tokens = Tokens.read_from_keyring()
-    with (
-        OpenAI(api_key=tokens.openai_api_key.get_secret_value(), http_client=DefaultHttpxClient(http2=True)) as openai,
-        TumblrSession(tokens) as tumblr,
-    ):
+    with OpenAI(api_key=tokens.openai_api_key) as openai, TumblrSession(tokens) as tumblr:
         if Confirm.ask("Download latest posts?", default=False):
             PostDownloader(openai=openai, tumblr=tumblr).main()
 

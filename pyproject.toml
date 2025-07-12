@@ -26,5 +26,5 @@ Source = "https://github.com/MaidThatPrograms/tumblrbot"
 tumblrbot = "tumblrbot.__main__:main"
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["flit_core"]
+build-backend = "flit_core.buildapi"

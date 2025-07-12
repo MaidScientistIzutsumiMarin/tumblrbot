@@ -2,6 +2,7 @@ from random import random
 from typing import override
 
 import rich
+from rich.prompt import IntPrompt
 
 from tumblrbot.utils.common import FlowClass, PreviewLive
 from tumblrbot.utils.models import Post
@@ -10,6 +11,8 @@ from tumblrbot.utils.models import Post
 class DraftGenerator(FlowClass):
     @override
     def main(self) -> None:
+        self.config.draft_count = IntPrompt.ask("How many drafts should be generated?", default=self.config.draft_count)
+
         message = f"View drafts here: https://tumblr.com/blog/{self.config.upload_blog_identifier}/drafts"
 
         with PreviewLive() as live:

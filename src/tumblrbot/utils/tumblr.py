@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Self
 
 from niquests import HTTPError, PreparedRequest, Response, Session
@@ -7,14 +6,11 @@ from requests_oauthlib import OAuth1
 from tumblrbot.utils.models import Post, Tokens
 
 
-@dataclass
 class TumblrSession(Session):
-    tokens: Tokens
-
-    def __post_init__(self) -> None:
+    def __init__(self, tokens: Tokens) -> None:
         super().__init__(multiplexed=True, happy_eyeballs=True)
 
-        self.auth = OAuth1(**self.tokens.tumblr.model_dump(mode="json"))
+        self.auth = OAuth1(**tokens.tumblr.model_dump(mode="json"))
         self.hooks["response"].append(self.response_hook)
 
     def __enter__(self) -> Self:

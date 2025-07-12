@@ -17,7 +17,7 @@ def main() -> None:
     tokens = Tokens.read_from_keyring()
     with (
         OpenAI(api_key=tokens.openai_api_key.get_secret_value(), http_client=DefaultHttpxClient(http2=True)) as openai,
-        TumblrSession(tokens=tokens) as tumblr,
+        TumblrSession(tokens) as tumblr,
     ):
         if Confirm.ask("Download latest posts?", default=False):
             PostDownloader(openai=openai, tumblr=tumblr).main()

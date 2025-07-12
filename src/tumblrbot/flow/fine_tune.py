@@ -1,7 +1,7 @@
 from collections.abc import Generator
 from datetime import datetime
 from textwrap import dedent
-from time import sleep, time
+from time import sleep
 from typing import override
 
 import rich
@@ -41,8 +41,6 @@ class FineTuner(FlowClass):
 
                 live.progress.update(
                     task_id,
-                    total=job.estimated_finish - job.created_at if job.estimated_finish else None,
-                    completed=time() - job.created_at,
                     description=f"Fine-tuning: [italic]{job.status.replace('_', ' ').title()}[/]...",
                 )
 

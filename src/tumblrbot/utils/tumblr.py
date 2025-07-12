@@ -8,7 +8,7 @@ from tumblrbot.utils.models import Post, Tokens
 
 class TumblrSession(Session):
     def __init__(self, tokens: Tokens) -> None:
-        super().__init__(multiplexed=True, happy_eyeballs=True)
+        super().__init__(multiplexed=True, happy_eyeballs=True, base_url="https://api.tumblr.com/v2/blog")
 
         self.auth = OAuth1(**tokens.tumblr.model_dump(mode="json"))
         self.hooks["response"].append(self.response_hook)
@@ -28,7 +28,7 @@ class TumblrSession(Session):
 
     def retrieve_published_posts(self, blog_identifier: str, after: int) -> Response:
         return self.get(
-            f"https://api.tumblr.com/v2/blog/{blog_identifier}/posts",
+            f"{blog_identifier}/posts",
             params={
                 "after": str(after),
                 "sort": "asc",
@@ -38,6 +38,6 @@ class TumblrSession(Session):
 
     def create_post(self, blog_identifier: str, post: Post) -> Response:
         return self.post(
-            f"https://api.tumblr.com/v2/blog/{blog_identifier}/posts",
+            f"{blog_identifier}/posts",
             json=post.model_dump(mode="json"),
         )

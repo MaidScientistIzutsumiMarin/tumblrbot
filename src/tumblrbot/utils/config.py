@@ -31,6 +31,7 @@ class Config(BaseSettings):
     data_directory: Path = Field(Path("data"), description="Where to store downloaded post data.")
 
     # Writing Examples
+    max_moderation_batch_size: PositiveInt = Field(100, description="How many posts, at most, to submit to the OpenAI moderation API. This is also capped by the API.")
     custom_prompts_file: Path = Field(Path("custom_prompts.jsonl"), description="Where to read in custom prompts from.")
 
     # Writing Examples & Fine-Tuning

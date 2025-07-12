@@ -88,11 +88,10 @@ class ExamplesWriter(FlowClass):
                         yield post
 
     def get_moderation_batch_size(self) -> int:
-        test_n = 1000
         try:
-            self.openai.moderations.create(input=[""] * test_n)
+            self.openai.moderations.create(input=[""] * self.config.max_moderation_batch_size)
         except BadRequestError as error:
             message = error.response.json()["error"]["message"]
             if match := search(r"(\d+)\.", message):
                 return int(match.group(1))
-        return test_n
+        return self.config.max_moderation_batch_size

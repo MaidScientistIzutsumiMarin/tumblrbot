@@ -1,4 +1,5 @@
 from random import random
+from typing import override
 
 import rich
 
@@ -7,7 +8,8 @@ from tumblrbot.utils.models import Post
 
 
 class DraftGenerator(FlowClass):
-    def create_drafts(self) -> None:
+    @override
+    def main(self) -> None:
         message = f"View drafts here: https://tumblr.com/blog/{self.config.upload_blog_identifier}/drafts"
 
         with PreviewLive() as live:

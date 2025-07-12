@@ -1,13 +1,14 @@
 from io import TextIOBase
 from json import dump
-from pathlib import Path
+from typing import override
 
 from tumblrbot.utils.common import FlowClass, PreviewLive
 from tumblrbot.utils.models import Post
 
 
 class PostDownloader(FlowClass):
-    def download(self) -> None:
+    @override
+    def main(self) -> None:
         self.config.data_directory.mkdir(parents=True, exist_ok=True)
 
         with PreviewLive() as live:
@@ -50,9 +51,3 @@ class PostDownloader(FlowClass):
                 completed += len(posts)
             else:
                 return
-
-    def get_data_paths(self) -> list[Path]:
-        return list(map(self.get_data_path, self.config.download_blog_identifiers))
-
-    def get_data_path(self, blog_identifier: str) -> Path:
-        return (self.config.data_directory / blog_identifier).with_suffix(".jsonl")

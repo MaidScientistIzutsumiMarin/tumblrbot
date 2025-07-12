@@ -1,24 +1,36 @@
-from dataclasses import dataclass
+from abc import abstractmethod
 from random import choice
 from typing import ClassVar, Self, override
 
 from openai import OpenAI
+from pydantic import ConfigDict
 from rich._spinners import SPINNERS
 from rich.console import RenderableType
 from rich.live import Live
 from rich.progress import MofNCompleteColumn, Progress, SpinnerColumn, TimeElapsedColumn
 from rich.table import Table
 
-from tumblrbot.utils.config import Config
+from tumblrbot.utils.config import Config, Path
+from tumblrbot.utils.models import FullyValidatedModel
 from tumblrbot.utils.tumblr import TumblrSession
 
 
-@dataclass
-class FlowClass:
+class FlowClass(FullyValidatedModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     config: ClassVar = Config()  # pyright: ignore[reportCallIssue]
 
     openai: OpenAI
     tumblr: TumblrSession
+
+    @abstractmethod
+    def main(self) -> None: ...
+
+    def get_data_paths(self) -> list[Path]:
+        return list(map(self.get_data_path, self.config.download_blog_identifiers))
+
+    def get_data_path(self, blog_identifier: str) -> Path:
+        return (self.config.data_directory / blog_identifier).with_suffix(".jsonl")
 
 
 class PreviewLive(Live):

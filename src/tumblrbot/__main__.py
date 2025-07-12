@@ -19,22 +19,18 @@ def main() -> None:
         OpenAI(api_key=tokens.openai_api_key.get_secret_value(), http_client=DefaultHttpxClient(http2=True)) as openai,
         TumblrSession(tokens=tokens) as tumblr,
     ):
-        post_downloader = PostDownloader(openai, tumblr)
         if Confirm.ask("Download latest posts?", default=False):
-            post_downloader.download()
-        download_paths = post_downloader.get_data_paths()
+            PostDownloader(openai=openai, tumblr=tumblr).main()
 
-        examples_writer = ExamplesWriter(openai, tumblr, download_paths)
         if Confirm.ask("Create training data?", default=False):
-            examples_writer.write_examples()
-        estimated_tokens = sum(examples_writer.count_tokens())
+            ExamplesWriter(openai=openai, tumblr=tumblr).main()
 
-        fine_tuner = FineTuner(openai, tumblr, estimated_tokens)
+        fine_tuner = FineTuner(openai=openai, tumblr=tumblr)
         fine_tuner.print_estimates()
 
         message = "Resume monitoring the previous fine-tuning process?" if FlowClass.config.job_id else "Upload data to OpenAI for fine-tuning?"
         if Confirm.ask(f"{message} [bold]You must do this to set the model to generate drafts from. Alternatively, manually enter a model into the config", default=False):
-            fine_tuner.fine_tune()
+            fine_tuner.main()
 
         if Confirm.ask("Generate drafts?", default=False):
-            DraftGenerator(openai, tumblr).create_drafts()
+            DraftGenerator(openai=openai, tumblr=tumblr).main()

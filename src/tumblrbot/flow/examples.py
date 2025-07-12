@@ -1,27 +1,21 @@
 from collections.abc import Generator
-from dataclasses import dataclass
 from json import loads
 from math import ceil
-from pathlib import Path
 from re import search
-from typing import IO
+from typing import IO, override
 
 import rich
 from more_itertools import chunked
 from openai import BadRequestError
-from rich.console import Console
 from rich.prompt import Confirm
-from tiktoken import encoding_for_model, get_encoding
 
 from tumblrbot.utils.common import FlowClass, PreviewLive
 from tumblrbot.utils.models import Example, Post
 
 
-@dataclass
 class ExamplesWriter(FlowClass):
-    data_paths: list[Path]
-
-    def write_examples(self) -> None:
+    @override
+    def main(self) -> None:
         self.config.examples_file.parent.mkdir(parents=True, exist_ok=True)
 
         with self.config.examples_file.open("w", encoding="utf_8") as fp:
@@ -86,7 +80,7 @@ class ExamplesWriter(FlowClass):
             yield from posts
 
     def get_valid_posts(self) -> Generator[Post]:
-        for data_path in self.data_paths:
+        for data_path in self.get_data_paths():
             with data_path.open(encoding="utf_8") as fp:
                 for line in fp:
                     post = Post.model_validate_json(line)
@@ -102,19 +96,3 @@ class ExamplesWriter(FlowClass):
             if match := search(r"(\d+)\.", message):
                 return int(match.group(1))
         return test_n
-
-    def count_tokens(self) -> Generator[int]:
-        # Based on https://cookbook.openai.com/examples/how_to_count_tokens_with_tiktoken
-        # and https://cookbook.openai.com/examples/chat_finetuning_data_prep
-        try:
-            encoding = encoding_for_model(self.config.base_model)
-        except KeyError as error:
-            encoding = get_encoding("o200k_base")
-            Console(stderr=True, style="logging.level.warning").print(f"[Warning] Using encoding '{encoding.name}': {''.join(error.args)}\n")
-
-        with self.config.examples_file.open(encoding="utf_8") as fp:
-            for line in fp:
-                example = Example.model_validate_json(line)
-                yield len(encoding.encode("assistant"))  # every reply is primed with <|start|>assistant<|message|>
-                for message in example.messages:
-                    yield 4 + len(encoding.encode(message.content))

@@ -39,7 +39,6 @@ Features:
 - An [interactive console][Main] for all steps of generating posts for the blog:
    1. Asks for [OpenAI] and [Tumblr] tokens.
       - Stores API tokens using [keyring].
-      - Prevents API tokens from printing to the console.
    1. Retrieves [Tumblr] [OAuth] tokens.
    1. [Downloads posts][Download] from the [configured][config] [Tumblr] blogs.
       - Skips redownloading already downloaded posts.
@@ -49,8 +48,8 @@ Features:
       - Filters out any posts flagged by the [OpenAI] [Moderation API] (optional).
          - Shows progress and previews the current post.
       - Adds custom user messages and assistant responses to the dataset from the [configured][config] file.
-   1. Provides cost estimates if the currently saved examples are used to fine-tune the [configured][config] model.
    1. [Uploads examples][Fine-Tune] to [OpenAI] and begins the fine-tuning process.
+      - Provides cost estimates if the currently saved examples are used to fine-tune the [configured][config] model.
       - Resumes monitoring the same fine-tuning process when restarted.
       - Deletes the uploaded examples file if fine-tuning does not succeed (optional).
       - Stores the output model automatically when fine-tuning is completed.

@@ -19,8 +19,7 @@ class TumblrSession(OAuth1Session):
         try:
             response.raise_for_status()
         except HTTPError as error:
-            if response.text:
-                error.add_note(response.text)
+            error.add_note(response.text)
             raise
 
     def retrieve_published_posts(self, blog_identifier: str, after: int) -> Response:

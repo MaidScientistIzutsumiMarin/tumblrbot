@@ -85,7 +85,7 @@ class Config(BaseSettings):
 
         dumped_model = self.model_dump(mode="json")
         for name, field in self.__class__.model_fields.items():
-            if field.description:
+            if field.description is not None:
                 for line in field.description.split(". "):
                     toml_table.add(comment(f"{line.removesuffix('.')}."))
 

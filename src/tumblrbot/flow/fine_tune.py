@@ -98,8 +98,8 @@ class FineTuner(FlowClass):
             if job.status == "failed" and job.error is not None:
                 raise RuntimeError(job.error.message)
 
-        if job.fine_tuned_model:
-            self.config.fine_tuned_model = job.fine_tuned_model or ""
+        if job.fine_tuned_model is not None:
+            self.config.fine_tuned_model = job.fine_tuned_model
 
     def print_estimates(self) -> None:
         estimated_tokens = sum(self.count_tokens())

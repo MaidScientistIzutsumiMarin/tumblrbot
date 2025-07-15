@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [project.urls]
-Source = "https://github.com/MaidThatPrograms/tumblrbot"
+Source = "https://github.com/MaidScientistIzutsumiMarin/tumblrbot"
 
 [project.scripts]
 tumblrbot = "tumblrbot.__main__:main"

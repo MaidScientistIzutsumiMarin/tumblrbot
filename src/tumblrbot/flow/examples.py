@@ -49,7 +49,7 @@ class ExamplesWriter(FlowClass):
         self.config.custom_prompts_file.parent.mkdir(parents=True, exist_ok=True)
         self.config.custom_prompts_file.touch(exist_ok=True)
 
-        with self.config.custom_prompts_file.open("r", encoding="utf_8") as fp:
+        with self.config.custom_prompts_file.open("rb") as fp:
             for line in fp:
                 data: dict[str, str] = loads(line)
                 yield from data.items()
@@ -81,7 +81,7 @@ class ExamplesWriter(FlowClass):
 
     def get_valid_posts(self) -> Generator[Post]:
         for data_path in self.get_data_paths():
-            with data_path.open(encoding="utf_8") as fp:
+            with data_path.open("rb") as fp:
                 for line in fp:
                     post = Post.model_validate_json(line)
                     if post.valid_text_post():

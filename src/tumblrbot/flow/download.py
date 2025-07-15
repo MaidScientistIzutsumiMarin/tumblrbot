@@ -18,7 +18,7 @@ class PostDownloader(FlowClass):
                 completed = 0
                 after = 0
                 if data_path.exists():
-                    lines = data_path.read_text("utf_8").splitlines() if data_path.exists() else []
+                    lines = data_path.read_bytes().splitlines() if data_path.exists() else []
                     completed = len(lines)
                     if lines:
                         after = Post.model_validate_json(lines[-1]).timestamp

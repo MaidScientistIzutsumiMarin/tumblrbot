@@ -78,7 +78,7 @@ class Config(FileSyncSettings):
     @classmethod
     @override
     def read(cls) -> dict[str, object] | None:
-        return tomllib.loads(cls.toml_file.read_text()) if cls.toml_file.exists() else None
+        return tomllib.loads(cls.toml_file.read_text("utf_8")) if cls.toml_file.exists() else None
 
     @model_validator(mode="after")
     @override

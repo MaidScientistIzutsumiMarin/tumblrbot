@@ -39,7 +39,7 @@ class FileSyncSettings(FullyValidatedModel):
 
     @model_validator(mode="after")
     @abstractmethod
-    def save(self) -> Self: ...
+    def write(self) -> Self: ...
 
 
 class Config(FileSyncSettings):
@@ -82,7 +82,7 @@ class Config(FileSyncSettings):
 
     @model_validator(mode="after")
     @override
-    def save(self) -> Self:
+    def write(self) -> Self:
         if not self.download_blog_identifiers:
             rich.print("Enter the [cyan]identifiers of your blogs[/] that data should be [bold purple]downloaded[/] from, separated by commas.")
             self.download_blog_identifiers = list(map(str.strip, Prompt.ask("[bold][Example] [dim]staff.tumblr.com,changes").split(",")))
@@ -139,7 +139,7 @@ class Tokens(FileSyncSettings):
 
     @model_validator(mode="after")
     @override
-    def save(self) -> Self:
+    def write(self) -> Self:
         if not self.openai_api_key or Confirm.ask("Reset OpenAI API key?", default=False):
             (self.openai_api_key,) = self.online_token_prompt("https://platform.openai.com/api-keys", "API key")
 

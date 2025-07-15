@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from pathlib import Path
 from random import choice
 from typing import ClassVar, Self, override
 
@@ -10,15 +11,14 @@ from rich.live import Live
 from rich.progress import MofNCompleteColumn, Progress, SpinnerColumn, TimeElapsedColumn
 from rich.table import Table
 
-from tumblrbot.utils.config import Config, Path
-from tumblrbot.utils.models import FullyValidatedModel
+from tumblrbot.utils.models import Config, FullyValidatedModel
 from tumblrbot.utils.tumblr import TumblrSession
 
 
 class FlowClass(FullyValidatedModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    config: ClassVar = Config()  # pyright: ignore[reportCallIssue]
+    config: ClassVar = Config.load()
 
     openai: OpenAI
     tumblr: TumblrSession

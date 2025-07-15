@@ -9,7 +9,6 @@ dependencies = [
   "openai",
   "pwinput",
   "pydantic",
-  "pydantic-settings",
   "requests",
   "requests-oauthlib",
   "rich",

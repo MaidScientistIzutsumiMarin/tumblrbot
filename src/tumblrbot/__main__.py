@@ -14,7 +14,7 @@ from tumblrbot.utils.tumblr import TumblrSession
 def main() -> None:
     install()
 
-    tokens = Tokens.read_from_keyring()
+    tokens = Tokens.load()
     with OpenAI(api_key=tokens.openai_api_key) as openai, TumblrSession(tokens) as tumblr:
         if Confirm.ask("Download latest posts?", default=False):
             PostDownloader(openai=openai, tumblr=tumblr).main()

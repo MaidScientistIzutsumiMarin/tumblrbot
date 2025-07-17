@@ -1,7 +1,7 @@
 # Custom
 data
 *.toml
-*.jsonl
+examples.jsonl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

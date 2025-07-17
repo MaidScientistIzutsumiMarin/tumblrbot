@@ -1,6 +1,7 @@
 # Custom
 data
 *.toml
+custom_prompts.jsonl
 examples.jsonl
 
 # Byte-compiled / optimized / DLL files

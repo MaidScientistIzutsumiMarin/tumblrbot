@@ -1,6 +1,7 @@
 # Custom
 data
-*.toml
+*.lnk
+config.toml
 custom_prompts.jsonl
 examples.jsonl
 

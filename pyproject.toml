@@ -17,6 +17,7 @@ dependencies = [
 ]
 
 [project.urls]
+Funding = "https://ko-fi.com/maidscientistizutsumimarin"
 Source = "https://github.com/MaidScientistIzutsumiMarin/tumblrbot"
 
 [project.scripts]

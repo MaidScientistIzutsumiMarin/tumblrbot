@@ -28,26 +28,27 @@ class DraftGenerator(FlowClass):
         rich.print(f":chart_increasing: [bold green]Generated {self.config.draft_count} draft(s).[/] {message}")
 
     def generate_post(self) -> Post:
-        content = self.generate_content()
-        post = Post(content=[content])
-        if tags := self.generate_tags(content):
-            post.tags = tags.tags
-        return post
+        text = self.generate_text()
+        if tags := self.generate_tags(text):
+            tags = tags.tags
+        return Post(
+            content=[Post.Block(type="text", text=text)],
+            tags=tags or [],
+            state="draft",
+        )
 
-    def generate_content(self) -> Post.Block:
-        content = self.openai.responses.create(
+    def generate_text(self) -> str:
+        return self.openai.responses.create(
             input=self.config.user_message,
             instructions=self.config.developer_message,
             model=self.config.fine_tuned_model,
         ).output_text
 
-        return Post.Block(text=content)
-
-    def generate_tags(self, content: Post.Block) -> Post | None:
+    def generate_tags(self, text: str) -> Post | None:
         if random() < self.config.tags_chance:  # noqa: S311
             return self.openai.responses.parse(
                 text_format=Post,
-                input=content.text,
+                input=text,
                 instructions=self.config.tags_developer_message,
                 model=self.config.base_model,
             ).output_parsed

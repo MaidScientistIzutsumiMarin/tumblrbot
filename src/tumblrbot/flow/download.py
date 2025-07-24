@@ -36,18 +36,18 @@ class PostDownloader(FlowClass):
         task_id = live.progress.add_task(f"Downloading posts from '{blog_identifier}'...", total=None, completed=completed)
 
         while True:
-            response = self.tumblr.retrieve_published_posts(blog_identifier, after=after).json()["response"]
-            live.progress.update(task_id, total=response["blog"]["posts"], completed=completed)
+            response = self.tumblr.retrieve_published_posts(blog_identifier, after=after)
+            live.progress.update(task_id, total=response.response.blog.posts, completed=completed)
 
-            if posts := response["posts"]:
-                for post in posts:
-                    dump(post, fp)
-                    fp.write("\n")
-
-                    model = Post.model_validate(post)
-                    after = model.timestamp
-                    live.custom_update(model)
-
-                completed += len(posts)
-            else:
+            if not response.response.posts:
                 return
+
+            for post in response.response.posts:
+                dump(post, fp)
+                fp.write("\n")
+
+                model = Post.model_validate(post)
+                after = model.timestamp
+                live.custom_update(model)
+
+            completed += len(response.response.posts)

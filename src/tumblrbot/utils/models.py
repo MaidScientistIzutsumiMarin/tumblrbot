@@ -170,15 +170,26 @@ class Tokens(FileSyncSettings):
         return self
 
 
+class ResponseModel(FullyValidatedModel):
+    class Response(FullyValidatedModel):
+        class Blog(FullyValidatedModel):
+            posts: int
+
+        blog: Blog = Blog(posts=0)
+        posts: list[Any] = []
+
+    response: Response
+
+
 class Post(FullyValidatedModel):
     class Block(FullyValidatedModel):
-        type: str = "text"
+        type: str
         text: str = ""
         blocks: list[int] = []
 
     timestamp: SkipJsonSchema[int] = 0
-    tags: Annotated[list[str], PlainSerializer(",".join)] = []
-    state: SkipJsonSchema[Literal["published", "queued", "draft", "private", "unapproved"]] = "draft"
+    tags: Annotated[list[str], PlainSerializer(",".join)]
+    state: SkipJsonSchema[Literal["published", "queued", "draft", "private", "unapproved"]] = "published"
 
     content: SkipJsonSchema[list[Block]] = []
     layout: SkipJsonSchema[list[Block]] = []

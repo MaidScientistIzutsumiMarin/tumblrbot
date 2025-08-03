@@ -19,8 +19,12 @@ def main() -> None:
         if Confirm.ask("Download latest posts?", default=False):
             PostDownloader(openai=openai, tumblr=tumblr).main()
 
+        examples_writer = ExamplesWriter(openai=openai, tumblr=tumblr)
         if Confirm.ask("Create training data?", default=False):
-            ExamplesWriter(openai=openai, tumblr=tumblr).main()
+            examples_writer.main()
+
+        if Confirm.ask("Remove training data flagged by the OpenAI moderation? [bold]This can sometimes resolve errors with fine-tuning validation, but is slow.", default=False):
+            examples_writer.filter_examples()
 
         fine_tuner = FineTuner(openai=openai, tumblr=tumblr)
         fine_tuner.print_estimates()

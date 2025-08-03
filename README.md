@@ -13,8 +13,8 @@
 [OpenAI]: https://pypi.org/project/openai
 [OpenAI Pricing]: https://platform.openai.com/docs/pricing#fine-tuning
 [OpenAI Tokens]: https://platform.openai.com/settings/organization/api-keys
+[OpenAI Moderation API]: https://platform.openai.com/docs/guides/moderation
 [Fine-Tuning Portal]: https://platform.openai.com/finetune
-[Moderation API]: https://platform.openai.com/docs/api-reference/moderations
 
 [Tumblr]: https://tumblr.com
 [Tumblr Tokens]: https://tumblr.com/oauth/apps
@@ -45,9 +45,8 @@ Features:
       - Shows progress and previews the current post.
    1. [Creates examples][Examples] to fine-tune the model from your posts.
       - Filters out posts that contain more than just text data.
-      - Filters out any posts flagged by the [OpenAI] [Moderation API] (optional).
-         - Shows progress and previews the current post.
       - Adds custom user messages and assistant responses to the dataset from the [configured][config] file.
+   1. Filters out any posts flagged by the [OpenAI Moderation API].
    1. [Uploads examples][Fine-Tune] to [OpenAI] and begins the fine-tuning process.
       - Provides cost estimates if the currently saved examples are used to fine-tune the [configured][config] model.
       - Resumes monitoring the same fine-tuning process when restarted.
@@ -63,6 +62,7 @@ Features:
 **To-Do:**
 
 - Add code documentation.
+- Add reblog generation logic.
 
 **Known Issues:**
 

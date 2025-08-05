@@ -74,6 +74,8 @@ class Config(FileSyncSettings):
     draft_count: PositiveInt = Field(150, description="The number of drafts to process. This will affect the number of tokens used with OpenAI")
     tags_chance: NonNegativeFloat = Field(0.1, description="The chance to generate tags for any given post. This will incur extra calls to OpenAI.")
     tags_developer_message: str = Field("You will be provided with a block of text, and your task is to extract a very short list of the most important subjects from it.", description="The developer message used to generate tags.")
+    reblog_chance: NonNegativeFloat = Field(0.05, description="The chance to generate a reblog of a random post.")
+    reblog_user_message: str = Field("Please write a comical Tumblr post in response to the following Tumblr post:", description="The prefix for the user message used to reblog posts.")
 
     @classmethod
     @override
@@ -100,7 +102,7 @@ class Config(FileSyncSettings):
 
             toml_table[name] = value
 
-        Path(self.toml_file).write_text(tomlkit.dumps(toml_table), encoding="utf_8")
+        self.toml_file.write_text(tomlkit.dumps(toml_table), encoding="utf_8")
 
         return self
 
@@ -170,12 +172,14 @@ class Tokens(FileSyncSettings):
         return self
 
 
+class Blog(FullyValidatedModel):
+    posts: int = 0
+    uuid: str = ""
+
+
 class ResponseModel(FullyValidatedModel):
     class Response(FullyValidatedModel):
-        class Blog(FullyValidatedModel):
-            posts: int
-
-        blog: Blog = Blog(posts=0)
+        blog: Blog = Blog()
         posts: list[Any] = []
 
     response: Response
@@ -183,12 +187,18 @@ class ResponseModel(FullyValidatedModel):
 
 class Post(FullyValidatedModel):
     class Block(FullyValidatedModel):
-        type: str
+        type: str = ""
         text: str = ""
         blocks: list[int] = []
 
+    blog: SkipJsonSchema[Blog] = Blog()
+    id: SkipJsonSchema[int] = 0
+    parent_tumblelog_uuid: SkipJsonSchema[str] = ""
+    parent_post_id: SkipJsonSchema[int] = 0
+    reblog_key: SkipJsonSchema[str] = ""
+
     timestamp: SkipJsonSchema[int] = 0
-    tags: Annotated[list[str], PlainSerializer(",".join)]
+    tags: Annotated[list[str], PlainSerializer(",".join)] = []
     state: SkipJsonSchema[Literal["published", "queued", "draft", "private", "unapproved"]] = "published"
 
     content: SkipJsonSchema[list[Block]] = []

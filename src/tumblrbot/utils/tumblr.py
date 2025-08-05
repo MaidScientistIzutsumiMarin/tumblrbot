@@ -22,20 +22,25 @@ class TumblrSession(OAuth1Session):
             error.add_note(response.text)
             raise
 
-    def retrieve_published_posts(self, blog_identifier: str, after: int) -> ResponseModel:
+    def retrieve_blog_info(self, blog_identifier: str) -> ResponseModel:
+        response = self.get(f"https://api.tumblr.com/v2/blog/{blog_identifier}/info")
+        return ResponseModel.model_validate_json(response.text)
+
+    def retrieve_published_posts(self, blog_identifier: str, offset: int | None = None, after: int | None = None) -> ResponseModel:
         response = self.get(
             f"https://api.tumblr.com/v2/blog/{blog_identifier}/posts",
             params={
+                "offset": offset,
                 "after": after,
                 "sort": "asc",
                 "npf": True,
             },
         )
-        return ResponseModel.model_validate_json(response.content)
+        return ResponseModel.model_validate_json(response.text)
 
     def create_post(self, blog_identifier: str, post: Post) -> ResponseModel:
         response = self.post(
             f"https://api.tumblr.com/v2/blog/{blog_identifier}/posts",
             json=post.model_dump(),
         )
-        return ResponseModel.model_validate_json(response.content)
+        return ResponseModel.model_validate_json(response.text)

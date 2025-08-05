@@ -55,7 +55,7 @@ Features:
    1. [Generates and uploads posts][Generate] to the [configured][config] [Tumblr] blog using the [configured][config] fine-tuned model.
       - Creates tags by extracting keywords at the [configured][config] frequency using the [configured][config] model.
       - Uploads posts as drafts to the [configured][config] [Tumblr] blog.
-      - Reblog posts at the [configured][config] frequency.
+      - Reblogs posts at the [configured][config] frequency.
       - Shows progress and previews the current post.
 - Colorful output, progress bars, and post previews using [rich].
 - Automatically keeps the [config] file up-to-date and recreates it if missing.

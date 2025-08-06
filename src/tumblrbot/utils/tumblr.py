@@ -26,10 +26,17 @@ class TumblrSession(OAuth1Session):
         response = self.get(f"https://api.tumblr.com/v2/blog/{blog_identifier}/info")
         return ResponseModel.model_validate_json(response.text)
 
-    def retrieve_published_posts(self, blog_identifier: str, offset: int | None = None, after: int | None = None) -> ResponseModel:
+    def retrieve_published_posts(
+        self,
+        blog_identifier: str,
+        limit: int | None = None,
+        offset: int | None = None,
+        after: int | None = None,
+    ) -> ResponseModel:
         response = self.get(
             f"https://api.tumblr.com/v2/blog/{blog_identifier}/posts",
             params={
+                "limit": limit,
                 "offset": offset,
                 "after": after,
                 "sort": "asc",

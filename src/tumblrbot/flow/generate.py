@@ -69,6 +69,7 @@ class DraftGenerator(FlowClass):
         total = self.tumblr.retrieve_blog_info(self.config.upload_blog_identifier).response.blog.posts
         post = self.tumblr.retrieve_published_posts(
             self.config.upload_blog_identifier,
-            offset=randrange(total),  # noqa: S311
+            1,
+            randrange(total),  # noqa: S311
         ).response.posts[0]
         return Post.model_validate(post)

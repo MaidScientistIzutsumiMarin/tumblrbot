@@ -72,9 +72,9 @@ class Config(FileSyncSettings):
     # Generating
     upload_blog_identifier: str = Field("", description="The identifier of the blog which generated drafts will be uploaded to. This must be a blog associated with the same account as the configured Tumblr secret tokens.")
     draft_count: PositiveInt = Field(150, description="The number of drafts to process. This will affect the number of tokens used with OpenAI")
-    tags_chance: NonNegativeFloat = Field(0.1, description="The chance to generate tags for any given post. This will incur extra calls to OpenAI.")
+    tags_chance: NonNegativeFloat = Field(0.1, description="The chance to generate tags for any given post. This will use more OpenAI tokens.")
     tags_developer_message: str = Field("You will be provided with a block of text, and your task is to extract a very short list of the most important subjects from it.", description="The developer message used to generate tags.")
-    reblog_chance: NonNegativeFloat = Field(0.05, description="The chance to generate a reblog of a random post.")
+    reblog_chance: NonNegativeFloat = Field(0.05, description="The chance to generate a reblog of a random post. This will use more OpenAI tokens.")
     reblog_user_message: str = Field("Please write a comical Tumblr post in response to the following post from your blog:", description="The prefix for the user message used to reblog posts.")
 
     @classmethod

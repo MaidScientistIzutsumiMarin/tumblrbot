@@ -130,13 +130,15 @@ All file options can include directories that will be created when the program i
    To be specific, it should follow the [JSON Lines] file format with one collection of name/value pairs (a dictionary) per line. You can validate your file using the [JSON Lines Validator].
 
 - **`developer_message`** - This message is used in for fine-tuning the AI as well as generating prompts. If you change this, you will need to run the fine-tuning again with the new value before generating posts.
-- **`user_message`** - This message is used in the same way as `developer_message` and should be treated the same.
+- **`user_message`** - This setting is used and works in the same way as `developer_message`.
 - **`expected_epochs`** - The default value here is the default number of epochs for `base_model`. You may have to change this value if you change `base_model`. After running fine-tuning once, you will see the number of epochs used in the [fine-tuning portal] under *Hyperparameters*. This value will also be updated automatically if you run fine-tuning through this program.
 - **`token_price`** - The default value here is the default token price for `base_model`. You can find the up-to-date value in [OpenAI Pricing], in the *Training* column.
 - **`job_id`** - If there is any value here, this program will resume monitoring the corresponding job, instead of starting a new one. This gets set when starting the fine-tuning and is cleared when it is completed. You can read more in [fine-tuning].
 - **`base_model`** - This value is used to choose the tokenizer for estimating fine-tuning costs. It is also the base model that will be fine-tuned and the model that is used to generate tags. You can find a list of options in the [fine-tuning portal] by pressing `+ Create` and opening the drop-down list for `Base Model`. Be sure to update `token_price` if you change this value.
 - **`fine_tuned_model`** - Set automatically after monitoring fine-tuning if the job has succeeded. You can read more in [fine-tuning].
 - **`tags_chance`** - This should be between 0 and 1. Setting it to 0 corresponds to a 0% chance (never) to add tags to a post. 1 corresponds to a 100% chance (always) to add tags to a post. Adding tags incurs a very small token cost.
+- **`reblog_chance`** - This setting works the same way as `tags_chance`.
+- **`reblog_user_message`** - This setting is a prefix that is directly prepended to the contents of the post being reblogged.
 
 ## Manual Fine-Tuning
 

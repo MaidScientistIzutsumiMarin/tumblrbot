@@ -62,7 +62,9 @@ Features:
 
 **To-Do:**
 
-- ...
+- Create training data from a sample of posts (possible).
+- Specify a list of blogs that the bot can reblog from.
+- User-specified list of words that will filter out posts.
 
 **Known Issues:**
 

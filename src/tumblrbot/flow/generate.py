@@ -1,4 +1,4 @@
-from random import random, randrange
+from random import choice, random, randrange
 from typing import override
 
 import rich
@@ -28,7 +28,7 @@ class DraftGenerator(FlowClass):
         rich.print(f":chart_increasing: [bold green]Generated {self.config.draft_count} draft(s).[/] {message}")
 
     def generate_post(self) -> Post:
-        if random() < self.config.reblog_chance:  # noqa: S311
+        if self.config.reblog_blog_identifiers and random() < self.config.reblog_chance:  # noqa: S311
             original = self.get_random_post()
             user_message = f"{self.config.reblog_user_message}\n\n{original.get_content_text()}"
         else:
@@ -66,10 +66,14 @@ class DraftGenerator(FlowClass):
         return None
 
     def get_random_post(self) -> Post:
-        total = self.tumblr.retrieve_blog_info(self.config.upload_blog_identifier).response.blog.posts
-        post = self.tumblr.retrieve_published_posts(
-            self.config.upload_blog_identifier,
-            1,
-            randrange(total),  # noqa: S311
-        ).response.posts[0]
-        return Post.model_validate(post)
+        blog_identifier = choice(self.config.reblog_blog_identifiers)  # noqa: S311
+        while True:
+            total = self.tumblr.retrieve_blog_info(blog_identifier).response.blog.posts
+            for raw_post in self.tumblr.retrieve_published_posts(
+                blog_identifier,
+                "text",
+                randrange(total),  # noqa: S311
+            ).response.posts:
+                post = Post.model_validate(raw_post)
+                if post.valid_text_post():
+                    return post

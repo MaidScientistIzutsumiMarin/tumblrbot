@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Literal, Self
 
 from requests import HTTPError, Response
 from requests_oauthlib import OAuth1Session
@@ -29,14 +29,14 @@ class TumblrSession(OAuth1Session):
     def retrieve_published_posts(
         self,
         blog_identifier: str,
-        limit: int | None = None,
+        type_: Literal["text", "quote", "link", "answer", "video", "audio", "photo", "chat"] | None = None,
         offset: int | None = None,
         after: int | None = None,
     ) -> ResponseModel:
         response = self.get(
             f"https://api.tumblr.com/v2/blog/{blog_identifier}/posts",
             params={
-                "limit": limit,
+                "type": type_,
                 "offset": offset,
                 "after": after,
                 "sort": "asc",

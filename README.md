@@ -18,6 +18,8 @@
 
 [Tumblr]: https://tumblr.com
 [Tumblr Tokens]: https://tumblr.com/oauth/apps
+[Tumblr API Documentation on Blog Identifiers]: https://tumblr.com/docs/en/api/v2#blog-identifiers
+[Tumblr API Documentation on Rate Limits]: https://tumblr.com/docs/en/api/v2#rate-limits
 
 [Download]: src/tumblrbot/flow/download.py
 [Examples]: src/tumblrbot/flow/examples.py
@@ -40,7 +42,7 @@ Features:
    1. Asks for [OpenAI] and [Tumblr] tokens.
       - Stores API tokens using [keyring].
    1. Retrieves [Tumblr] [OAuth] tokens.
-   1. [Downloads posts][Download] from the [configured][config] [Tumblr] blogs.
+   1. [Downloads posts][Download] from the [configured][config] blogs.
       - Skips redownloading already downloaded posts.
       - Shows progress and previews the current post.
    1. [Creates examples][Examples] to fine-tune the model from your posts.
@@ -52,10 +54,10 @@ Features:
       - Resumes monitoring the same fine-tuning process when restarted.
       - Deletes the uploaded examples file if fine-tuning does not succeed (optional).
       - Stores the output model automatically when fine-tuning is completed.
-   1. [Generates and uploads posts][Generate] to the [configured][config] [Tumblr] blog using the [configured][config] fine-tuned model.
+   1. [Generates and uploads posts][Generate] to the [configured][config] blog using the [configured][config] fine-tuned model.
       - Creates tags by extracting keywords at the [configured][config] frequency using the [configured][config] model.
-      - Uploads posts as drafts to the [configured][config] [Tumblr] blog.
-      - Reblogs posts at the [configured][config] frequency.
+      - Uploads posts as drafts to the [configured][config] blog.
+      - Reblogs posts from the [configured][config] blogs at the [configured][config] frequency.
       - Shows progress and previews the current post.
 - Colorful output, progress bars, and post previews using [rich].
 - Automatically keeps the [config] file up-to-date and recreates it if missing.
@@ -63,13 +65,13 @@ Features:
 **To-Do:**
 
 - Create training data from a sample of posts (possible).
-- Specify a list of blogs that the bot can reblog from.
 - User-specified list of words that will filter out posts.
 
 **Known Issues:**
 
 - Sometimes, you will get an error about the training file not being found when starting fine-tuning. We do not currently have a fix or workaround for this. You should instead use the online portal for fine-tuning if this continues to happen. Read more in [fine-tuning].
 - Post counts are incorrect when downloading posts. We are not certain what the cause of this is, but our tests suggest this is a [Tumblr] API problem that is giving inaccurate numbers.
+- During post downloading or post generation, you may receive a "Limit Exceeded" error message from the [Tumblr] API. This is caused by server-side rate-limiting by [Tumblr]. The only workaround is trying again or waiting for a period of time before retrying. In most cases, you either have to wait for a minute or an hour for the limits to reset. You can read more about the limits in the [Tumblr API documentation on rate limits].
 
 **Please submit an issue or contact us for features you want added/reimplemented.**
 
@@ -120,6 +122,10 @@ After inputting the [Tumblr] tokens, you will be given a URL that you need to op
 All config options can be found in `config.toml` after running the program once. This will be kept up-to-date if there are changes to the config's format in a future update. This also means it may be worthwhile to double-check the config file after an update. Any changes to the config should be in the changelog for a given version.
 
 All file options can include directories that will be created when the program is run.
+
+All config options that involve *blog identifiers* expect any version of a blog URL, which is explained in more detail in the [Tumblr API documentation on blog identifiers].
+
+Specific Options:
 
 - `custom_prompts_file` This file should follow the following file format:
 

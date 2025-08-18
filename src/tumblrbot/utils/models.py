@@ -52,6 +52,7 @@ class Config(FileSyncSettings):
     # Writing Examples
     max_moderation_batch_size: PositiveInt = Field(100, description="How many posts, at most, to submit to the OpenAI moderation API. This is also capped by the API.")
     custom_prompts_file: Path = Field(Path("custom_prompts.jsonl"), description="Where to read in custom prompts from.")
+    filtered_words: list[str] = Field([], description="A case-insensitive list of disallowed words used to filter out training data. Regular expressions are allowed, but must be escaped.")
 
     # Writing Examples & Fine-Tuning
     examples_file: Path = Field(Path("examples.jsonl"), description="Where to output the examples that will be used to fine-tune the model.")

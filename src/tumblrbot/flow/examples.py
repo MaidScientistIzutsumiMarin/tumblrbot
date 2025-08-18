@@ -1,3 +1,4 @@
+import re
 from collections.abc import Generator
 from itertools import batched
 from json import loads
@@ -54,11 +55,12 @@ class ExamplesWriter(FlowClass):
                 yield from data.items()
 
     def get_valid_posts(self) -> Generator[Post]:
+        pattern = re.compile("|".join(self.config.filtered_words), re.IGNORECASE)
         for data_path in self.get_data_paths():
             with data_path.open("rb") as fp:
                 for line in fp:
                     post = Post.model_validate_json(line)
-                    if post.valid_text_post():
+                    if post.valid_text_post() and not (self.config.filtered_words and pattern.search(post.get_content_text())):
                         yield post
 
     def filter_examples(self) -> None:

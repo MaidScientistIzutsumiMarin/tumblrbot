@@ -1,4 +1,4 @@
-from random import choice, random, randrange
+from random import choice, random, sample
 from typing import override
 
 import rich
@@ -28,8 +28,7 @@ class DraftGenerator(FlowClass):
         rich.print(f":chart_increasing: [bold green]Generated {self.config.draft_count} draft(s).[/] {message}")
 
     def generate_post(self) -> Post:
-        if self.config.reblog_blog_identifiers and random() < self.config.reblog_chance:  # noqa: S311
-            original = self.get_random_post()
+        if original := self.get_random_post():
             user_message = f"{self.config.reblog_user_message}\n\n{original.get_content_text()}"
         else:
             original = Post()
@@ -38,6 +37,7 @@ class DraftGenerator(FlowClass):
         text = self.generate_text(user_message)
         if tags := self.generate_tags(text):
             tags = tags.tags
+
         return Post(
             content=[Post.Block(type="text", text=text)],
             tags=tags or [],
@@ -65,15 +65,18 @@ class DraftGenerator(FlowClass):
 
         return None
 
-    def get_random_post(self) -> Post:
-        blog_identifier = choice(self.config.reblog_blog_identifiers)  # noqa: S311
-        while True:
+    def get_random_post(self) -> Post | None:
+        if self.config.reblog_blog_identifiers and random() < self.config.reblog_chance:  # noqa: S311
+            blog_identifier = choice(self.config.reblog_blog_identifiers)  # noqa: S311
             total = self.tumblr.retrieve_blog_info(blog_identifier).response.blog.posts
-            for raw_post in self.tumblr.retrieve_published_posts(
-                blog_identifier,
-                "text",
-                randrange(total),  # noqa: S311
-            ).response.posts:
-                post = Post.model_validate(raw_post)
-                if post.valid_text_post():
-                    return post
+            for offset in sample(range(total), min(total, self.config.reblog_attempts)):
+                for raw_post in self.tumblr.retrieve_published_posts(
+                    blog_identifier,
+                    "text",
+                    offset,
+                ).response.posts:
+                    post = Post.model_validate(raw_post)
+                    if post.valid_text_post():
+                        return post
+
+        return None

@@ -76,6 +76,7 @@ class Config(FileSyncSettings):
     tags_chance: NonNegativeFloat = Field(0.1, description="The chance to generate tags for any given post. This will use more OpenAI tokens.")
     tags_developer_message: str = Field("You will be provided with a block of text, and your task is to extract a very short list of the most important subjects from it.", description="The developer message used to generate tags.")
     reblog_blog_identifiers: list[str] = Field([], description="The identifiers of blogs that can be reblogged from when generating drafts.")
+    reblog_attempts: int = Field(50, description="How many times to attempt to find a valid random post from a blog before giving up.")
     reblog_chance: NonNegativeFloat = Field(0.05, description="The chance to generate a reblog of a random post. This will use more OpenAI tokens.")
     reblog_user_message: str = Field("Please write a comical Tumblr post in response to the following post:", description="The prefix for the user message used to reblog posts.")
 

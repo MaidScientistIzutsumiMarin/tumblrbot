@@ -1,7 +1,10 @@
+from collections.abc import Iterable
+from functools import cache
 from random import choice, random, sample
 from typing import override
 
 import rich
+from pydantic import ConfigDict
 from rich.prompt import IntPrompt
 
 from tumblrbot.utils.common import FlowClass, PreviewLive
@@ -9,6 +12,8 @@ from tumblrbot.utils.models import Post
 
 
 class DraftGenerator(FlowClass):
+    model_config = ConfigDict(frozen=True)  # Makes this class hashable.
+
     @override
     def main(self) -> None:
         self.config.draft_count = IntPrompt.ask("How many drafts should be generated?", default=self.config.draft_count)
@@ -33,8 +38,8 @@ class DraftGenerator(FlowClass):
         else:
             original = Post()
             user_message = self.config.user_message
-
         text = self.generate_text(user_message)
+
         if tags := self.generate_tags(text):
             tags = tags.tags
 
@@ -68,11 +73,9 @@ class DraftGenerator(FlowClass):
     def get_random_post(self) -> Post | None:
         if self.config.reblog_blog_identifiers and random() < self.config.reblog_chance:  # noqa: S311
             blog_identifier = choice(self.config.reblog_blog_identifiers)  # noqa: S311
-            total = self.tumblr.retrieve_blog_info(blog_identifier).response.blog.posts
-            for offset in sample(range(total), min(total, self.config.reblog_attempts)):
+            for offset in self.get_offsets(blog_identifier):
                 for raw_post in self.tumblr.retrieve_published_posts(
                     blog_identifier,
-                    "text",
                     offset,
                 ).response.posts:
                     post = Post.model_validate(raw_post)
@@ -80,3 +83,9 @@ class DraftGenerator(FlowClass):
                         return post
 
         return None
+
+    @cache  # noqa: B019 # This creates a memory leak, but it doesn't matter since this class isn't discarded until the end of the program anyways.
+    def get_offsets(self, blog_identifier: str) -> Iterable[int]:
+        total = self.tumblr.retrieve_blog_info(blog_identifier).response.blog.posts
+        # The same Iterable object is cached, so reading an element will effectively discard it. This prevents checking the same offsets twice.
+        return iter(sample(range(total), total))

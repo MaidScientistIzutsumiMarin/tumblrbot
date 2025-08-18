@@ -47,6 +47,7 @@ Features:
       - Shows progress and previews the current post.
    1. [Creates examples][Examples] to fine-tune the model from your posts.
       - Filters out posts that contain more than just text data.
+      - Filters out posts that contain [configured][config] regular expressions.
       - Adds custom user messages and assistant responses to the dataset from the [configured][config] file.
    1. Filters out any posts flagged by the [OpenAI Moderation API].
    1. [Uploads examples][Fine-Tune] to [OpenAI] and begins the fine-tuning process.
@@ -65,7 +66,6 @@ Features:
 **To-Do:**
 
 - Create training data from a sample of posts (possible).
-- User-specified list of words that will filter out posts.
 
 **Known Issues:**
 
@@ -137,6 +137,7 @@ Specific Options:
 
    To be specific, it should follow the [JSON Lines] file format with one collection of name/value pairs (a dictionary) per line. You can validate your file using the [JSON Lines Validator].
 
+- **`filtered_words`** - During training data generation, any posts with the specified words will be removed. Word boundaries are not checked by default, so "the" will also filter out posts with "them" or "thematic". This setting supports regular expressions, so you can explicitly look for word boundaries by surrounding an entry with "\\\b", i.e. "\\\bthe\\\b". Regular expressions have to be escaped like so due to how JSON data is read in. If you are familiar with regular expressions, it could be useful for you to know that every entry is joined with a "|" which is then used to search the post content for any matches.
 - **`developer_message`** - This message is used in for fine-tuning the AI as well as generating prompts. If you change this, you will need to run the fine-tuning again with the new value before generating posts.
 - **`user_message`** - This setting is used and works in the same way as `developer_message`.
 - **`expected_epochs`** - The default value here is the default number of epochs for `base_model`. You may have to change this value if you change `base_model`. After running fine-tuning once, you will see the number of epochs used in the [fine-tuning portal] under *Hyperparameters*. This value will also be updated automatically if you run fine-tuning through this program.
@@ -145,6 +146,7 @@ Specific Options:
 - **`base_model`** - This value is used to choose the tokenizer for estimating fine-tuning costs. It is also the base model that will be fine-tuned and the model that is used to generate tags. You can find a list of options in the [fine-tuning portal] by pressing `+ Create` and opening the drop-down list for `Base Model`. Be sure to update `token_price` if you change this value.
 - **`fine_tuned_model`** - Set automatically after monitoring fine-tuning if the job has succeeded. You can read more in [fine-tuning].
 - **`tags_chance`** - This should be between 0 and 1. Setting it to 0 corresponds to a 0% chance (never) to add tags to a post. 1 corresponds to a 100% chance (always) to add tags to a post. Adding tags incurs a very small token cost.
+- **`reblog_blog_identifiers`** - Whenever a reblog is attempted, a random blog from this list will be chosen to be reblogged from.
 - **`reblog_chance`** - This setting works the same way as `tags_chance`.
 - **`reblog_user_message`** - This setting is a prefix that is directly prepended to the contents of the post being reblogged.
 

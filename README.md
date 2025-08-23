@@ -48,6 +48,7 @@ Features:
    1. [Creates examples][Examples] to fine-tune the model from your posts.
       - Filters out posts that contain more than just text data.
       - Filters out posts that contain [configured][config] regular expressions.
+      - Only uses the most recent posts from each blog as [configured][config].
       - Adds custom user messages and assistant responses to the dataset from the [configured][config] file.
    1. Filters out any posts flagged by the [OpenAI Moderation API].
    1. [Uploads examples][Fine-Tune] to [OpenAI] and begins the fine-tuning process.
@@ -62,10 +63,6 @@ Features:
       - Shows progress and previews the current post.
 - Colorful output, progress bars, and post previews using [rich].
 - Automatically keeps the [config] file up-to-date and recreates it if missing.
-
-**To-Do:**
-
-- Create training data from a sample of posts (possible).
 
 **Known Issues:**
 
@@ -125,6 +122,13 @@ All file options can include directories that will be created when the program i
 
 All config options that involve *blog identifiers* expect any version of a blog URL, which is explained in more detail in the [Tumblr API documentation on blog identifiers].
 
+A valid post:
+
+- Contains any content.
+- Only has text.
+- Is not an ask.
+- Is not a reblog.
+
 Specific Options:
 
 - `custom_prompts_file` This file should follow the following file format:
@@ -137,6 +141,7 @@ Specific Options:
 
    To be specific, it should follow the [JSON Lines] file format with one collection of name/value pairs (a dictionary) per line. You can validate your file using the [JSON Lines Validator].
 
+- **`post_limit`** - At most, this many valid posts will be included in the training data. This effectively is a filter to select the `N` most recent valid posts from each blog. `0` will use every available valid post.
 - **`filtered_words`** - During training data generation, any posts with the specified words will be removed. Word boundaries are not checked by default, so "the" will also filter out posts with "them" or "thematic". This setting supports regular expressions, so you can explicitly look for word boundaries by surrounding an entry with "\\\b", i.e. "\\\bthe\\\b". Regular expressions have to be escaped like so due to how JSON data is read in. If you are familiar with regular expressions, it could be useful for you to know that every entry is joined with a "|" which is then used to search the post content for any matches.
 - **`developer_message`** - This message is used in for fine-tuning the AI as well as generating prompts. If you change this, you will need to run the fine-tuning again with the new value before generating posts.
 - **`user_message`** - This setting is used and works in the same way as `developer_message`.

@@ -9,7 +9,7 @@ import tomlkit
 from keyring import get_password, set_password
 from openai.types import ChatModel
 from pwinput import pwinput
-from pydantic import BaseModel, ConfigDict, Field, NonNegativeFloat, PlainSerializer, PositiveFloat, PositiveInt, model_validator
+from pydantic import BaseModel, ConfigDict, Field, NonNegativeFloat, NonNegativeInt, PlainSerializer, PositiveFloat, PositiveInt, model_validator
 from pydantic.json_schema import SkipJsonSchema
 from requests_oauthlib import OAuth1Session
 from rich.panel import Panel
@@ -50,6 +50,7 @@ class Config(FileSyncSettings):
     data_directory: Path = Field(Path("data"), description="Where to store downloaded post data.")
 
     # Writing Examples
+    post_limit: NonNegativeInt = Field(0, description="The number of the most recent posts from each blog that should be included in the training data.")
     max_moderation_batch_size: PositiveInt = Field(100, description="How many posts, at most, to submit to the OpenAI moderation API. This is also capped by the API.")
     custom_prompts_file: Path = Field(Path("custom_prompts.jsonl"), description="Where to read in custom prompts from.")
     filtered_words: list[str] = Field([], description="A case-insensitive list of disallowed words used to filter out training data. Regular expressions are allowed, but must be escaped.")

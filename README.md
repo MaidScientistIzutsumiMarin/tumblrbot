@@ -156,7 +156,7 @@ Specific Options:
 - **`tags_chance`** - This should be between 0 and 1. Setting it to 0 corresponds to a 0% chance (never) to add tags to a post. 1 corresponds to a 100% chance (always) to add tags to a post. Adding tags incurs a very small token cost.
 - **`reblog_blog_identifiers`** - Whenever a reblog is attempted, a random blog from this list will be chosen to be reblogged from.
 - **`reblog_chance`** - This setting works the same way as `tags_chance`.
-- **`reblog_user_message`** - This setting is a [format string]. The only argument it is formatted with is the content of the post being reblogged. In simple terms, the `{}` will be replaced with said content.
+- **`reblog_user_message`** - This setting is a [format string]. The only argument it is formatted with is the content of the post being reblogged. In simple terms, the `{}` will be replaced with said content. Alternatively, you can leave out the `{}` so that the reblogged post is appended to the end.
   - *Note: The bot is only given the latest message in a reblog chain due to the required complexity and added costs of including the entire chain.*
 
 ## Manual Fine-Tuning

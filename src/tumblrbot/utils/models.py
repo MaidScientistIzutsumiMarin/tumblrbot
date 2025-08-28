@@ -145,12 +145,16 @@ class Tokens(FileSyncSettings):
     @model_validator(mode="after")
     @override
     def write(self) -> Self:
+        # Check if any tokens are missing or if the user wants to reset them, then set tokens if necessary.
         if not self.openai_api_key or Confirm.ask("Reset OpenAI API key?", default=False):
             (self.openai_api_key,) = self.online_token_prompt("https://platform.openai.com/api-keys", "API key")
 
         if not all(self.tumblr.model_dump().values()) or Confirm.ask("Reset Tumblr API tokens?", default=False):
             self.tumblr.client_key, self.tumblr.client_secret = self.online_token_prompt("https://tumblr.com/oauth/apps", "consumer key", "consumer secret")
 
+            # This is the whole OAuth 1.0 process.
+            # https://requests-oauthlib.readthedocs.io/en/latest/examples/tumblr.html
+            # We tried setting up OAuth 2.0, but the token refresh process is far too unreliable for this sort of program.
             with OAuth1Session(
                 self.tumblr.client_key,
                 self.tumblr.client_secret,
@@ -170,6 +174,8 @@ class Tokens(FileSyncSettings):
 
             self.tumblr.resource_owner_key, self.tumblr.resource_owner_secret = self.get_oauth_tokens(oauth_tokens)
 
+        # Regardless of whether any values were changed, we may as well write to the keyring.
+        # Any unchanged values will be set to the value they already were, since this is run after reading from the keyring.
         set_password(self.service_name, self.username, self.model_dump_json())
 
         return self
@@ -220,9 +226,16 @@ class Post(FullyValidatedModel):
         )
 
     def __str__(self) -> str:
+        # This function is really only relevant when a post is already valid, so we don't have to check the block types.
+        # If it is called on an invalid post, it would also work, but might give strange data.
         return "\n\n".join(block.text for block in self.content)
 
     def valid_text_post(self) -> bool:
+        # Checks if this post:
+        # - has any content blocks (some glitched empty posts have no content)
+        # - only has content blocks of type 'text' (this excludes photo/video/poll/etc posts)
+        # - is not a submitted post
+        # - has no ask blocks in the content
         return bool(self.content) and all(block.type == "text" for block in self.content) and not (self.is_submission or any(block.type == "ask" for block in self.layout))
 
 

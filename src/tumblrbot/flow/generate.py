@@ -35,6 +35,8 @@ class DraftGenerator(FlowClass):
     def generate_post(self) -> Post:
         if original := self.get_random_post():
             user_message = self.config.reblog_user_message.format(original)
+            if "{}" not in self.config.reblog_user_message:
+                user_message += str(original)
         else:
             original = Post()
             user_message = self.config.user_message

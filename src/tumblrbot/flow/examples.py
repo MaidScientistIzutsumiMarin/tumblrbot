@@ -30,7 +30,7 @@ class ExamplesWriter(FlowClass):
             for post in self.get_valid_posts():
                 self.write_example(
                     self.config.user_message,
-                    post.get_content_text(),
+                    str(post),
                     fp,
                 )
 
@@ -65,7 +65,7 @@ class ExamplesWriter(FlowClass):
         with path.open("rb") as fp:
             for line in fp:
                 post = Post.model_validate_json(line)
-                if post.valid_text_post() and not (self.config.filtered_words and pattern.search(post.get_content_text())):
+                if post.valid_text_post() and not (post.trail and self.config.filtered_words and pattern.search(str(post))):
                     yield post
 
     def filter_examples(self) -> None:

@@ -78,7 +78,7 @@ class Config(FileSyncSettings):
     tags_developer_message: str = Field("You will be provided with a block of text, and your task is to extract a very short list of the most important subjects from it.", description="The developer message used to generate tags.")
     reblog_blog_identifiers: list[str] = Field([], description="The identifiers of blogs that can be reblogged from when generating drafts.")
     reblog_chance: NonNegativeFloat = Field(0.1, description="The chance to generate a reblog of a random post. This will use more OpenAI tokens.")
-    reblog_user_message: str = Field("Please write a comical Tumblr post in response to the following post:", description="The prefix for the user message used to reblog posts.")
+    reblog_user_message: str = Field("Please write a comical Tumblr post in response to the following post:\n\n{}", description="The format string for the user message used to reblog posts.")
 
     @classmethod
     @override
@@ -176,6 +176,7 @@ class Tokens(FileSyncSettings):
 
 
 class Blog(FullyValidatedModel):
+    name: str = ""
     posts: int = 0
     uuid: str = ""
 
@@ -206,23 +207,23 @@ class Post(FullyValidatedModel):
 
     content: SkipJsonSchema[list[Block]] = []
     layout: SkipJsonSchema[list[Block]] = []
-    trail: SkipJsonSchema[list[Any]] = []
+    trail: SkipJsonSchema[list[Self]] = []
 
     is_submission: SkipJsonSchema[bool] = False
 
     def __rich__(self) -> Panel:
         return Panel(
-            self.get_content_text(),
+            str(self),
             title="Preview",
             subtitle=" ".join(f"#{tag}" for tag in self.tags),
             subtitle_align="left",
         )
 
-    def valid_text_post(self) -> bool:
-        return bool(self.content) and all(block.type == "text" for block in self.content) and not (self.is_submission or self.trail or any(block.type == "ask" for block in self.layout))
-
-    def get_content_text(self) -> str:
+    def __str__(self) -> str:
         return "\n\n".join(block.text for block in self.content)
+
+    def valid_text_post(self) -> bool:
+        return bool(self.content) and all(block.type == "text" for block in self.content) and not (self.is_submission or any(block.type == "ask" for block in self.layout))
 
 
 class Example(FullyValidatedModel):

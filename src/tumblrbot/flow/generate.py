@@ -34,7 +34,7 @@ class DraftGenerator(FlowClass):
 
     def generate_post(self) -> Post:
         if original := self.get_random_post():
-            user_message = f"{self.config.reblog_user_message}\n\n{original.get_content_text()}"
+            user_message = self.config.reblog_user_message.format(original)
         else:
             original = Post()
             user_message = self.config.user_message
@@ -80,6 +80,9 @@ class DraftGenerator(FlowClass):
                 ).response.posts:
                     post = Post.model_validate(raw_post)
                     if post.valid_text_post():
+                        for trail_post in post.trail:
+                            if not trail_post.valid_text_post() or trail_post.blog.name not in self.config.reblog_blog_identifiers:
+                                break
                         return post
 
         return None

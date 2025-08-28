@@ -79,10 +79,7 @@ class DraftGenerator(FlowClass):
                     offset,
                 ).response.posts:
                     post = Post.model_validate(raw_post)
-                    if post.valid_text_post():
-                        for trail_post in post.trail:
-                            if not trail_post.valid_text_post() or trail_post.blog.name not in self.config.reblog_blog_identifiers:
-                                break
+                    if post.valid_text_post() and self.is_trail_valid(post.trail):
                         return post
 
         return None
@@ -92,3 +89,7 @@ class DraftGenerator(FlowClass):
         total = self.tumblr.retrieve_blog_info(blog_identifier).response.blog.posts
         # The same Iterable object is cached, so reading an element will effectively discard it. This prevents checking the same offsets twice.
         return iter(sample(range(total), total))
+
+    def is_trail_valid(self, trail: list[Post]) -> bool:
+        # Checks if every post in the reblog trail is valid and that the blog that created the post is in the allowed reblog list.
+        return all(post.valid_text_post() and post.blog.name in self.config.reblog_blog_identifiers for post in trail)

@@ -21,13 +21,15 @@
 [Tumblr API Documentation on Blog Identifiers]: https://tumblr.com/docs/en/api/v2#blog-identifiers
 [Tumblr API Documentation on Rate Limits]: https://tumblr.com/docs/en/api/v2#rate-limits
 
+[Format String]: https://docs.python.org/3/library/string.html#format-string-syntax
+
 [Download]: src/tumblrbot/flow/download.py
 [Examples]: src/tumblrbot/flow/examples.py
 [Fine-Tune]: src/tumblrbot/flow/fine_tune.py
 [Generate]: src/tumblrbot/flow/generate.py
 [Main]: src/tumblrbot/__main__.py
 
-[Config]: #configuration
+[Configurable]: #configuration
 [Fine-Tuning]: #manual-fine-tuning
 [![PyPI - Version](https://img.shields.io/pypi/v/tumblrbot)](https://python.org/pypi/tumblrbot)
 
@@ -42,33 +44,34 @@ Features:
    1. Asks for [OpenAI] and [Tumblr] tokens.
       - Stores API tokens using [keyring].
    1. Retrieves [Tumblr] [OAuth] tokens.
-   1. [Downloads posts][Download] from the [configured][config] blogs.
+   1. [Downloads posts][Download] from specified blogs ([configurable]).
       - Skips redownloading already downloaded posts.
       - Shows progress and previews the current post.
-   1. [Creates examples][Examples] to fine-tune the model from your posts.
+   1. [Creates examples][Examples] to fine-tune the model from the downloaded posts.
       - Filters out posts that contain more than just text data.
-      - Filters out posts that contain [configured][config] regular expressions.
-      - Only uses the most recent posts from each blog as [configured][config].
-      - Adds custom user messages and assistant responses to the dataset from the [configured][config] file.
+      - Filters out posts that contain regular expressions ([configurable]).
+      - Only uses the most recent posts from each blog ([configurable]).
+      - Adds custom user messages and assistant responses to the dataset ([configurable]).
    1. Filters out any posts flagged by the [OpenAI Moderation API].
    1. [Uploads examples][Fine-Tune] to [OpenAI] and begins the fine-tuning process.
-      - Provides cost estimates if the currently saved examples are used to fine-tune the [configured][config] model.
+      - Provides cost estimates if the currently saved examples are used to fine-tune a base model ([configurable]).
       - Resumes monitoring the same fine-tuning process when restarted.
       - Deletes the uploaded examples file if fine-tuning does not succeed (optional).
       - Stores the output model automatically when fine-tuning is completed.
-   1. [Generates and uploads posts][Generate] to the [configured][config] blog using the [configured][config] fine-tuned model.
-      - Creates tags by extracting keywords at the [configured][config] frequency using the [configured][config] model.
-      - Uploads posts as drafts to the [configured][config] blog.
-      - Reblogs posts from the [configured][config] blogs at the [configured][config] frequency.
+   1. [Generates and uploads posts][Generate] to a blog using the fine-tuned model ([configurable]).
+      - Creates tags by extracting keywords using the base model ([configurable]).
+      - Uploads posts as drafts.
+      - Reblogs posts from allowed blogs ([configurable]).
       - Shows progress and previews the current post.
 - Colorful output, progress bars, and post previews using [rich].
-- Automatically keeps the [config] file up-to-date and recreates it if missing.
+- Automatically keeps the [config][configurable] file up-to-date and recreates it if missing (without overriding user settings).
 
 **Known Issues:**
 
 - Sometimes, you will get an error about the training file not being found when starting fine-tuning. We do not currently have a fix or workaround for this. You should instead use the online portal for fine-tuning if this continues to happen. Read more in [fine-tuning].
 - Post counts are incorrect when downloading posts. We are not certain what the cause of this is, but our tests suggest this is a [Tumblr] API problem that is giving inaccurate numbers.
 - During post downloading or post generation, you may receive a "Limit Exceeded" error message from the [Tumblr] API. This is caused by server-side rate-limiting by [Tumblr]. The only workaround is trying again or waiting for a period of time before retrying. In most cases, you either have to wait for a minute or an hour for the limits to reset. You can read more about the limits in the [Tumblr API documentation on rate limits].
+- Similar to the above issue, you may sometimes get a message saying your IP is blocked. This block is temporary and probably follows the same rules as previously described.
 
 **Please submit an issue or contact us for features you want added/reimplemented.**
 
@@ -85,7 +88,7 @@ Features:
 
 ## Usage
 
-Run `tumblrbot` from anywhere. Run `tumblrbot --help` for command-line options. Every command-line option corresponds to a value from the [config].
+Run `tumblrbot` from anywhere. Run `tumblrbot --help` for command-line options. Every command-line option corresponds to a value from the [config][configurable].
 
 ## Obtaining Tokens
 
@@ -153,15 +156,15 @@ Specific Options:
 - **`tags_chance`** - This should be between 0 and 1. Setting it to 0 corresponds to a 0% chance (never) to add tags to a post. 1 corresponds to a 100% chance (always) to add tags to a post. Adding tags incurs a very small token cost.
 - **`reblog_blog_identifiers`** - Whenever a reblog is attempted, a random blog from this list will be chosen to be reblogged from.
 - **`reblog_chance`** - This setting works the same way as `tags_chance`.
-- **`reblog_user_message`** - This setting is a prefix that is directly prepended to the contents of the post being reblogged.
+- **`reblog_user_message`** - This setting is a [format string]. The only argument it is formatted with is the content of the post being reblogged. In simple terms, the `{}` will be replaced with said content.
 
 ## Manual Fine-Tuning
 
 You can manually upload the examples file to [OpenAI] and start the fine-tuning here: [fine-tuning portal].
 
 1. Press `+ Create`.
-1. Select the desired `Base Model` from the dropdown. This should ideally match the model set in the [config].
-1. Upload the generated examples file to the section under `Training data`. You can find the path for this in the [config].
+1. Select the desired `Base Model` from the dropdown. This should ideally match the model set in the [config][configurable].
+1. Upload the generated examples file to the section under `Training data`. You can find the path for this in the [config][configurable].
 1. Press `Create`.
-1. (Optional) Copy the value next to `Job ID` and paste it into the [config] under `job_id`. You can then run the program and monitor its progress as usual.
-1. If you do not do the above, you will have to copy the value next to `Output model` once the job is complete and paste it into the [config] under `fine_tuned_model`.
+1. (Optional) Copy the value next to `Job ID` and paste it into the [config][configurable] under `job_id`. You can then run the program and monitor its progress as usual.
+1. If you do not do the above, you will have to copy the value next to `Output model` once the job is complete and paste it into the [config][configurable] under `fine_tuned_model`.

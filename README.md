@@ -157,6 +157,7 @@ Specific Options:
 - **`reblog_blog_identifiers`** - Whenever a reblog is attempted, a random blog from this list will be chosen to be reblogged from.
 - **`reblog_chance`** - This setting works the same way as `tags_chance`.
 - **`reblog_user_message`** - This setting is a [format string]. The only argument it is formatted with is the content of the post being reblogged. In simple terms, the `{}` will be replaced with said content.
+  - *Note: The bot is only given the latest message in a reblog chain due to the required complexity and added costs of including the entire chain.*
 
 ## Manual Fine-Tuning
 

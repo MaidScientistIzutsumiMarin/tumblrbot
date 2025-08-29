@@ -45,6 +45,8 @@ class FileSyncSettings(FullyValidatedModel):
 class Config(FileSyncSettings):
     toml_file: ClassVar = Path("config.toml")
 
+    tokens_profile: str = Field("tokens", description="The name under which API keys are stored and retrieved.")
+
     # Downloading Posts & Writing Examples
     download_blog_identifiers: list[str] = Field([], description="The identifiers of the blogs which post data will be downloaded from.")
     data_directory: Path = Field(Path("data"), description="Where to store downloaded post data.")
@@ -118,7 +120,7 @@ class Tokens(FileSyncSettings):
         resource_owner_secret: str = ""
 
     service_name: ClassVar = "tumblrbot"
-    username: ClassVar = "tokens"
+    username: ClassVar = Config.load().tokens_profile  # This is gross but we don't really know a better way to do this...
 
     openai_api_key: str = ""
     tumblr: Tumblr = Tumblr()

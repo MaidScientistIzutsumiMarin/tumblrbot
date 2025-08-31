@@ -217,5 +217,5 @@ __marimo__/
 
 data
 *.jsonl
-config.toml
+*.toml
 tumblrbot.exe.lnk

@@ -1,20 +1,17 @@
-import tomllib
-from abc import abstractmethod
 from collections.abc import Generator
 from pathlib import Path
-from typing import Annotated, Any, ClassVar, Literal, Self, override
+from tomllib import loads
+from typing import Annotated, Any, Literal, Self, override
 
 import rich
-import tomlkit
-from keyring import get_password, set_password
 from openai.types import ChatModel
 from pwinput import pwinput
 from pydantic import BaseModel, ConfigDict, Field, NonNegativeFloat, NonNegativeInt, PlainSerializer, PositiveFloat, PositiveInt, model_validator
 from pydantic.json_schema import SkipJsonSchema
 from requests_oauthlib import OAuth1Session
 from rich.panel import Panel
-from rich.prompt import Confirm, Prompt
-from tomlkit import comment, document
+from rich.prompt import Prompt
+from tomlkit import comment, document, dumps  # pyright: ignore[reportUnknownVariableType]
 
 
 class FullyValidatedModel(BaseModel):
@@ -29,24 +26,32 @@ class FullyValidatedModel(BaseModel):
 
 class FileSyncSettings(FullyValidatedModel):
     @classmethod
-    @abstractmethod
-    def read(cls) -> Self | dict[str, object] | str | None: ...
+    def get_toml_file(cls) -> Path:
+        return Path(f"{cls.__name__.lower()}.toml")
 
     @classmethod
     def load(cls) -> Self:
-        data = cls.read() or {}
-        return cls.model_validate_json(data) if isinstance(data, str) else cls.model_validate(data)
+        toml_file = cls.get_toml_file()
+        data = loads(toml_file.read_text("utf_8")) if toml_file.exists() else {}
+        return cls.model_validate(data)
 
     @model_validator(mode="after")
-    @abstractmethod
-    def write(self) -> Self: ...
+    def dump(self) -> Self:
+        toml_table = document()
+
+        for (name, field), value in zip(self.__class__.model_fields.items(), self.model_dump(mode="json").values(), strict=True):
+            if field.description is not None:
+                for line in field.description.split(". "):
+                    toml_table.add(comment(f"{line.removesuffix('.')}."))
+
+            toml_table[name] = value
+
+        self.get_toml_file().write_text(dumps(toml_table), encoding="utf_8")
+
+        return self
 
 
 class Config(FileSyncSettings):
-    toml_file: ClassVar = Path("config.toml")
-
-    tokens_profile: str = Field("tokens", description="The name under which API keys are stored and retrieved.")
-
     # Downloading Posts & Writing Examples
     download_blog_identifiers: list[str] = Field([], description="The identifiers of the blogs which post data will be downloaded from.")
     data_directory: Path = Field(Path("data"), description="Where to store downloaded post data.")
@@ -82,14 +87,8 @@ class Config(FileSyncSettings):
     reblog_chance: NonNegativeFloat = Field(0.1, description="The chance to generate a reblog of a random post. This will use more OpenAI tokens.")
     reblog_user_message: str = Field("Please write a comical Tumblr post in response to the following post:\n\n{}", description="The format string for the user message used to reblog posts.")
 
-    @classmethod
     @override
-    def read(cls) -> dict[str, object] | None:
-        return tomllib.loads(cls.toml_file.read_text("utf_8")) if cls.toml_file.exists() else None
-
-    @model_validator(mode="after")
-    @override
-    def write(self) -> Self:
+    def model_post_init(self, _: object) -> None:
         if not self.download_blog_identifiers:
             rich.print("Enter the [cyan]identifiers of your blogs[/] that data should be [bold purple]downloaded[/] from, separated by commas.")
             self.download_blog_identifiers = list(map(str.strip, Prompt.ask("[bold][Example] [dim]staff.tumblr.com,changes").split(",")))
@@ -97,19 +96,6 @@ class Config(FileSyncSettings):
         if not self.upload_blog_identifier:
             rich.print("Enter the [cyan]identifier of your blog[/] that drafts should be [bold purple]uploaded[/] to.")
             self.upload_blog_identifier = Prompt.ask("[bold][Example] [dim]staff.tumblr.com or changes").strip()
-
-        toml_table = document()
-
-        for (name, field), value in zip(self.__class__.model_fields.items(), self.model_dump(mode="json").values(), strict=True):
-            if field.description is not None:
-                for line in field.description.split(". "):
-                    toml_table.add(comment(f"{line.removesuffix('.')}."))
-
-            toml_table[name] = value
-
-        self.toml_file.write_text(tomlkit.dumps(toml_table), encoding="utf_8")
-
-        return self
 
 
 class Tokens(FileSyncSettings):
@@ -119,39 +105,16 @@ class Tokens(FileSyncSettings):
         resource_owner_key: str = ""
         resource_owner_secret: str = ""
 
-    service_name: ClassVar = "tumblrbot"
-    username: ClassVar = Config.load().tokens_profile  # This is gross but we don't really know a better way to do this...
-
     openai_api_key: str = ""
     tumblr: Tumblr = Tumblr()
 
-    @staticmethod
-    def get_oauth_tokens(token: dict[str, str]) -> tuple[str, str]:
-        return token["oauth_token"], token["oauth_token_secret"]
-
-    @staticmethod
-    def online_token_prompt(url: str, *tokens: str) -> Generator[str]:
-        formatted_token_string = " and ".join(f"[cyan]{token}[/]" for token in tokens)
-
-        rich.print(f"Retrieve your {formatted_token_string} from: {url}")
-        for token in tokens:
-            yield pwinput(f"Enter your {token} (masked): ").strip()
-
-        rich.print()
-
-    @classmethod
     @override
-    def read(cls) -> str | None:
-        return get_password(cls.service_name, cls.username)
-
-    @model_validator(mode="after")
-    @override
-    def write(self) -> Self:
+    def model_post_init(self, _: object) -> None:
         # Check if any tokens are missing or if the user wants to reset them, then set tokens if necessary.
-        if not self.openai_api_key or Confirm.ask("Reset OpenAI API key?", default=False):
+        if not self.openai_api_key:
             (self.openai_api_key,) = self.online_token_prompt("https://platform.openai.com/api-keys", "API key")
 
-        if not all(self.tumblr.model_dump().values()) or Confirm.ask("Reset Tumblr API tokens?", default=False):
+        if not all(self.tumblr.model_dump().values()):
             self.tumblr.client_key, self.tumblr.client_secret = self.online_token_prompt("https://tumblr.com/oauth/apps", "consumer key", "consumer secret")
 
             # This is the whole OAuth 1.0 process.
@@ -176,11 +139,19 @@ class Tokens(FileSyncSettings):
 
             self.tumblr.resource_owner_key, self.tumblr.resource_owner_secret = self.get_oauth_tokens(oauth_tokens)
 
-        # Regardless of whether any values were changed, we may as well write to the keyring.
-        # Any unchanged values will be set to the value they already were, since this is run after reading from the keyring.
-        set_password(self.service_name, self.username, self.model_dump_json())
+    @staticmethod
+    def online_token_prompt(url: str, *tokens: str) -> Generator[str]:
+        formatted_token_string = " and ".join(f"[cyan]{token}[/]" for token in tokens)
 
-        return self
+        rich.print(f"Retrieve your {formatted_token_string} from: {url}")
+        for token in tokens:
+            yield pwinput(f"Enter your {token} (masked): ").strip()
+
+        rich.print()
+
+    @staticmethod
+    def get_oauth_tokens(token: dict[str, str]) -> tuple[str, str]:
+        return token["oauth_token"], token["oauth_token_secret"]
 
 
 class Blog(FullyValidatedModel):

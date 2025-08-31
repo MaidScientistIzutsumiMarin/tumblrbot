@@ -48,7 +48,6 @@ class DraftGenerator(FlowClass):
         return Post(
             content=[Post.Block(type="text", text=text)],
             tags=tags or [],
-            state="draft",
             parent_tumblelog_uuid=original.blog.uuid,
             parent_post_id=original.id,
             reblog_key=original.reblog_key,

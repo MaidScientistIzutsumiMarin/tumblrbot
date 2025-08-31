@@ -211,7 +211,7 @@ class Post(FullyValidatedModel):
 
     timestamp: SkipJsonSchema[int] = 0
     tags: Annotated[list[str], PlainSerializer(",".join)] = []
-    state: SkipJsonSchema[Literal["published", "queued", "draft", "private", "unapproved"]] = "published"
+    state: SkipJsonSchema[Literal["published", "queued", "draft", "private", "unapproved"]] = "draft"
 
     content: SkipJsonSchema[list[Block]] = []
     layout: SkipJsonSchema[list[Block]] = []

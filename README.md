@@ -7,7 +7,6 @@
 [JSON Lines Validator]: https://jsonlines.org/validator
 
 [pip]: https://pypi.org
-[keyring]: https://pypi.org/project/keyring
 [Rich]: https://pypi.org/project/rich
 
 [OpenAI]: https://pypi.org/project/openai
@@ -83,7 +82,6 @@ Features:
 1. Install the [pip] package: `pip install tumblrbot`
    - Alternatively, you can install from this repository: `pip install git+https://github.com/MaidThatPrograms/tumblrbot.git`
    - On Linux, you will have to make a virtual environment or use the flag to install packages system-wide.
-   - See [keyring] for additional requirements if you are not on Windows.
 
 ## Usage
 

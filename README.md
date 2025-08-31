@@ -42,7 +42,6 @@ Features:
 
 - An [interactive console][Main] for all steps of generating posts for the blog:
    1. Asks for [OpenAI] and [Tumblr] tokens.
-      - Stores API tokens using [keyring].
    1. Retrieves [Tumblr] [OAuth] tokens.
    1. [Downloads posts][Download] from specified blogs ([configurable]).
       - Skips redownloading already downloaded posts.

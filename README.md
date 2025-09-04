@@ -1,5 +1,7 @@
 # tumblrbot
 
+[tumblrbot.exe]: https://github.com/MaidScientistIzutsumiMarin/tumblrbot/releases/latest/download/tumblrbot.exe
+
 [OAuth]: https://oauth.net/1
 [Python]: https://python.org/download
 
@@ -82,6 +84,11 @@ Features:
 1. Install the [pip] package: `pip install tumblrbot`
    - Alternatively, you can install from this repository: `pip install git+https://github.com/MaidThatPrograms/tumblrbot.git`
    - On Linux, you will have to make a virtual environment or use the flag to install packages system-wide.
+
+### Alternative Installation for Windows
+
+1. Download the latest release's [tumblrbot.exe].
+1. Run the file directly, or add it to your path, and use it as normal.
 
 ## Usage
 

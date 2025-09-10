@@ -15,6 +15,7 @@
 [OpenAI Pricing]: https://platform.openai.com/docs/pricing#fine-tuning
 [OpenAI Tokens]: https://platform.openai.com/settings/organization/api-keys
 [OpenAI Moderation API]: https://platform.openai.com/docs/guides/moderation
+[Flags]: https://platform.openai.com/docs/guides/moderation/over#content-classifications
 [Fine-Tuning Portal]: https://platform.openai.com/finetune
 
 [Tumblr]: https://tumblr.com
@@ -68,6 +69,12 @@ Features:
 
 **Known Issues:**
 
+- Fine-tuning can fail after the validation phase due to the examples file not passing [OpenAI] moderation checks. There are a few workarounds for this that can be tried in combination:
+  - You can retry with the same examples file. This has, on rare occasions, worked.
+  - You can submit the examples file to the [OpenAI] moderation API with this program's guided prompts. This has worked consistently for our dataset, but others have reported it not being thorough enough.
+  - You can use regular expressions to filter out training data in the [config][configurable]. This is more of a brute-force solution, but it can work if the other solutions do not.
+  - You can try limiting your dataset by specifying fewer blogs to download from or limiting the number of posts taken from each one in the [config][configurable].
+  - If all else fails, you can manually remove data from the examples file until it passes. It is unfortunately not a definitive resource, but it can help to read about what the [OpenAI moderation API flags][Flags].
 - Sometimes, you will get an error about the training file not being found when starting fine-tuning. We do not currently have a fix or workaround for this. You should instead use the online portal for fine-tuning if this continues to happen. Read more in [fine-tuning].
 - Post counts are incorrect when downloading posts. We are not certain what the cause of this is, but our tests suggest this is a [Tumblr] API problem that is giving inaccurate numbers.
 - During post downloading or post generation, you may receive a "Limit Exceeded" error message from the [Tumblr] API. This is caused by server-side rate-limiting by [Tumblr]. The only workaround is trying again or waiting for a period of time before retrying. In most cases, you either have to wait for a minute or an hour for the limits to reset. You can read more about the limits in the [Tumblr API documentation on rate limits].

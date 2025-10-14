@@ -131,4 +131,4 @@ class FineTuner(FlowClass):
                     yield 4 + len(encoding.encode(message.content))
 
     def get_cost_string(self, total_tokens: int) -> str:
-        return f"${self.config.token_price / 1000000 * total_tokens:.2f}"
+        return f"{self.config.token_price / 1000000 * total_tokens:.2f} USD"

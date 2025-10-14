@@ -70,7 +70,6 @@ Features:
 **To-Do:**
 
 - Update to Python 3.14.
-- Make post generation estimated time update regularly.
 
 **Known Issues:**
 

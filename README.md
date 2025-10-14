@@ -69,7 +69,7 @@ Features:
 
 **To-Do:**
 
-- Update to Python 3.14.
+- Update to Python 3.14. Currently waiting for Jiter to have wheels.
 
 **Known Issues:**
 

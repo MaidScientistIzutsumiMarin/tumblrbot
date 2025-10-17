@@ -1,11 +1,9 @@
-from collections.abc import Generator
 from datetime import datetime
 from textwrap import dedent
 from time import sleep
-from typing import override
+from typing import TYPE_CHECKING, override
 
 import rich
-from openai.types.fine_tuning import FineTuningJob
 from rich import progress
 from rich.console import Console
 from rich.prompt import Confirm
@@ -13,6 +11,11 @@ from tiktoken import encoding_for_model, get_encoding
 
 from tumblrbot.utils.common import FlowClass, PreviewLive
 from tumblrbot.utils.models import Example
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
+
+    from openai.types.fine_tuning import FineTuningJob
 
 
 class FineTuner(FlowClass):

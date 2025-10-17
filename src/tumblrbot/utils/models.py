@@ -1,17 +1,17 @@
 from collections.abc import Generator
+from getpass import getpass
 from pathlib import Path
-from tomllib import loads
 from typing import Annotated, Any, Literal, Self, override
 
 import rich
 from openai.types import ChatModel
-from pwinput import pwinput
 from pydantic import BaseModel, ConfigDict, Field, NonNegativeFloat, NonNegativeInt, PlainSerializer, PositiveFloat, PositiveInt, model_validator
 from pydantic.json_schema import SkipJsonSchema
 from requests_oauthlib import OAuth1Session
 from rich.panel import Panel
 from rich.prompt import Prompt
 from tomlkit import comment, document, dumps  # pyright: ignore[reportUnknownVariableType]
+from tomllib import loads
 
 
 class FullyValidatedModel(BaseModel):
@@ -145,7 +145,7 @@ class Tokens(FileSyncSettings):
 
         rich.print(f"Retrieve your {formatted_token_string} from: {url}")
         for token in tokens:
-            yield pwinput(f"Enter your {token} (masked): ").strip()
+            yield getpass(f"Enter your {token} (masked): ", echo_char="*").strip()
 
         rich.print()
 

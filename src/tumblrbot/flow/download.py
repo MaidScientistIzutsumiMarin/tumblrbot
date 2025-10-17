@@ -1,9 +1,11 @@
-from io import TextIOBase
 from json import dump
-from typing import override
+from typing import TYPE_CHECKING, override
 
 from tumblrbot.utils.common import FlowClass, PreviewLive
 from tumblrbot.utils.models import Post
+
+if TYPE_CHECKING:
+    from io import TextIOBase
 
 
 class PostDownloader(FlowClass):

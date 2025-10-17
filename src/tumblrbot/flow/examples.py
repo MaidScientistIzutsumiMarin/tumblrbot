@@ -1,17 +1,19 @@
 import re
-from collections.abc import Generator
 from itertools import batched
 from json import loads
 from math import ceil
-from pathlib import Path
 from re import search
-from typing import IO, override
+from typing import IO, TYPE_CHECKING, override
 
 import rich
 from openai import BadRequestError
 
 from tumblrbot.utils.common import FlowClass, PreviewLive
 from tumblrbot.utils.models import Example, Post
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from pathlib import Path
 
 
 class ExamplesWriter(FlowClass):

@@ -1,7 +1,6 @@
-from collections.abc import Iterable
 from functools import cache
 from random import choice, random, sample
-from typing import override
+from typing import TYPE_CHECKING, override
 
 import rich
 from pydantic import ConfigDict
@@ -9,6 +8,9 @@ from rich.prompt import IntPrompt
 
 from tumblrbot.utils.common import FlowClass, PreviewLive
 from tumblrbot.utils.models import Post
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 class DraftGenerator(FlowClass):

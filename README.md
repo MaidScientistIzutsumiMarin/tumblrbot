@@ -67,6 +67,10 @@ Features:
 - Colorful output, progress bars, and post previews using [rich].
 - Automatically keeps the [config][configurable] file up-to-date and recreates it if missing (without overriding user settings).
 
+**To-Do:**
+
+- Add retry logic for rate limiting.
+
 **Known Issues:**
 
 - Fine-tuning can fail after the validation phase due to the examples file not passing [OpenAI] moderation checks. There are a few workarounds for this that can be tried in combination:

@@ -70,6 +70,7 @@ Features:
 **To-Do:**
 
 - Add retry logic for rate limiting.
+- Investigate moderation rate limiting.
 
 **Known Issues:**
 

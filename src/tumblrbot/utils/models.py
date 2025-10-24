@@ -3,11 +3,11 @@ from getpass import getpass
 from pathlib import Path
 from typing import Annotated, Any, Literal, Self, override
 
-import rich
 from openai.types import ChatModel
 from pydantic import BaseModel, ConfigDict, Field, NonNegativeFloat, NonNegativeInt, PlainSerializer, PositiveFloat, PositiveInt, model_validator
 from pydantic.json_schema import SkipJsonSchema
 from requests_oauthlib import OAuth1Session
+from rich import print as rich_print
 from rich.panel import Panel
 from rich.prompt import Prompt
 from tomlkit import comment, document, dumps  # pyright: ignore[reportUnknownVariableType]
@@ -90,11 +90,11 @@ class Config(FileSyncSettings):
     @override
     def model_post_init(self, _: object) -> None:
         if not self.download_blog_identifiers:
-            rich.print("Enter the [cyan]identifiers of your blogs[/] that data should be [bold purple]downloaded[/] from, separated by commas.")
+            rich_print("Enter the [cyan]identifiers of your blogs[/] that data should be [bold purple]downloaded[/] from, separated by commas.")
             self.download_blog_identifiers = list(map(str.strip, Prompt.ask("[bold][Example] [dim]staff.tumblr.com,changes").split(",")))
 
         if not self.upload_blog_identifier:
-            rich.print("Enter the [cyan]identifier of your blog[/] that drafts should be [bold purple]uploaded[/] to.")
+            rich_print("Enter the [cyan]identifier of your blog[/] that drafts should be [bold purple]uploaded[/] to.")
             self.upload_blog_identifier = Prompt.ask("[bold][Example] [dim]staff.tumblr.com or changes").strip()
 
 
@@ -124,8 +124,8 @@ class Tokens(FileSyncSettings):
                 self.tumblr.client_key,
                 self.tumblr.client_secret,
             ) as oauth_session:
-                fetch_response = oauth_session.fetch_request_token("http://tumblr.com/oauth/request_token")
-                full_authorize_url = oauth_session.authorization_url("http://tumblr.com/oauth/authorize")
+                fetch_response = oauth_session.fetch_request_token("http://tumblr.com/oauth/request_token")  # pyright: ignore[reportUnknownMemberType]
+                full_authorize_url = oauth_session.authorization_url("http://tumblr.com/oauth/authorize")  # pyright: ignore[reportUnknownMemberType]
                 (redirect_response,) = self.online_token_prompt(full_authorize_url, "full redirect URL")
                 oauth_response = oauth_session.parse_authorization_response(redirect_response)
 
@@ -135,7 +135,7 @@ class Tokens(FileSyncSettings):
                 *self.get_oauth_tokens(fetch_response),
                 verifier=oauth_response["oauth_verifier"],
             ) as oauth_session:
-                oauth_tokens = oauth_session.fetch_access_token("http://tumblr.com/oauth/access_token")
+                oauth_tokens = oauth_session.fetch_access_token("http://tumblr.com/oauth/access_token")  # pyright: ignore[reportUnknownMemberType]
 
             self.tumblr.resource_owner_key, self.tumblr.resource_owner_secret = self.get_oauth_tokens(oauth_tokens)
 
@@ -143,11 +143,11 @@ class Tokens(FileSyncSettings):
     def online_token_prompt(url: str, *tokens: str) -> Generator[str]:
         formatted_token_string = " and ".join(f"[cyan]{token}[/]" for token in tokens)
 
-        rich.print(f"Retrieve your {formatted_token_string} from: {url}")
+        rich_print(f"Retrieve your {formatted_token_string} from: {url}")
         for token in tokens:
             yield getpass(f"Enter your {token} (masked): ", echo_char="*").strip()
 
-        rich.print()
+        rich_print()
 
     @staticmethod
     def get_oauth_tokens(token: dict[str, str]) -> tuple[str, str]:

@@ -1,12 +1,12 @@
-import re
 from itertools import batched
 from json import loads
 from math import ceil
-from re import search
+from re import IGNORECASE, search
+from re import compile as re_compile
 from typing import IO, TYPE_CHECKING, override
 
-import rich
 from openai import BadRequestError
+from rich import print as rich_print
 
 from tumblrbot.utils.common import FlowClass, PreviewLive
 from tumblrbot.utils.models import Example, Post
@@ -36,7 +36,7 @@ class ExamplesWriter(FlowClass):
                     fp,
                 )
 
-        rich.print(f"[bold]The examples file can be found at: '{self.config.examples_file}'\n")
+        rich_print(f"[bold]The examples file can be found at: '{self.config.examples_file}'\n")
 
     def write_example(self, user_message: str, assistant_message: str, fp: IO[str]) -> None:
         example = Example(
@@ -63,7 +63,7 @@ class ExamplesWriter(FlowClass):
             yield from posts[-self.config.post_limit :]
 
     def get_valid_posts_from_path(self, path: Path) -> Generator[Post]:
-        pattern = re.compile("|".join(self.config.filtered_words), re.IGNORECASE)
+        pattern = re_compile("|".join(self.config.filtered_words), IGNORECASE)
         with path.open("rb") as fp:
             for line in fp:
                 post = Post.model_validate_json(line)
@@ -88,7 +88,7 @@ class ExamplesWriter(FlowClass):
                             removed += 1
                         else:
                             fp.write(f"{example}\n")
-            rich.print(f"[red]Removed {removed} posts.\n")
+            rich_print(f"[red]Removed {removed} posts.\n")
 
     def get_moderation_batch_size(self) -> int:
         try:

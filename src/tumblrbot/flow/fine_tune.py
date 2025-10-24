@@ -3,7 +3,7 @@ from textwrap import dedent
 from time import sleep
 from typing import TYPE_CHECKING, override
 
-import rich
+from rich import print as rich_print
 from rich import progress
 from rich.console import Console
 from rich.prompt import Confirm
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 class FineTuner(FlowClass):
     @staticmethod
     def dedent_print(text: str) -> None:
-        rich.print(dedent(text).lstrip())
+        rich_print(dedent(text).lstrip())
 
     @override
     def main(self) -> None:
@@ -60,7 +60,7 @@ class FineTuner(FlowClass):
                 file=fp,
                 purpose="fine-tune",
             )
-        rich.print()
+        rich_print()
 
         job = self.openai.fine_tuning.jobs.create(
             model=self.config.base_model,
@@ -96,7 +96,7 @@ class FineTuner(FlowClass):
         if job.status != "succeeded":
             if Confirm.ask("[gray62]Delete uploaded examples file?", default=False):
                 self.openai.files.delete(job.training_file)
-                rich.print()
+                rich_print()
 
             if job.status == "failed" and job.error is not None:
                 raise RuntimeError(job.error.message)

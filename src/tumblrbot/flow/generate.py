@@ -2,8 +2,8 @@ from functools import cache
 from random import choice, random, sample
 from typing import TYPE_CHECKING, override
 
-import rich
 from pydantic import ConfigDict
+from rich import print as rich_print
 from rich.prompt import IntPrompt
 
 from tumblrbot.utils.common import FlowClass, PreviewLive
@@ -32,7 +32,7 @@ class DraftGenerator(FlowClass):
                     exception.add_note(f"📉 An error occurred! Generated {i} draft(s) before failing. {message}")
                     raise
 
-        rich.print(f":chart_increasing: [bold green]Generated {self.config.draft_count} draft(s).[/] {message}")
+        rich_print(f":chart_increasing: [bold green]Generated {self.config.draft_count} draft(s).[/] {message}")
 
     def generate_post(self) -> Post:
         if original := self.get_random_post():

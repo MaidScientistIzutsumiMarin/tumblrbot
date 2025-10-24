@@ -8,7 +8,7 @@ from tumblrbot.utils.models import Post, ResponseModel, Tokens
 
 class TumblrSession(OAuth1Session):
     def __init__(self, tokens: Tokens) -> None:
-        super().__init__(**tokens.tumblr.model_dump())
+        super().__init__(**tokens.tumblr.model_dump())  # pyright: ignore[reportUnknownMemberType]
         self.hooks["response"].append(self.response_hook)
 
     def __enter__(self) -> Self:

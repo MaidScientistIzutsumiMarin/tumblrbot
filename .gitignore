@@ -218,4 +218,4 @@ __marimo__/
 data
 *.toml
 *.jsonl
-*.lnk
+*.ps1

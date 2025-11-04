@@ -87,24 +87,33 @@ Features:
 
 **Please submit an issue or contact us for features you want added/reimplemented.**
 
-## Installation
+## Installation & Usage
+
+### Downloadable Binary
+
+| Pros | Cons |
+| --- | --- |
+| Easier to install | Harder to update |
+| No risk of dependencies breaking | Dependencies may be older |
+
+1. Download the latest release's [tumblrbot.exe].
+1. Launch `tumblrbot.exe` in the install location.
+
+### PyPi
+
+| Pros | Cons |
+| --- | --- |
+| Easier to update | Harder to install |
+| Dependencies may be newer | Dependencies may break |
 
 1. Install the latest version of [Python]:
    - Windows: `winget install python3`
    - Linux (apt): `apt install python-pip`
    - Linux (pacman): `pacman install python-pip`
 1. Install the [pip] package: `pip install tumblrbot`
-   - Alternatively, you can install from this repository: `pip install git+https://github.com/MaidThatPrograms/tumblrbot.git`
+   - Alternatively, you can install from this repository: `pip install git+https://github.com/MaidScientistIzutsumiMarin/tumblrbot.git`
    - On Linux, you will have to make a virtual environment or use the flag to install packages system-wide.
-
-### Alternative Installation for Windows
-
-1. Download the latest release's [tumblrbot.exe].
-1. Run the file directly, or add it to your path, and use it as normal.
-
-## Usage
-
-Run `tumblrbot` from anywhere. Run `tumblrbot --help` for command-line options. Every command-line option corresponds to a value from the [config][configurable].
+1. Run `tumblrbot` from anywhere. Run `tumblrbot --help` for command-line options. Every command-line option corresponds to a value from the [config][configurable].
 
 ## Obtaining Tokens
 

@@ -1,17 +1,19 @@
-from collections.abc import Generator
 from getpass import getpass
 from pathlib import Path
-from typing import Annotated, Any, Literal, Self, override
+from tomllib import loads
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Self, override
 
-from openai.types import ChatModel
+from openai.types import ChatModel  # noqa: TC002
 from pydantic import BaseModel, ConfigDict, Field, NonNegativeFloat, NonNegativeInt, PlainSerializer, PositiveFloat, PositiveInt, model_validator
-from pydantic.json_schema import SkipJsonSchema
+from pydantic.json_schema import SkipJsonSchema  # noqa: TC002
 from requests_oauthlib import OAuth1Session
 from rich import print as rich_print
 from rich.panel import Panel
 from rich.prompt import Prompt
 from tomlkit import comment, document, dumps  # pyright: ignore[reportUnknownVariableType]
-from tomllib import loads
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 
 class FullyValidatedModel(BaseModel):

@@ -2,6 +2,7 @@ from abc import abstractmethod
 from random import choice
 from typing import TYPE_CHECKING, ClassVar, Self, override
 
+from openai import OpenAI  # noqa: TC002
 from pydantic import ConfigDict
 from rich._spinners import SPINNERS
 from rich.live import Live
@@ -9,14 +10,12 @@ from rich.progress import MofNCompleteColumn, Progress, SpinnerColumn, TimeElaps
 from rich.table import Table
 
 from tumblrbot.utils.models import Config, FullyValidatedModel
+from tumblrbot.utils.tumblr import TumblrSession  # noqa: TC001
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from openai import OpenAI
     from rich.console import RenderableType
-
-    from tumblrbot.utils.tumblr import TumblrSession
 
 
 class FlowClass(FullyValidatedModel):

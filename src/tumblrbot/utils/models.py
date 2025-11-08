@@ -88,7 +88,9 @@ class Config(FileSyncSettings):
     reblog_user_message: str = Field("Please write a comical Tumblr post in response to the following post:\n\n{}", description="The format string for the user message used to reblog posts.")
 
     @override
-    def model_post_init(self, _: object) -> None:
+    def model_post_init(self, context: object) -> None:
+        super().model_post_init(context)
+
         if not self.download_blog_identifiers:
             rich_print("Enter the [cyan]identifiers of your blogs[/] that data should be [bold purple]downloaded[/] from, separated by commas.")
             self.download_blog_identifiers = list(map(str.strip, Prompt.ask("[bold][Example] [dim]staff.tumblr.com,changes").split(",")))
@@ -109,7 +111,9 @@ class Tokens(FileSyncSettings):
     tumblr: Tumblr = Tumblr()
 
     @override
-    def model_post_init(self, _: object) -> None:
+    def model_post_init(self, context: object) -> None:
+        super().model_post_init(context)
+
         # Check if any tokens are missing or if the user wants to reset them, then set tokens if necessary.
         if not self.openai_api_key:
             (self.openai_api_key,) = self.online_token_prompt("https://platform.openai.com/api-keys", "API key")
@@ -160,20 +164,22 @@ class Blog(FullyValidatedModel):
     uuid: str = ""
 
 
-class ResponseModel(FullyValidatedModel):
-    class Response(FullyValidatedModel):
-        blog: Blog = Blog()
-        posts: list[Any] = []
+class Response(FullyValidatedModel):
+    blog: Blog = Blog()
+    posts: list[Any] = []
 
+
+class ResponseModel(FullyValidatedModel):
     response: Response
 
 
-class Post(FullyValidatedModel):
-    class Block(FullyValidatedModel):
-        type: str = ""
-        text: str = ""
-        blocks: list[int] = []
+class Block(FullyValidatedModel):
+    type: str = ""
+    text: str = ""
+    blocks: list[int] = []
 
+
+class Post(FullyValidatedModel):
     blog: SkipJsonSchema[Blog] = Blog()
     id: SkipJsonSchema[int] = 0
     parent_tumblelog_uuid: SkipJsonSchema[str] = ""
@@ -212,9 +218,10 @@ class Post(FullyValidatedModel):
         return bool(self.content) and all(block.type == "text" for block in self.content) and not (self.is_submission or any(block.type == "ask" for block in self.layout))
 
 
-class Example(FullyValidatedModel):
-    class Message(FullyValidatedModel):
-        role: Literal["developer", "user", "assistant"]
-        content: str
+class Message(FullyValidatedModel):
+    role: Literal["developer", "user", "assistant"]
+    content: str
 
+
+class Example(FullyValidatedModel):
     messages: list[Message]

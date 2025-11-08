@@ -9,7 +9,7 @@ from openai import BadRequestError
 from rich import print as rich_print
 
 from tumblrbot.utils.common import FlowClass, PreviewLive
-from tumblrbot.utils.models import Example, Post
+from tumblrbot.utils.models import Example, Message, Post
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -41,9 +41,9 @@ class ExamplesWriter(FlowClass):
     def write_example(self, user_message: str, assistant_message: str, fp: IO[str]) -> None:
         example = Example(
             messages=[
-                Example.Message(role="developer", content=self.config.developer_message),
-                Example.Message(role="user", content=user_message),
-                Example.Message(role="assistant", content=assistant_message),
+                Message(role="developer", content=self.config.developer_message),
+                Message(role="user", content=user_message),
+                Message(role="assistant", content=assistant_message),
             ],
         )
         fp.write(f"{example.model_dump_json()}\n")

@@ -7,7 +7,7 @@ from rich import print as rich_print
 from rich.prompt import IntPrompt
 
 from tumblrbot.utils.common import FlowClass, PreviewLive
-from tumblrbot.utils.models import Post
+from tumblrbot.utils.models import Block, Post
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -48,7 +48,7 @@ class DraftGenerator(FlowClass):
             tags = tags.tags
 
         return Post(
-            content=[Post.Block(type="text", text=text)],
+            content=[Block(type="text", text=text)],
             tags=tags or [],
             parent_tumblelog_uuid=original.blog.uuid,
             parent_post_id=original.id,

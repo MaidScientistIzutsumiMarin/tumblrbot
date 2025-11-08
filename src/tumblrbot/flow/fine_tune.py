@@ -4,8 +4,8 @@ from time import sleep
 from typing import TYPE_CHECKING, override
 
 from rich import print as rich_print
-from rich import progress
 from rich.console import Console
+from rich.progress import open as progress_open
 from rich.prompt import Confirm
 from tiktoken import encoding_for_model, get_encoding
 
@@ -55,7 +55,7 @@ class FineTuner(FlowClass):
         if self.config.job_id:
             return self.poll_job_status()
 
-        with progress.open(self.config.examples_file, "rb", description=f"Uploading [purple]{self.config.examples_file}[/]...") as fp:
+        with progress_open(self.config.examples_file, "rb", description=f"Uploading [purple]{self.config.examples_file}[/]...") as fp:
             file = self.openai.files.create(
                 file=fp,
                 purpose="fine-tune",

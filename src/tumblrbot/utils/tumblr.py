@@ -2,8 +2,18 @@ from typing import Self
 
 from requests import HTTPError, Response
 from requests_oauthlib import OAuth1Session
+from rich import print as rich_print
+from tenacity import retry, retry_if_exception_message, stop_after_attempt, wait_random_exponential
 
 from tumblrbot.utils.models import Post, ResponseModel, Tokens
+
+rate_limit_retry = retry(
+    stop=stop_after_attempt(10),
+    wait=wait_random_exponential(min=60),
+    retry=retry_if_exception_message(match="429 Client Error: Limit Exceeded for url: .+"),
+    before_sleep=lambda state: rich_print(f"[yellow]Tumblr rate limit exceeded. Waiting for {state.idle_for} seconds..."),
+    reraise=True,
+)
 
 
 class TumblrSession(OAuth1Session):
@@ -22,10 +32,12 @@ class TumblrSession(OAuth1Session):
             error.add_note(response.text)
             raise
 
+    @rate_limit_retry
     def retrieve_blog_info(self, blog_identifier: str) -> ResponseModel:
         response = self.get(f"https://api.tumblr.com/v2/blog/{blog_identifier}/info")
         return ResponseModel.model_validate_json(response.text)
 
+    @rate_limit_retry
     def retrieve_published_posts(
         self,
         blog_identifier: str,
@@ -43,6 +55,7 @@ class TumblrSession(OAuth1Session):
         )
         return ResponseModel.model_validate_json(response.text)
 
+    @rate_limit_retry
     def create_post(self, blog_identifier: str, post: Post) -> ResponseModel:
         response = self.post(
             f"https://api.tumblr.com/v2/blog/{blog_identifier}/posts",

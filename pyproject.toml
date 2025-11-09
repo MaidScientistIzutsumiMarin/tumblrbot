@@ -10,8 +10,9 @@ dependencies = [
   "requests",
   "requests-oauthlib",
   "rich",
+  "tenacity",
   "tiktoken",
-  "tomlkit",
+  "tomlkit"
 ]
 
 [project.urls]

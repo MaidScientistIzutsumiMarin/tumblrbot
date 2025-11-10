@@ -227,3 +227,10 @@ class Message(FullyValidatedModel):
 
 class Example(FullyValidatedModel):
     messages: list[Message]
+
+    def get_assistant_message(self) -> str:
+        for message in self.messages:
+            if message.role == "assistant":
+                return message.content
+        msg = "Assistant message not found!"
+        raise ValueError(msg)

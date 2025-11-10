@@ -218,4 +218,4 @@ __marimo__/
 data
 *.toml
 *.jsonl
-*.ps1
+tumblrbot.ps1

@@ -1,3 +1,5 @@
+from sys import exit as sys_exit
+
 from openai import OpenAI
 from rich.prompt import Confirm
 from rich.traceback import install
@@ -35,3 +37,7 @@ def main() -> None:
 
         if Confirm.ask("Generate drafts?", default=False):
             DraftGenerator(openai=openai, tumblr=tumblr).main()
+
+
+if __name__ == "__main__":
+    sys_exit(main())

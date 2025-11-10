@@ -60,7 +60,7 @@ class Config(FileSyncSettings):
 
     # Writing Examples
     post_limit: NonNegativeInt = Field(0, description="The number of the most recent posts from each blog that should be included in the training data.")
-    max_moderation_batch_size: PositiveInt = Field(100, description="The number of posts, at most, to submit to the OpenAI moderation API. This is also capped by the API.")
+    moderation_batch_size: PositiveInt = Field(25, description="The number of posts at a time to submit to the OpenAI moderation API.")
     custom_prompts_file: Path = Field(Path("custom_prompts.jsonl"), description="Where to read in custom prompts from.")
     filtered_words: list[str] = Field([], description="A case-insensitive list of disallowed words used to filter out training data. Regular expressions are allowed, but must be escaped.")
 

@@ -75,8 +75,8 @@ class ExamplesWriter(FlowClass):
         new_examples: list[Example] = []
         with PreviewLive() as live:
             for batch in live.progress.track(
-                batched(old_examples, self.config.max_moderation_batch_size, strict=False),
-                ceil(len(raw_examples) / self.config.max_moderation_batch_size),
+                batched(old_examples, self.config.moderation_batch_size, strict=False),
+                ceil(len(raw_examples) / self.config.moderation_batch_size),
                 description="Removing flagged posts...",
             ):
                 response = self.create_moderation_batch(tuple(map(Example.get_assistant_message, batch)))

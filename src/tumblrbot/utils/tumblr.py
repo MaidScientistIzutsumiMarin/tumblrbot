@@ -1,7 +1,7 @@
 from typing import Self
 
-from requests import HTTPError, Response
-from requests_oauthlib import OAuth1Session
+from requests import HTTPError, Response, Session
+from requests_oauthlib import OAuth1
 from rich import print as rich_print
 from tenacity import retry, retry_if_exception_message, stop_after_attempt, wait_random_exponential
 
@@ -16,9 +16,10 @@ rate_limit_retry = retry(
 )
 
 
-class TumblrSession(OAuth1Session):
+class TumblrSession(Session):
     def __init__(self, tokens: Tokens) -> None:
-        super().__init__(**tokens.tumblr.model_dump())  # pyright: ignore[reportUnknownMemberType]
+        super().__init__()
+        self.auth = OAuth1(**tokens.tumblr.model_dump())
         self.hooks["response"].append(self.response_hook)
 
     def __enter__(self) -> Self:

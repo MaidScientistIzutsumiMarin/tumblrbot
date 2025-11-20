@@ -1,1 +1,7 @@
-..\..\Powershell\build.ps1 -ExtraArgs '--collect-all tiktoken_ext --optimize 2'
+pyinstaller.exe `
+    --noconfirm `
+    --onefile `
+    --name tumblrbot `
+    --hidden-import tiktoken_ext.openai_public `
+    --optimize 2 `
+    src\tumblrbot\__main__.py

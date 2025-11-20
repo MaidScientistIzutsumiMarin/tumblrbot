@@ -22,6 +22,9 @@ Source = "https://github.com/MaidScientistIzutsumiMarin/tumblrbot"
 [project.scripts]
 tumblrbot = "tumblrbot.__main__:main"
 
+[project.optional-dependencies]
+dev = ["pyinstaller"]
+
 [build-system]
 requires = ["flit_core"]
 build-backend = "flit_core.buildapi"

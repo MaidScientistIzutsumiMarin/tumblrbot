@@ -2,7 +2,6 @@ from sys import exit as sys_exit
 
 from openai import OpenAI
 from rich.prompt import Confirm
-from rich.traceback import install
 
 from tumblrbot.flow.download import PostDownloader
 from tumblrbot.flow.examples import ExamplesWriter
@@ -14,8 +13,6 @@ from tumblrbot.utils.tumblr import TumblrSession
 
 
 def main() -> None:
-    install()
-
     tokens = Tokens.load()
     with OpenAI(api_key=tokens.openai_api_key) as openai, TumblrSession(tokens) as tumblr:
         if Confirm.ask("Download latest posts?", default=False):

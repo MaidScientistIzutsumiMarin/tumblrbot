@@ -1,15 +1,15 @@
 from abc import abstractmethod
+from dataclasses import dataclass
 from random import choice
-from typing import TYPE_CHECKING, ClassVar, Self, override
+from typing import TYPE_CHECKING, ClassVar
 
 from openai import OpenAI  # noqa: TC002
-from pydantic import ConfigDict
 from rich._spinners import SPINNERS
 from rich.live import Live
 from rich.progress import MofNCompleteColumn, Progress, SpinnerColumn, TimeElapsedColumn
 from rich.table import Table
 
-from tumblrbot.utils.models import Config, FullyValidatedModel
+from tumblrbot.utils.models import Config
 from tumblrbot.utils.tumblr import TumblrSession  # noqa: TC001
 
 if TYPE_CHECKING:
@@ -18,9 +18,8 @@ if TYPE_CHECKING:
     from rich.console import RenderableType
 
 
-class FlowClass(FullyValidatedModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
+@dataclass(frozen=True)
+class FlowClass:
     config: ClassVar = Config.load()
 
     openai: OpenAI
@@ -50,11 +49,6 @@ class PreviewLive(Live):
         )
 
         self.custom_update()
-
-    @override
-    def __enter__(self) -> Self:
-        super().__enter__()
-        return self
 
     def custom_update(self, *renderables: RenderableType | None) -> None:
         table = Table.grid()

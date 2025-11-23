@@ -1,8 +1,8 @@
+from dataclasses import dataclass
 from functools import cache
 from random import choice, random, sample
 from typing import TYPE_CHECKING, override
 
-from pydantic import ConfigDict
 from rich import print as rich_print
 from rich.prompt import IntPrompt
 
@@ -13,9 +13,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
 
+@dataclass(frozen=True)
 class DraftGenerator(FlowClass):
-    model_config = ConfigDict(frozen=True)  # Makes this class hashable.
-
     @override
     def main(self) -> None:
         self.config.draft_count = IntPrompt.ask("How many drafts should be generated?", default=self.config.draft_count)
@@ -48,7 +47,7 @@ class DraftGenerator(FlowClass):
             tags = tags.tags
 
         return Post(
-            content=[Block(type="text", text=text)],
+            content=[Block(text=text)],
             tags=tags or [],
             parent_tumblelog_uuid=original.blog.uuid,
             parent_post_id=original.id,

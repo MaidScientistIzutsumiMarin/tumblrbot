@@ -112,6 +112,16 @@ class Tokens(FileSyncSettings):
     openai_api_key: str = ""
     tumblr: Tumblr = Tumblr()
 
+    @staticmethod
+    def online_token_prompt(url: str, *tokens: str) -> Generator[str]:
+        formatted_token_string = " and ".join(f"[cyan]{token}[/]" for token in tokens)
+
+        rich_print(f"Retrieve your {formatted_token_string} from: {url}")
+        for token in tokens:
+            yield getpass(f"Enter your {token} (masked): ", echo_char="*").strip()
+
+        rich_print()
+
     @override
     def model_post_init(self, context: object) -> None:
         super().model_post_init(context)
@@ -126,38 +136,18 @@ class Tokens(FileSyncSettings):
             # This is the whole OAuth 1.0 process.
             # https://requests-oauthlib.readthedocs.io/en/latest/examples/tumblr.html
             # We tried setting up OAuth 2.0, but the token refresh process is far too unreliable for this sort of program.
-            with OAuth1Session(
-                self.tumblr.client_key,
-                self.tumblr.client_secret,
-            ) as oauth_session:
-                fetch_response = oauth_session.fetch_request_token("http://tumblr.com/oauth/request_token")  # pyright: ignore[reportUnknownMemberType]
-                full_authorize_url = oauth_session.authorization_url("http://tumblr.com/oauth/authorize")  # pyright: ignore[reportUnknownMemberType]
-                (redirect_response,) = self.online_token_prompt(full_authorize_url, "full redirect URL")
-                oauth_response = oauth_session.parse_authorization_response(redirect_response)
+            with OAuth1Session(**self.tumblr.model_dump()) as session:
+                session.fetch_request_token("http://tumblr.com/oauth/request_token")  # pyright: ignore[reportUnknownMemberType]
 
-            with OAuth1Session(
-                self.tumblr.client_key,
-                self.tumblr.client_secret,
-                *self.get_oauth_tokens(fetch_response),
-                verifier=oauth_response["oauth_verifier"],
-            ) as oauth_session:
-                oauth_tokens = oauth_session.fetch_access_token("http://tumblr.com/oauth/access_token")  # pyright: ignore[reportUnknownMemberType]
+                rich_print("Open the link below in your browser, and authorize this application.\nAfter authorizing, copy and paste the URL of the page you are redirected to below.")
+                authorization_url = session.authorization_url("http://tumblr.com/oauth/authorize")  # pyright: ignore[reportUnknownMemberType]
+                (authorization_response,) = self.online_token_prompt(authorization_url, "full redirect URL")
+                session.parse_authorization_response(authorization_response)
 
-            self.tumblr.resource_owner_key, self.tumblr.resource_owner_secret = self.get_oauth_tokens(oauth_tokens)
+                access_token = session.fetch_access_token("http://tumblr.com/oauth/access_token")  # pyright: ignore[reportUnknownMemberType]
 
-    @staticmethod
-    def online_token_prompt(url: str, *tokens: str) -> Generator[str]:
-        formatted_token_string = " and ".join(f"[cyan]{token}[/]" for token in tokens)
-
-        rich_print(f"Retrieve your {formatted_token_string} from: {url}")
-        for token in tokens:
-            yield getpass(f"Enter your {token} (masked): ", echo_char="*").strip()
-
-        rich_print()
-
-    @staticmethod
-    def get_oauth_tokens(token: dict[str, str]) -> tuple[str, str]:
-        return token["oauth_token"], token["oauth_token_secret"]
+            self.tumblr.resource_owner_key = access_token["oauth_token"]
+            self.tumblr.resource_owner_secret = access_token["oauth_token_secret"]
 
 
 class Blog(FullyValidatedModel):
@@ -166,35 +156,34 @@ class Blog(FullyValidatedModel):
     uuid: str = ""
 
 
-class Response(FullyValidatedModel):
-    blog: Blog = Blog()
-    posts: list[Any] = []
-
-
 class ResponseModel(FullyValidatedModel):
+    class Response(FullyValidatedModel):
+        blog: Blog = Blog()
+        posts: list[Any] = []
+
     response: Response
 
 
 class Block(FullyValidatedModel):
-    type: str = ""
+    type: str = "text"
     text: str = ""
     blocks: list[int] = []
 
 
 class Post(FullyValidatedModel):
-    blog: SkipJsonSchema[Blog] = Blog()
-    id: SkipJsonSchema[int] = 0
-    parent_tumblelog_uuid: SkipJsonSchema[str] = ""
-    parent_post_id: SkipJsonSchema[int] = 0
-    reblog_key: SkipJsonSchema[str] = ""
+    blog: Blog = Blog()
+    id: int = 0
+    parent_tumblelog_uuid: str = ""
+    parent_post_id: int = 0
+    reblog_key: str = ""
 
-    timestamp: SkipJsonSchema[int] = 0
+    timestamp: int = 0
     tags: Annotated[list[str], PlainSerializer(",".join)] = []
-    state: SkipJsonSchema[Literal["published", "queued", "draft", "private", "unapproved"]] = "draft"
+    state: Literal["published", "queued", "draft", "private", "unapproved"] = "draft"
 
-    content: SkipJsonSchema[list[Block]] = []
-    layout: SkipJsonSchema[list[Block]] = []
-    trail: SkipJsonSchema[list[Self]] = []
+    content: list[Block] = []
+    layout: list[Block] = []
+    trail: list[Self] = []
 
     is_submission: SkipJsonSchema[bool] = False
 

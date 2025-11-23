@@ -21,7 +21,6 @@
 [Tumblr]: https://tumblr.com
 [Tumblr Tokens]: https://tumblr.com/oauth/apps
 [Tumblr API Documentation on Blog Identifiers]: https://tumblr.com/docs/en/api/v2#blog-identifiers
-[Tumblr API Documentation on Rate Limits]: https://tumblr.com/docs/en/api/v2#rate-limits
 
 [Format String]: https://docs.python.org/3/library/string.html#format-string-syntax
 
@@ -75,10 +74,9 @@ Features:
   - You can use regular expressions to filter out training data in the [config][configurable]. This is more of a brute-force solution, but it can work if the other solutions do not.
   - You can try limiting your dataset by specifying fewer blogs to download from or limiting the number of posts taken from each one in the [config][configurable].
   - If all else fails, you can manually remove data from the examples file until it passes. It is unfortunately not a definitive resource, but it can help to read about what the [OpenAI moderation API flags][Flags].
-- Sometimes, you will get an error about the training file not being found when starting fine-tuning. We do not currently have a fix or workaround for this. You should instead use the online portal for fine-tuning if this continues to happen. Read more in [fine-tuning].
-- Post counts are incorrect when downloading posts. We are not certain what the cause of this is, but our tests suggest this is a [Tumblr] API problem that is giving inaccurate numbers.
-- During post downloading or post generation, you may receive a “Limit Exceeded” error message from the [Tumblr] API. This is caused by server-side rate-limiting by [Tumblr]. The only workaround is trying again or waiting for a period of time before retrying. In most cases, you either have to wait for a minute or an hour for the limits to reset. You can read more about the limits in the [Tumblr API documentation on rate limits].
-- Similar to the above issue, you may sometimes get a message saying your IP is blocked. This block is temporary and probably follows the same rules as previously described.
+- Sometimes, you will get an error about the training file not being found when starting fine-tuning. We do not currently have a fix or workaround for this. You should instead use the online portal for fine-tuning if this continues to happen. Read more in [fine-tuning]
+  - *We are unsure if this is still happening.*
+- Post counts are incorrect when downloading posts. Our tests suggest this is a [Tumblr] API problem that is giving inaccurate numbers, so treat them as estimates.
 
 **Please submit an issue or contact us for features you want added/reimplemented.**
 

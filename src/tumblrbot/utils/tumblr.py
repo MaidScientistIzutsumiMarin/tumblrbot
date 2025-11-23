@@ -1,5 +1,3 @@
-from typing import Self
-
 from requests import HTTPError, Response, Session
 from requests_oauthlib import OAuth1
 from rich import print as rich_print
@@ -22,20 +20,24 @@ class TumblrSession(Session):
         self.auth = OAuth1(**tokens.tumblr.model_dump())
         self.hooks["response"].append(self.response_hook)
 
-    def __enter__(self) -> Self:
-        super().__enter__()
-        return self
+        self.api_key = tokens.tumblr.client_key
 
     def response_hook(self, response: Response, *_args: object, **_kwargs: object) -> None:
         try:
             response.raise_for_status()
         except HTTPError as error:
-            error.add_note(response.text)
+            for error_msg in response.json()["errors"]:
+                error.add_note(f"{error_msg['code']}: {error_msg['detail']}")
             raise
 
     @rate_limit_retry
     def retrieve_blog_info(self, blog_identifier: str) -> ResponseModel:
-        response = self.get(f"https://api.tumblr.com/v2/blog/{blog_identifier}/info")
+        response = self.get(
+            f"https://api.tumblr.com/v2/blog/{blog_identifier}/info",
+            params={
+                "api_key": self.api_key,
+            },
+        )
         return ResponseModel.model_validate_json(response.text)
 
     @rate_limit_retry
@@ -48,6 +50,7 @@ class TumblrSession(Session):
         response = self.get(
             f"https://api.tumblr.com/v2/blog/{blog_identifier}/posts",
             params={
+                "api_key": self.api_key,
                 "offset": offset,
                 "after": after,
                 "sort": "asc",

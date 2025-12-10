@@ -3,7 +3,7 @@ from pathlib import Path
 from tomllib import loads
 from typing import TYPE_CHECKING, Annotated, Any, Literal, Self, override
 
-from openai.types import ChatModel  # noqa: TC002
+from openai.types import ResponsesModel  # noqa: TC002
 from pydantic import BaseModel, ConfigDict, Field, NonNegativeFloat, NonNegativeInt, PlainSerializer, PositiveFloat, PositiveInt, model_validator
 from pydantic.json_schema import SkipJsonSchema  # noqa: TC002
 from requests_oauthlib import OAuth1Session
@@ -77,7 +77,7 @@ class Config(FileSyncSettings):
     job_id: str = Field("", description="The fine-tuning job ID that will be polled on next run.")
 
     # Fine-Tuning & Generating
-    base_model: ChatModel = Field("gpt-4o-mini-2024-07-18", description="The name of the model that will be fine-tuned by the generated training data.")
+    base_model: ResponsesModel = Field("gpt-4o-mini-2024-07-18", description="The name of the model that will be fine-tuned by the generated training data.")
     fine_tuned_model: str = Field("", description="The name of the OpenAI model that was fine-tuned with your posts.")
 
     # Generating

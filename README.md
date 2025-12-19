@@ -78,6 +78,13 @@ Features:
   - *We are unsure if this is still happening.*
 - Post counts are incorrect when downloading posts. Our tests suggest this is a [Tumblr] API problem that is giving inaccurate numbers, so treat them as estimates.
 
+**To-Do:**
+
+- Read Tumblr rate-limiting information from headers.
+- Read OpenAI rate-limiting information from headers (if available).
+- Add selection menus to make it easier to pick a particular operation.
+- Default price information to local currency.
+
 **Please submit an issue or contact us for features you want added/reimplemented.**
 
 ## Installation & Usage

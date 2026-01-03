@@ -83,7 +83,6 @@ Features:
 - Read Tumblr rate-limiting information from headers.
 - Read OpenAI rate-limiting information from headers (if available).
 - Add selection menus to make it easier to pick a particular operation.
-- Default price information to local currency.
 
 **Please submit an issue or contact us for features you want added/reimplemented.**
 

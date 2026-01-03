@@ -58,8 +58,9 @@ class ExamplesWriter(FlowClass):
 
     def get_valid_posts(self) -> Generator[Post]:
         for path in self.get_data_paths():
-            posts = list(self.get_valid_posts_from_path(path))
-            yield from posts[-self.config.post_limit :]
+            if path.exists():
+                posts = list(self.get_valid_posts_from_path(path))
+                yield from posts[-self.config.post_limit :]
 
     def get_valid_posts_from_path(self, path: Path) -> Generator[Post]:
         pattern = re_compile("|".join(self.config.filtered_words), IGNORECASE)

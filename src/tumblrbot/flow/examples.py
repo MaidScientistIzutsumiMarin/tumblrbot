@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, override
 
 from openai import RateLimitError
 from rich import print as rich_print
+from rich.console import Console
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_random_exponential
 
 from tumblrbot.utils.common import FlowClass, PreviewLive
@@ -61,6 +62,8 @@ class ExamplesWriter(FlowClass):
             if path.exists():
                 posts = list(self.get_valid_posts_from_path(path))
                 yield from posts[-self.config.post_limit :]
+            else:
+                Console(stderr=True, style="logging.level.warning").print(f"{path} does not exist!")
 
     def get_valid_posts_from_path(self, path: Path) -> Generator[Post]:
         pattern = re_compile("|".join(self.config.filtered_words), IGNORECASE)

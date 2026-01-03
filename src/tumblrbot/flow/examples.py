@@ -1,6 +1,7 @@
 from collections.abc import Generator
 from itertools import batched
 from json import loads
+from locale import str as locale_str
 from math import ceil
 from re import IGNORECASE
 from re import compile as re_compile
@@ -94,7 +95,7 @@ class ExamplesWriter(FlowClass):
         stop=stop_after_attempt(10),
         wait=wait_random_exponential(),
         retry=retry_if_exception_type(RateLimitError),
-        before_sleep=lambda state: rich_print(f"[yellow]OpenAI rate limit exceeded. Waiting for {state.idle_for} seconds..."),
+        before_sleep=lambda state: rich_print(f"[yellow]OpenAI rate limit exceeded. Waiting for {locale_str(state.upcoming_sleep)} seconds..."),
         reraise=True,
     )
     def create_moderation_batch(self, api_input: str | SequenceNotStr[str] | Iterable[ModerationMultiModalInputParam]) -> ModerationCreateResponse:

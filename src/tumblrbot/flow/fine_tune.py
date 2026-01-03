@@ -1,15 +1,17 @@
 from datetime import datetime
+from locale import currency, localeconv
 from textwrap import dedent
 from time import sleep
 from typing import TYPE_CHECKING, override
 
+from currency_converter import CurrencyConverter
 from rich import print as rich_print
 from rich.console import Console
 from rich.progress import open as progress_open
 from rich.prompt import Confirm
 from tiktoken import encoding_for_model, get_encoding
 
-from tumblrbot.utils.common import FlowClass, PreviewLive
+from tumblrbot.utils.common import FlowClass, PreviewLive, localize_number
 from tumblrbot.utils.models import Example
 
 if TYPE_CHECKING:
@@ -87,7 +89,7 @@ class FineTuner(FlowClass):
     def process_completed_job(self, job: FineTuningJob) -> None:
         if job.trained_tokens is not None:
             self.dedent_print(f"""
-                Trained Tokens: {job.trained_tokens:,}
+                Trained Tokens: {localize_number(job.trained_tokens):,}
                 Cost: {self.get_cost_string(job.trained_tokens)}
             """)
 
@@ -110,8 +112,8 @@ class FineTuner(FlowClass):
         cost_string = self.get_cost_string(total_tokens)
 
         self.dedent_print(f"""
-            Tokens {estimated_tokens:,}:
-            Total tokens for [bold orange1]{self.config.expected_epochs}[/] epoch(s): {total_tokens:,}
+            Tokens: {localize_number(estimated_tokens)}:
+            Total tokens for [bold orange1]{self.config.expected_epochs}[/] epoch(s): {localize_number(total_tokens)}
             Expected cost when trained with [bold purple]{self.config.base_model}[/]: {cost_string}
             NOTE: Token values are approximate and may not be 100% accurate, please be aware of this when using the data.
                     [italic red]Amelia, Mutsumi, and Marin are not responsible for any inaccuracies in the token count or estimated price.[/]
@@ -134,4 +136,6 @@ class FineTuner(FlowClass):
                     yield 4 + len(encoding.encode(message.content))
 
     def get_cost_string(self, total_tokens: int) -> str:
-        return f"{self.config.token_price / 1000000 * total_tokens:.2f} USD"
+        c = CurrencyConverter()
+        cost = c.convert(self.config.token_price / 1000000 * total_tokens, "USD", localeconv()["int_curr_symbol"])
+        return currency(cost, grouping=True)

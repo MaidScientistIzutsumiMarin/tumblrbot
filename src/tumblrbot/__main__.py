@@ -1,3 +1,4 @@
+from locale import LC_ALL, setlocale
 from sys import exit as sys_exit
 
 from openai import OpenAI
@@ -14,6 +15,8 @@ from tumblrbot.utils.tumblr import TumblrSession
 
 
 def main() -> None:
+    setlocale(LC_ALL, "")
+
     install()
 
     tokens = Tokens.load()

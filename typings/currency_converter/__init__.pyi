@@ -1,0 +1,1 @@
+from currency_converter.currency_converter import CurrencyConverter as CurrencyConverter

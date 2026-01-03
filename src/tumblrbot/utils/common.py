@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from dataclasses import dataclass
+from locale import localize  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType]
 from random import choice
 from typing import TYPE_CHECKING, ClassVar
 
@@ -55,3 +56,7 @@ class PreviewLive(Live):
         table.add_row(self.progress)
         table.add_row(*renderables)
         self.update(table)
+
+
+def localize_number(value: object) -> str:
+    return localize(str(value), grouping=True)  # pyright: ignore[reportUnknownVariableType]

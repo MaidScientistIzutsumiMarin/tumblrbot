@@ -11,11 +11,11 @@
 [pip]: https://pypi.org
 [Rich]: https://pypi.org/project/rich
 
-[OpenAI]: https://pypi.org/project/openai
+[OpenAI]: https://openai.com
 [OpenAI Pricing]: https://platform.openai.com/docs/pricing#fine-tuning
 [OpenAI Tokens]: https://platform.openai.com/settings/organization/api-keys
 [OpenAI Moderation API]: https://platform.openai.com/docs/guides/moderation
-[Flags]: https://platform.openai.com/docs/guides/moderation/over#content-classifications
+[Flags]: https://platform.openai.com/docs/guides/moderation#content-classifications
 [Fine-Tuning Portal]: https://platform.openai.com/finetune
 
 [Tumblr]: https://tumblr.com

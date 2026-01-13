@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, override
 from rich import print as rich_print
 from rich.prompt import IntPrompt
 
-from tumblrbot.utils.common import FlowClass, PreviewLive
+from tumblrbot.utils.common import FlowClass, PreviewLive, localize_number
 from tumblrbot.utils.models import Block, Post
 
 if TYPE_CHECKING:
@@ -28,10 +28,10 @@ class DraftGenerator(FlowClass):
                     self.tumblr.create_post(self.config.upload_blog_identifier, post)
                     live.custom_update(post)
                 except BaseException as exception:
-                    exception.add_note(f"📉 An error occurred! Generated {i} draft(s) before failing. {message}")
+                    exception.add_note(f"📉 An error occurred! Generated {localize_number(i)} draft(s) before failing. {message}")
                     raise
 
-        rich_print(f":chart_increasing: [bold green]Generated {self.config.draft_count} draft(s).[/] {message}")
+        rich_print(f":chart_increasing: [bold green]Generated {localize_number(self.config.draft_count)} draft(s).[/] {message}")
 
     def generate_post(self) -> Post:
         if original := self.get_random_post():

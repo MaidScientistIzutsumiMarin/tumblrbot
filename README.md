@@ -80,7 +80,8 @@ Features:
 
 **To-Do:**
 
-- Read Tumblr rate-limiting information from headers.
+- **(Done)** Localize numbers and currencies.
+- **(Done)** Read Tumblr rate-limiting information from headers.
 - Read OpenAI rate-limiting information from headers (if available).
 - Add selection menus to make it easier to pick a particular operation.
 

@@ -1,5 +1,6 @@
 from locale import LC_ALL, setlocale
 from sys import exit as sys_exit
+from sys import maxsize
 
 from openai import OpenAI
 from rich.prompt import Confirm
@@ -20,7 +21,7 @@ def main() -> None:
     install()
 
     tokens = Tokens.load()
-    with OpenAI(api_key=tokens.openai_api_key) as openai, TumblrSession(tokens) as tumblr:
+    with OpenAI(api_key=tokens.openai_api_key, max_retries=maxsize) as openai, TumblrSession(tokens) as tumblr:
         if Confirm.ask("Download latest posts?", default=False):
             PostDownloader(openai, tumblr).main()
 

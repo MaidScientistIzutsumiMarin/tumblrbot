@@ -49,7 +49,9 @@ class ExamplesWriter(FlowClass):
                 data: dict[str, str] = loads(line)
                 yield from data.items()
 
-    # This function mostly exists to make writing examples atomic.
+    # This function mostly exists to make writing examples (mostly) atomic.
+    # If there is an error dumping the models or writing to the file,
+    # then it will leave a partially written or empty file behind.
     def write_examples(self, examples: Iterable[Example]) -> None:
         with self.config.examples_file.open("w", encoding="utf_8") as fp:
             for example in examples:

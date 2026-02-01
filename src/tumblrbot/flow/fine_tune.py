@@ -89,7 +89,7 @@ class FineTuner(FlowClass):
     def process_completed_job(self, job: FineTuningJob) -> None:
         if job.trained_tokens is not None:
             self.dedent_print(f"""
-                Trained Tokens: {localize_number(job.trained_tokens):,}
+                Trained Tokens: {localize_number(job.trained_tokens)}
                 Cost: {self.get_cost_string(job.trained_tokens)}
             """)
 

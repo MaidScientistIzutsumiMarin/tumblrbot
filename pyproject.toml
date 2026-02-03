@@ -1,6 +1,6 @@
 [project]
 name = "tumblrbot"
-version = "1.9.7"
+version = "1.10.0"
 description = "An updated bot that posts to Tumblr, based on your very own blog!"
 readme = "README.md"
 requires-python = ">= 3.14"
@@ -23,6 +23,5 @@ Source = "https://github.com/MaidScientistIzutsumiMarin/tumblrbot"
 [project.scripts]
 tumblrbot = "tumblrbot.__main__:main"
 
-[build-system]
-requires = ["flit_core"]
-build-backend = "flit_core.buildapi"
+[tool.uv]
+package = true

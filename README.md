@@ -1,6 +1,5 @@
 # tumblrbot
 
-[tumblrbot.exe]: https://github.com/MaidScientistIzutsumiMarin/tumblrbot/releases/latest/download/tumblrbot.exe
 
 [OAuth]: https://oauth.net/1
 [Python]: https://python.org/download
@@ -74,37 +73,15 @@ Features:
   - You can use regular expressions to filter out training data in the [config][configurable]. This is more of a brute-force solution, but it can work if the other solutions do not.
   - You can try limiting your dataset by specifying fewer blogs to download from or limiting the number of posts taken from each one in the [config][configurable].
   - If all else fails, you can manually remove data from the examples file until it passes. It is unfortunately not a definitive resource, but it can help to read about what the [OpenAI moderation API flags][Flags].
-- Sometimes, you will get an error about the training file not being found when starting fine-tuning. We do not currently have a fix or workaround for this. You should instead use the online portal for fine-tuning if this continues to happen. Read more in [fine-tuning]
-  - *We are unsure if this is still happening.*
-- Post counts are incorrect when downloading posts. Our tests suggest this is a [Tumblr] API problem that is giving inaccurate numbers, so treat them as estimates.
+- Post counts can be incorrect when downloading posts. Our tests suggest this is a [Tumblr] API problem that is giving inaccurate numbers, so treat them as estimates.
 
 **To-Do:**
 
-- **(Done)** Localize numbers and currencies.
-- **(Done)** Read Tumblr rate-limiting information from headers.
-- **(Done)** Read OpenAI rate-limiting information from headers (if available).
 - Add selection menus to make it easier to pick a particular operation.
 
 **Please submit an issue or contact us for features you want added/reimplemented.**
 
 ## Installation & Usage
-
-### Downloadable Binary
-
-| Pros | Cons |
-| --- | --- |
-| Easier to install | Harder to update |
-| No risk of dependencies breaking | Dependencies may be older |
-
-1. Download the latest release's [tumblrbot.exe].
-1. Launch `tumblrbot.exe` in the install location.
-
-### PyPi
-
-| Pros | Cons |
-| --- | --- |
-| Easier to update | Harder to install |
-| Dependencies may be newer | Dependencies may break |
 
 1. Install the latest version of [Python]:
    - Windows: `winget install python3`

@@ -33,6 +33,20 @@
 [Fine-Tuning]: #manual-fine-tuning
 [![PyPI - Version](https://img.shields.io/pypi/v/tumblrbot)](https://python.org/pypi/tumblrbot)
 
+
+## Installation & Usage
+
+1. Install the latest version of [Python]:
+   - Windows: `winget install python3`
+   - Linux (apt): `apt install python-pip`
+   - Linux (pacman): `pacman install python-pip`
+1. Install the [pip] package: `pip install tumblrbot`
+   - Alternatively, you can install from this repository: `pip install git+https://github.com/MaidScientistIzutsumiMarin/tumblrbot.git`
+   - On Linux, you will have to make a virtual environment or use the flag to install packages system-wide.
+1. Run `tumblrbot` from anywhere. Run `tumblrbot --help` for command-line options. Every command-line option corresponds to a value from the [config][configurable].
+
+---
+
 Description of original project:
 > 4tv-tumblrbot was a collaborative project I embarked on with my close friend Dima, who goes by @smoqueen on Tumblr. The aim of this endeavor was straightforward yet silly: to develop a Tumblr bot powered by a machine-learning model. This bot would be specifically trained on the content from a particular Tumblr blog or a selected set of blogs, allowing it to mimic the style, tone, and thematic essence of the original posts.
 
@@ -81,16 +95,7 @@ Features:
 
 **Please submit an issue or contact us for features you want added/reimplemented.**
 
-## Installation & Usage
-
-1. Install the latest version of [Python]:
-   - Windows: `winget install python3`
-   - Linux (apt): `apt install python-pip`
-   - Linux (pacman): `pacman install python-pip`
-1. Install the [pip] package: `pip install tumblrbot`
-   - Alternatively, you can install from this repository: `pip install git+https://github.com/MaidScientistIzutsumiMarin/tumblrbot.git`
-   - On Linux, you will have to make a virtual environment or use the flag to install packages system-wide.
-1. Run `tumblrbot` from anywhere. Run `tumblrbot --help` for command-line options. Every command-line option corresponds to a value from the [config][configurable].
+---
 
 ## Obtaining Tokens
 

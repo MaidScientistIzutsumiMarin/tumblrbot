@@ -136,5 +136,6 @@ class FineTuner(FlowClass):
                     yield 4 + len(encoding.encode(message.content))
 
     def get_cost_string(self, total_tokens: int) -> str:
-        cost = CurrencyConverter().convert(self.config.token_price / 1000000 * total_tokens, "USD", localeconv()["int_curr_symbol"].strip())
-        return currency(cost, grouping=True)
+        usd_cost = self.config.token_price / 1000000 * total_tokens
+        local_cost = currency(CurrencyConverter().convert(usd_cost, "USD", localeconv()["int_curr_symbol"].strip()), grouping=True)
+        return f"{usd_cost:.3} USD (~{local_cost})"

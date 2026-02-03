@@ -1,6 +1,5 @@
 # tumblrbot
 
-
 [OAuth]: https://oauth.net/1
 [Python]: https://python.org/download
 
@@ -32,7 +31,6 @@
 [Configurable]: #configuration
 [Fine-Tuning]: #manual-fine-tuning
 [![PyPI - Version](https://img.shields.io/pypi/v/tumblrbot)](https://python.org/pypi/tumblrbot)
-
 
 ## Installation & Usage
 

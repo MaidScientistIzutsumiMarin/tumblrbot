@@ -8,6 +8,7 @@ dependencies = [
   "CurrencyConverter",
   "openai",
   "pydantic",
+  "questionary",
   "requests",
   "requests-oauthlib",
   "rich",

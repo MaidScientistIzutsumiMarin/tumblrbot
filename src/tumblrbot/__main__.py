@@ -3,7 +3,8 @@ from sys import exit as sys_exit
 from sys import maxsize
 
 from openai import OpenAI
-from rich.prompt import Confirm
+from questionary import Choice, select
+from rich.console import Console
 from rich.traceback import install
 
 from tumblrbot.flow.download import PostDownloader
@@ -20,27 +21,28 @@ def main() -> None:
 
     install()
 
+    console = Console()
+
     tokens = Tokens.load()
     with OpenAI(api_key=tokens.openai_api_key, max_retries=maxsize) as openai, TumblrSession(tokens) as tumblr:
-        if Confirm.ask("Download latest posts?", default=False):
-            PostDownloader(openai, tumblr).main()
-
+        post_downloader = PostDownloader(openai, tumblr)
         examples_writer = ExamplesWriter(openai, tumblr)
-        if Confirm.ask("Create training data?", default=False):
-            examples_writer.main()
-
-        if Confirm.ask("Remove training data flagged by the OpenAI moderation? [bold]This can sometimes resolve errors with fine-tuning validation, but is slow.", default=False):
-            examples_writer.filter_examples()
-
         fine_tuner = FineTuner(openai, tumblr)
-        fine_tuner.print_estimates()
+        draft_generator = DraftGenerator(openai, tumblr)
 
-        message = "Resume monitoring the previous fine-tuning process?" if FlowClass.config.job_id else "Upload data to OpenAI for fine-tuning?"
-        if Confirm.ask(f"{message} [bold]You must do this to set the model to generate drafts from. Alternatively, manually enter a model into the config", default=False):
-            fine_tuner.main()
+        while True:
+            action_choices = [
+                Choice("Download latest posts", post_downloader.main, description=""),
+                Choice("Create training data", examples_writer.main, description=""),
+                Choice("Filter training data", examples_writer.filter_examples, description="Removes training data flagged by the OpenAI moderation. This can sometimes resolve errors with fine-tuning validation, but is slow."),
+                Choice("Fine-tune model", fine_tuner.main, description="Resume monitoring the previous fine-tuning process?" if FlowClass.config.job_id else "Upload data to OpenAI for fine-tuning? You must do this to set the model to generate drafts from. Alternatively, manually enter a model into the config."),
+                Choice("Generate drafts", draft_generator.main, description=""),
+                Choice("Quit", sys_exit, description="Quit this program."),
+            ]
 
-        if Confirm.ask("Generate drafts?", default=False):
-            DraftGenerator(openai, tumblr).main()
+            select("Select an action", action_choices, use_indicator=True).ask()()
+            console.rule()
+            fine_tuner.print_estimates()
 
 
 if __name__ == "__main__":

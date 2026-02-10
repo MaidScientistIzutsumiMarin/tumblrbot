@@ -3,7 +3,7 @@ from sys import exit as sys_exit
 from sys import maxsize
 
 from openai import OpenAI
-from questionary import Choice, select
+from questionary import Choice, checkbox
 from rich.console import Console
 from rich.traceback import install
 
@@ -40,7 +40,8 @@ def main() -> None:
                 Choice("Quit", sys_exit, description="Quit this program."),
             ]
 
-            select("Select an action", action_choices, use_indicator=True).ask()()
+            for action in checkbox("Select an action", action_choices).ask():
+                action()
             console.rule()
             fine_tuner.print_estimates()
 

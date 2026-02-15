@@ -23,6 +23,8 @@ if TYPE_CHECKING:
 class ExamplesWriter(FlowClass):
     @override
     def main(self) -> None:
+        rich_print("[bold]Writing training data...")
+
         self.config.examples_file.parent.mkdir(parents=True, exist_ok=True)
 
         examples = [self.create_example(*prompt) for prompt in self.get_custom_prompts()]

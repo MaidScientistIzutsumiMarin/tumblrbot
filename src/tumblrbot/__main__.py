@@ -20,6 +20,7 @@ def main() -> None:
     install()
     setlocale(LC_ALL, "")
 
+    console = Console()
     tokens = Tokens.load()
     with OpenAI(api_key=tokens.openai_api_key, max_retries=maxsize) as openai, TumblrSession(tokens) as tumblr:
         post_downloader = PostDownloader(openai, tumblr)
@@ -37,9 +38,14 @@ def main() -> None:
                 Choice("Quit", sys_exit, description="Quit this program."),
             ]
 
-            for choice in checkbox("Select an action", choices).unsafe_ask():
+            response = checkbox("Select an action", choices).unsafe_ask()
+            if not response:
+                console.print("[red]Nothing selected! Exiting program...")
+                return
+
+            for choice in response:
                 choice()
-            Console().rule()
+            console.rule()
             fine_tuner.print_estimates()
 
 

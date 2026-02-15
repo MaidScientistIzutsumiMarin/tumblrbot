@@ -17,6 +17,7 @@ from tumblrbot.utils.tumblr import TumblrSession
 
 
 def main() -> None:
+    install()
     setlocale(LC_ALL, "")
 
     install()

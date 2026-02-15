@@ -29,9 +29,9 @@ def main() -> None:
 
         while True:
             choices = [
-                Choice("Download latest posts", post_downloader.main, description="Download latest posts from blogs specified in the config."),
+                Choice("Download latest posts", post_downloader.main, description="Download latest posts from blogs."),
                 Choice("Create training data", examples_writer.main, description="Create examples file that can be used to fine-tune a model."),
-                Choice("Filter training data", examples_writer.filter_examples, description="Remove training data flagged by the OpenAI moderation. This can sometimes resolve errors with fine-tuning validation, but is slow."),
+                Choice("Filter training data", examples_writer.filter_examples, description="Remove training data flagged by OpenAI. May fix errors with fine-tuning validation."),
                 Choice("Fine-tune model", fine_tuner.main, description="Resume monitoring the previous fine-tuning process." if FlowClass.config.job_id else "Upload data to OpenAI and start fine-tuning."),
                 Choice("Generate drafts", draft_generator.main, description="Generate and upload posts to the bot's drafts."),
                 Choice("Quit", sys_exit, description="Quit this program."),

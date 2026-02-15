@@ -8,7 +8,6 @@ from currency_converter import CurrencyConverter
 from rich import print as rich_print
 from rich.console import Console
 from rich.progress import open as progress_open
-from rich.prompt import Confirm
 from tiktoken import encoding_for_model, get_encoding
 
 from tumblrbot.utils.common import FlowClass, PreviewLive, localize_number
@@ -96,9 +95,9 @@ class FineTuner(FlowClass):
         self.config.job_id = ""
 
         if job.status != "succeeded":
-            if Confirm.ask("[gray62]Delete uploaded examples file?", default=False):
-                self.openai.files.delete(job.training_file)
-                rich_print()
+            rich_print("[gray62]Fine-tuning failed. Deleting the uploaded examples file...")
+            self.openai.files.delete(job.training_file)
+            rich_print()
 
             if job.status == "failed" and job.error is not None:
                 raise RuntimeError(job.error.message)

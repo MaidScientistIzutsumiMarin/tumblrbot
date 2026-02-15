@@ -20,10 +20,6 @@ def main() -> None:
     install()
     setlocale(LC_ALL, "")
 
-    install()
-
-    console = Console()
-
     tokens = Tokens.load()
     with OpenAI(api_key=tokens.openai_api_key, max_retries=maxsize) as openai, TumblrSession(tokens) as tumblr:
         post_downloader = PostDownloader(openai, tumblr)
@@ -32,18 +28,18 @@ def main() -> None:
         draft_generator = DraftGenerator(openai, tumblr)
 
         while True:
-            action_choices = [
-                Choice("Download latest posts", post_downloader.main, description=""),
-                Choice("Create training data", examples_writer.main, description=""),
-                Choice("Filter training data", examples_writer.filter_examples, description="Removes training data flagged by the OpenAI moderation. This can sometimes resolve errors with fine-tuning validation, but is slow."),
-                Choice("Fine-tune model", fine_tuner.main, description="Resume monitoring the previous fine-tuning process?" if FlowClass.config.job_id else "Upload data to OpenAI for fine-tuning? You must do this to set the model to generate drafts from. Alternatively, manually enter a model into the config."),
-                Choice("Generate drafts", draft_generator.main, description=""),
+            choices = [
+                Choice("Download latest posts", post_downloader.main, description="Download latest posts from blogs specified in the config."),
+                Choice("Create training data", examples_writer.main, description="Create examples file that can be used to fine-tune a model."),
+                Choice("Filter training data", examples_writer.filter_examples, description="Remove training data flagged by the OpenAI moderation. This can sometimes resolve errors with fine-tuning validation, but is slow."),
+                Choice("Fine-tune model", fine_tuner.main, description="Resume monitoring the previous fine-tuning process." if FlowClass.config.job_id else "Upload data to OpenAI and start fine-tuning."),
+                Choice("Generate drafts", draft_generator.main, description="Generate and upload posts to the bot's drafts."),
                 Choice("Quit", sys_exit, description="Quit this program."),
             ]
 
-            for action in checkbox("Select an action", action_choices).ask():
-                action()
-            console.rule()
+            for choice in checkbox("Select an action", choices).unsafe_ask():
+                choice()
+            Console().rule()
             fine_tuner.print_estimates()
 
 

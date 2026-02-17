@@ -89,8 +89,6 @@ Features:
 
 **To-Do:**
 
-- Add selection menus to make it easier to pick a particular operation.
-- Add retrying to the fine-tuning process (if necessary).
 - Add an option to filter newest posts by a specific date.
 
 **Please submit an issue or contact us for features you want added/reimplemented.**

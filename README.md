@@ -96,7 +96,6 @@ In addition, `tumblrbot` will:
 **To-Do:**
 
 - Allow limiting the newest posts from each blog with a configurable date.
-- Change instances of "fine-tuning" to "training" (maybe).
 
 **Please submit an issue or contact us for features you want added/reimplemented.**
 

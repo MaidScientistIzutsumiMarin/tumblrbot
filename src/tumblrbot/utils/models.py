@@ -65,7 +65,7 @@ class Config(FileSyncSettings):
     filtered_words: list[str] = Field([], description="A case-insensitive list of disallowed words used to filter out training data. Regular expressions are allowed, but must be escaped.")
 
     # Writing Examples & Fine-Tuning
-    examples_file: Path = Field(Path("examples.jsonl"), description="Where to output the examples that will be used to fine-tune the model.")
+    examples_file: Path = Field(Path("training_data_file.jsonl"), description="Where to output the training data that will be used to fine-tune the model.")
 
     # Writing Examples & Generating
     developer_message: str = Field("You are a Tumblr post bot. Please generate a Tumblr post in accordance with the user's request.", description="The developer message used by the OpenAI API to generate drafts.")
@@ -126,28 +126,32 @@ class Tokens(FileSyncSettings):
     def model_post_init(self, context: object) -> None:
         super().model_post_init(context)
 
-        # Check if any tokens are missing or if the user wants to reset them, then set tokens if necessary.
         if not self.openai_api_key:
-            (self.openai_api_key,) = self.online_token_prompt("https://platform.openai.com/api-keys", "API key")
-
+            self.set_openai_token()
         if not all(self.tumblr.model_dump().values()):
-            self.tumblr.client_key, self.tumblr.client_secret = self.online_token_prompt("https://tumblr.com/oauth/apps", "consumer key", "consumer secret")
+            self.set_tumblr_tokens()
 
-            # This is the whole OAuth 1.0 process.
-            # https://requests-oauthlib.readthedocs.io/en/latest/examples/tumblr.html
-            # We tried setting up OAuth 2.0, but the token refresh process is far too unreliable for this sort of program.
-            with OAuth1Session(**self.tumblr.model_dump()) as session:
-                session.fetch_request_token("http://tumblr.com/oauth/request_token")  # pyright: ignore[reportUnknownMemberType]
+    def set_openai_token(self) -> None:
+        (self.openai_api_key,) = self.online_token_prompt("https://platform.openai.com/api-keys", "API key")
 
-                rich_print("Open the link below in your browser, and authorize this application.\nAfter authorizing, copy and paste the URL of the page you are redirected to below.")
-                authorization_url = session.authorization_url("http://tumblr.com/oauth/authorize")  # pyright: ignore[reportUnknownMemberType]
-                (authorization_response,) = self.online_token_prompt(authorization_url, "full redirect URL")
-                session.parse_authorization_response(authorization_response)
+    def set_tumblr_tokens(self) -> None:
+        self.tumblr.client_key, self.tumblr.client_secret = self.online_token_prompt("https://tumblr.com/oauth/apps", "consumer key", "consumer secret")
 
-                access_token = session.fetch_access_token("http://tumblr.com/oauth/access_token")  # pyright: ignore[reportUnknownMemberType]
+        # This is the whole OAuth 1.0 process.
+        # https://requests-oauthlib.readthedocs.io/en/latest/examples/tumblr.html
+        # We tried setting up OAuth 2.0, but the token refresh process is far too unreliable for this sort of program.
+        with OAuth1Session(**self.tumblr.model_dump()) as session:
+            session.fetch_request_token("http://tumblr.com/oauth/request_token")  # pyright: ignore[reportUnknownMemberType]
 
-            self.tumblr.resource_owner_key = access_token["oauth_token"]
-            self.tumblr.resource_owner_secret = access_token["oauth_token_secret"]
+            rich_print("Open the link below in your browser, and authorize this application.\nAfter authorizing, copy and paste the URL of the page you are redirected to below.")
+            authorization_url = session.authorization_url("http://tumblr.com/oauth/authorize")  # pyright: ignore[reportUnknownMemberType]
+            (authorization_response,) = self.online_token_prompt(authorization_url, "full redirect URL")
+            session.parse_authorization_response(authorization_response)
+
+            access_token = session.fetch_access_token("http://tumblr.com/oauth/access_token")  # pyright: ignore[reportUnknownMemberType]
+
+        self.tumblr.resource_owner_key = access_token["oauth_token"]
+        self.tumblr.resource_owner_secret = access_token["oauth_token_secret"]
 
 
 class Blog(FullyValidatedModel):

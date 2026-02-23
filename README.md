@@ -71,7 +71,7 @@ This fork is largely a rewrite of the source code with similarities in its struc
 - Generate and upload posts to a configured blog using a configured fine-tuned model.
   - Creates tags by extracting keywords using the base model with configurable settings.
   - Uploads generated posts as drafts.
-  - Reblogs generated posts from configured blogs.
+  - Reblogs generated posts from configured blogs **(disabled by default)**.
   - Shows overall progress and post previews.
 - Delete data saved by `tumblrbot`.
 - Reset settings and/or tokens.

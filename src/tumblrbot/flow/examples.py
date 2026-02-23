@@ -29,9 +29,11 @@ class ExamplesWriter(FlowClass):
 
         examples = [self.create_example(*prompt) for prompt in self.get_custom_prompts()]
         examples.extend(self.create_example(self.config.user_message, str(post)) for post in self.get_valid_posts())
-        self.write_examples(examples)
-
-        rich_print(f"[bold]The examples file can be found at: '{self.config.examples_file}'\n")
+        if examples:
+            self.write_examples(examples)
+            rich_print(f"[bold]The training data can be found at: '{self.config.examples_file}'\n")
+        else:
+            rich_print("[bold red]No valid posts found! No training data has been written! [italic]Try downloading your latest posts...")
 
     def create_example(self, user_message: str, assistant_message: str) -> Example:
         return Example(

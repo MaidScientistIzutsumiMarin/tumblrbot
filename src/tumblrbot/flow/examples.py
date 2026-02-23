@@ -25,13 +25,13 @@ class ExamplesWriter(FlowClass):
     def main(self) -> None:
         rich_print("[bold]Writing training data...")
 
-        self.config.examples_file.parent.mkdir(parents=True, exist_ok=True)
+        self.config.training_data_file.parent.mkdir(parents=True, exist_ok=True)
 
         examples = [self.create_example(*prompt) for prompt in self.get_custom_prompts()]
         examples.extend(self.create_example(self.config.user_message, str(post)) for post in self.get_valid_posts())
         if examples:
             self.write_examples(examples)
-            rich_print(f"[bold]The training data can be found at: '{self.config.examples_file}'\n")
+            rich_print(f"[bold]The training data can be found at: '{self.config.training_data_file}'\n")
         else:
             rich_print("[bold red]No valid posts found! No training data has been written! [italic]Try downloading your latest posts...")
 
@@ -57,7 +57,7 @@ class ExamplesWriter(FlowClass):
     # If there is an error dumping the models or writing to the file,
     # then it will leave a partially written or empty file behind.
     def write_examples(self, examples: Iterable[Example]) -> None:
-        with self.config.examples_file.open("w", encoding="utf_8") as fp:
+        with self.config.training_data_file.open("w", encoding="utf_8") as fp:
             for example in examples:
                 fp.write(f"{example.model_dump_json()}\n")
 
@@ -78,7 +78,7 @@ class ExamplesWriter(FlowClass):
                     yield post
 
     def filter_examples(self) -> None:
-        raw_examples = self.config.examples_file.read_bytes().splitlines()
+        raw_examples = self.config.training_data_file.read_bytes().splitlines()
         old_examples = map(Example.model_validate_json, raw_examples)
         new_examples: list[Example] = []
         with PreviewLive() as live:

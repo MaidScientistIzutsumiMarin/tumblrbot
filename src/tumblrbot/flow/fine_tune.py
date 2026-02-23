@@ -57,7 +57,7 @@ class FineTuner(FlowClass):
         if self.config.job_id:
             return self.poll_job_status()
 
-        with progress_open(self.config.examples_file, "rb", description=f"Uploading [purple]{self.config.examples_file}[/]...") as fp:
+        with progress_open(self.config.training_data_file, "rb", description=f"Uploading [purple]{self.config.training_data_file}[/]...") as fp:
             file = self.openai.files.create(
                 file=fp,
                 purpose="fine-tune",
@@ -128,7 +128,7 @@ class FineTuner(FlowClass):
             encoding = get_encoding("o200k_base")
             Console(stderr=True, style="logging.level.warning").print(f"[Warning] Using encoding '{encoding.name}': {''.join(error.args)}\n")
 
-        with self.config.examples_file.open(encoding="utf_8") as fp:
+        with self.config.training_data_file.open(encoding="utf_8") as fp:
             for line in fp:
                 example = Example.model_validate_json(line)
                 yield len(encoding.encode("assistant"))  # every reply is primed with <|start|>assistant<|message|>

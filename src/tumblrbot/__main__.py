@@ -43,7 +43,7 @@ def main() -> None:
         while True:
             delete_choices = [
                 create_delete_choice("Delete downloaded posts", "Delete all downloaded posts.", FlowClass.config.data_directory),
-                create_delete_choice("Delete training data", "Delete generated training data.", FlowClass.config.examples_file),
+                create_delete_choice("Delete training data", "Delete generated training data.", FlowClass.config.training_data_file),
             ]
 
             reset_choices = [
@@ -63,7 +63,7 @@ def main() -> None:
             ]
 
             console.rule()
-            if FlowClass.config.examples_file.exists():
+            if FlowClass.config.training_data_file.exists():
                 fine_tuner.print_estimates()
             else:
                 console.print("[gray62]Hint: Try creating training data to see price estimates for fine-tuning.")

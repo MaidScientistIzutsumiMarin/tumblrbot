@@ -65,7 +65,7 @@ class Config(FileSyncSettings):
     filtered_words: list[str] = Field([], description="A case-insensitive list of disallowed words used to filter out training data. Regular expressions are allowed, but must be escaped.")
 
     # Writing Examples & Fine-Tuning
-    examples_file: Path = Field(Path("training_data_file.jsonl"), description="Where to output the training data that will be used to fine-tune the model.")
+    training_data_file: Path = Field(Path("training_data.jsonl"), description="Where to output the training data that will be used to fine-tune the model.")
 
     # Writing Examples & Generating
     developer_message: str = Field("You are a Tumblr post bot. Please generate a Tumblr post in accordance with the user's request.", description="The developer message used by the OpenAI API to generate drafts.")

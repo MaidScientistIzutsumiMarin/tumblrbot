@@ -32,6 +32,8 @@
 
 [![PyPI - Version](https://img.shields.io/pypi/v/tumblrbot)](https://python.org/pypi/tumblrbot)
 
+## Due to OpenAI's involvement with the United States military, we will no longer be updating this program. If local model training becomes feasible, this may change in the future
+
 ## Installation & Usage
 
 1. Install the latest version of [uv] following [these instructions][uv Installation].

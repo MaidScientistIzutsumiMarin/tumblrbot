@@ -90,8 +90,9 @@ class Config(FileSyncSettings):
     reblog_user_message: str = Field("Please write a comical Tumblr post in response to the following post:\n\n{}", description="The format string for the user message used to reblog posts.")
 
     def update_fields(self, user: User) -> None:
+        choices = [Choice(blog.name, blog.name, description=blog.description) for blog in user.blogs]
+
         if not self.download_blog_identifiers:
-            choices = [Choice(blog.name, blog.name, description=blog.description) for blog in user.blogs]
             self.download_blog_identifiers = checkbox(
                 "Select blogs to download from and then press <enter>",
                 choices,
@@ -99,7 +100,6 @@ class Config(FileSyncSettings):
             ).unsafe_ask()
 
         if not self.upload_blog_identifier:
-            choices = [Choice(blog.name, blog.name, description=blog.description) for blog in user.blogs]
             self.upload_blog_identifier = select(
                 "Select a blog to upload to",
                 choices,

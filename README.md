@@ -96,6 +96,7 @@ In addition, `tumblrbot` will:
 **To-Do:**
 
 - Allow limiting the newest posts from each blog with a configurable date.
+- Add a menu to optionally select blogs to download from and upload to from the list of blogs for the current user.
 
 **Please submit an issue or contact us for features you want added/reimplemented.**
 

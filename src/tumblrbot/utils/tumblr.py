@@ -81,3 +81,8 @@ class TumblrSession(Session):
             json=post.model_dump(),
         )
         return ResponseModel.model_validate_json(response.text)
+
+    @rate_limit_retry
+    def get_user_information(self) -> ResponseModel:
+        response = self.get("https://api.tumblr.com/v2/user/info")
+        return ResponseModel.model_validate_json(response.text)

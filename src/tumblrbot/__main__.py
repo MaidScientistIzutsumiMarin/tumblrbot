@@ -35,6 +35,8 @@ def main() -> None:
     tokens = Tokens.load()
 
     with OpenAI(api_key=tokens.openai_api_key, max_retries=maxsize) as openai, TumblrSession(tokens) as tumblr:
+        FlowClass.config.update_fields(tumblr.get_user_information().response.user)
+
         post_downloader = PostDownloader(openai, tumblr)
         examples_writer = ExamplesWriter(openai, tumblr)
         fine_tuner = FineTuner(openai, tumblr)

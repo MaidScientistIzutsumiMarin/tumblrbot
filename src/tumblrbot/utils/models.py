@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING, Annotated, Any, Literal, Self, override
 from openai.types import ResponsesModel  # noqa: TC002
 from pydantic import BaseModel, ConfigDict, Field, NonNegativeFloat, NonNegativeInt, PlainSerializer, PositiveFloat, PositiveInt, model_validator
 from pydantic.json_schema import SkipJsonSchema  # noqa: TC002
+from questionary import Choice, checkbox, select
 from requests_oauthlib import OAuth1Session
 from rich import print as rich_print
 from rich.panel import Panel
-from rich.prompt import Prompt
 from tomlkit import comment, document, dumps  # pyright: ignore[reportUnknownVariableType]
 
 if TYPE_CHECKING:
@@ -89,17 +89,21 @@ class Config(FileSyncSettings):
     reblog_chance: NonNegativeFloat = Field(0.1, description="The chance to generate a reblog of a random post. This will use more OpenAI tokens.")
     reblog_user_message: str = Field("Please write a comical Tumblr post in response to the following post:\n\n{}", description="The format string for the user message used to reblog posts.")
 
-    @override
-    def model_post_init(self, context: object) -> None:
-        super().model_post_init(context)
-
+    def update_fields(self, user: User) -> None:
         if not self.download_blog_identifiers:
-            rich_print("Enter the [cyan]identifiers of your blogs[/] that data should be [bold purple]downloaded[/] from, separated by commas.")
-            self.download_blog_identifiers = list(map(str.strip, Prompt.ask("[bold][Example] [dim]staff.tumblr.com,changes").split(",")))
+            choices = [Choice(blog.name, blog.name, description=blog.description) for blog in user.blogs]
+            self.download_blog_identifiers = checkbox(
+                "Select blogs to download from and then press <enter>",
+                choices,
+                validate=lambda response: bool(response) or "Please select at least one blog...",
+            ).unsafe_ask()
 
         if not self.upload_blog_identifier:
-            rich_print("Enter the [cyan]identifier of your blog[/] that drafts should be [bold purple]uploaded[/] to.")
-            self.upload_blog_identifier = Prompt.ask("[bold][Example] [dim]staff.tumblr.com or changes").strip()
+            choices = [Choice(blog.name, blog.name, description=blog.description) for blog in user.blogs]
+            self.upload_blog_identifier = select(
+                "Select a blog to upload to",
+                choices,
+            ).unsafe_ask()
 
 
 class Tokens(FileSyncSettings):
@@ -155,15 +159,22 @@ class Tokens(FileSyncSettings):
 
 
 class Blog(FullyValidatedModel):
+    title: str = ""
     name: str = ""
+    description: str = ""
     posts: int = 0
     uuid: str = ""
+
+
+class User(FullyValidatedModel):
+    blogs: list[Blog] = []
 
 
 class ResponseModel(FullyValidatedModel):
     class Response(FullyValidatedModel):
         blog: Blog = Blog()
         posts: list[Any] = []
+        user: User = User()
 
     response: Response
 

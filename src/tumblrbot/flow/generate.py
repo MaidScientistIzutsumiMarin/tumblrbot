@@ -3,6 +3,7 @@ from functools import cache
 from random import choice, random, sample
 from typing import TYPE_CHECKING, override
 
+from openai import BadRequestError
 from rich import print as rich_print
 
 from tumblrbot.utils import localize_number
@@ -25,8 +26,12 @@ class DraftGenerator(FlowClass):
                     post = self.generate_post()
                     self.tumblr.create_post(self.config.upload_blog_identifier, post)
                     live.custom_update(post)
-                except BaseException as exception:
-                    exception.add_note(f"📉 An error occurred! Generated {localize_number(i)} draft(s) before failing. {message}")
+                except BadRequestError as e:
+                    e.add_note("[italic]Hint: Try fine-tuning a model or changing the fine-tuned model value in the config...")
+                    raise
+                except BaseException as e:
+                    if i > 0:
+                        e.add_note(f"📉 An error occurred! Generated {localize_number(i)} draft(s) before failing. {message}")
                     raise
 
         rich_print(f":chart_increasing: [bold green]Generated {localize_number(self.config.draft_count)} draft(s).[/] {message}")

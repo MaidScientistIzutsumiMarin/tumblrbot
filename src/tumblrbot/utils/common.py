@@ -55,3 +55,7 @@ class PreviewLive(Live):
         table.add_row(self.progress)
         table.add_row(*renderables)
         self.update(table)
+
+
+class TumblrBotError(Exception):
+    pass

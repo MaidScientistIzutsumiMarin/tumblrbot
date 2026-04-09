@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, override
 from rich import print as rich_print
 
 from tumblrbot.utils import localize_number, warning_console
-from tumblrbot.utils.common import FlowClass, PreviewLive
+from tumblrbot.utils.common import FlowClass, PreviewLive, TumblrBotError
 from tumblrbot.utils.models import Example, Message, Post
 
 if TYPE_CHECKING:
@@ -30,8 +30,12 @@ class ExamplesWriter(FlowClass):
         examples = [self.create_example(*prompt) for prompt in self.get_custom_prompts()]
         examples.extend(self.create_example(self.config.user_message, str(post)) for post in self.get_valid_posts())
 
-        self.write_examples(examples)
-        rich_print(f"[bold]The training data can be found at: '{self.config.training_data_file}'\n")
+        if examples:
+            self.write_examples(examples)
+            rich_print(f"[bold]The training data can be found at: '{self.config.training_data_file}'\n")
+        else:
+            msg = "No valid posts found! [italic]Hint: Try downloading your latest posts..."
+            raise TumblrBotError(msg)
 
     def create_example(self, user_message: str, assistant_message: str) -> Example:
         return Example(

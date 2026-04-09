@@ -5,13 +5,14 @@ from time import sleep
 from typing import TYPE_CHECKING, override
 
 from currency_converter import CurrencyConverter
+from openai import BadRequestError
 from rich import print as rich_print
 from rich.progress import open as progress_open
 from rich.prompt import Confirm
 from tiktoken import encoding_for_model, get_encoding
 
 from tumblrbot.utils import localize_number, warning_console
-from tumblrbot.utils.common import FlowClass, PreviewLive
+from tumblrbot.utils.common import FlowClass, PreviewLive, TumblrBotError
 from tumblrbot.utils.models import Example
 
 if TYPE_CHECKING:
@@ -64,10 +65,14 @@ class FineTuner(FlowClass):
             )
         rich_print()
 
-        job = self.openai.fine_tuning.jobs.create(
-            model=self.config.base_model,
-            training_file=file.id,
-        )
+        try:
+            job = self.openai.fine_tuning.jobs.create(
+                model=self.config.base_model,
+                training_file=file.id,
+            )
+        except BadRequestError as e:
+            e.add_note("[italic]Hint: Try changing the base model value in the config...")
+            raise
 
         self.config.job_id = job.id
         return job
@@ -101,7 +106,9 @@ class FineTuner(FlowClass):
                 rich_print()
 
             message = "Fine-tuning failed!" if job.error is None else job.error.message
-            raise RuntimeError(message or "Fine-tuning cancelled!")
+            if message:
+                message += "[italic]Hint: Try filtering training data if validation failed..."
+            raise TumblrBotError(message or "Fine-tuning cancelled!")
 
         if job.fine_tuned_model is not None:
             self.config.fine_tuned_model = job.fine_tuned_model
@@ -126,7 +133,7 @@ class FineTuner(FlowClass):
             encoding = encoding_for_model(self.config.base_model)
         except KeyError as error:
             encoding = get_encoding("o200k_base")
-            warning_console.print(f"[Warning] Using encoding '{encoding.name}': {''.join(error.args)}\n")
+            warning_console.print(f"Using encoding '{encoding.name}': {''.join(error.args)}\n")
 
         with self.config.training_data_file.open(encoding="utf_8") as fp:
             for line in fp:

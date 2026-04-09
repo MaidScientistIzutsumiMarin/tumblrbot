@@ -1,12 +1,13 @@
+from collections.abc import Callable, Mapping
 from functools import partial
 from locale import LC_ALL, setlocale
 from pathlib import Path
 from shutil import rmtree
 from sys import exit as sys_exit
 from sys import maxsize
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
-from openai import OpenAI
+from openai import BadRequestError, OpenAI
 from questionary import Choice, checkbox, select
 from rich import print as rich_print
 from rich.traceback import install
@@ -15,8 +16,8 @@ from tumblrbot.flow.download import PostDownloader
 from tumblrbot.flow.examples import ExamplesWriter
 from tumblrbot.flow.fine_tune import FineTuner
 from tumblrbot.flow.generate import DraftGenerator
-from tumblrbot.utils import console
-from tumblrbot.utils.common import FlowClass
+from tumblrbot.utils import console, error_console
+from tumblrbot.utils.common import FlowClass, TumblrBotError
 from tumblrbot.utils.models import Config, Tokens
 from tumblrbot.utils.tumblr import TumblrSession
 
@@ -64,17 +65,39 @@ def main() -> None:
             ]
 
             console.rule()
-            if FlowClass.config.training_data_file.exists():
+
+            try:
                 fine_tuner.print_estimates()
-            else:
+            except FileNotFoundError:
                 console.print("[gray62]Hint: Try creating training data to see price estimates for fine-tuning.")
 
-            for choice in checkbox(
+            selected = checkbox(
                 "Select action(s) and then press <enter>",
                 choices,
                 validate=lambda response: bool(response) or "Please select at least one action...",
-            ).unsafe_ask():
-                choice()
+            ).unsafe_ask()
+            maid_error_cleanup(selected)
+
+
+def maid_error_cleanup(selected: list[Callable[[], Any]]) -> None:
+    try:
+        for selection in selected:
+            selection()
+    except TumblrBotError as e:
+        error_console.print(*e.args)
+    except FileNotFoundError as e:
+        if e.filename == str(FlowClass.config.training_data_file):
+            error_console.print("Training data not found! [italic]Hint: Try creating training data...")
+        else:
+            raise
+    except BadRequestError as e:
+        if isinstance(e.body, Mapping):
+            e.body = cast("Mapping[str, str]", e.body)  # pyright: ignore[reportUnknownMemberType]
+            error_console.print(f"{e.body['message']}")
+
+        if hasattr(e, "__notes__"):
+            for note in e.__notes__:
+                error_console.print(note)
 
 
 def create_submenu_choice(verb: str, choices: Sequence[str | Choice[Path] | dict[str, object]], *, should_exit_on_success: bool = False) -> Choice[partial[None]]:

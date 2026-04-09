@@ -94,7 +94,7 @@ class ExamplesWriter(FlowClass):
 
         self.write_examples(new_examples)
 
-        rich_print(f"[red]Removed {localize_number(len(raw_examples) - len(new_examples))} posts.\n")
+        rich_print(f"[green]Removed {localize_number(len(raw_examples) - len(new_examples))} posts.\n")
 
     def create_moderation_batch(self, api_input: str | SequenceNotStr[str] | Iterable[ModerationMultiModalInputParam]) -> ModerationCreateResponse:
         return self.openai.moderations.create(input=api_input)

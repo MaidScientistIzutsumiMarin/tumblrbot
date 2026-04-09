@@ -1,11 +1,9 @@
-from locale import str as locale_str
-
 from requests import HTTPError, Response, Session
 from requests_oauthlib import OAuth1
-from rich import print as rich_print
 from rich.pretty import pprint
 from tenacity import RetryCallState, retry, retry_if_exception_message
 
+from tumblrbot.utils import localize_number, warning_console
 from tumblrbot.utils.models import Post, ResponseModel, Tokens
 
 
@@ -21,7 +19,7 @@ def wait_until_ratelimit_reset(retry_state: RetryCallState) -> float:
 rate_limit_retry = retry(
     wait=wait_until_ratelimit_reset,
     retry=retry_if_exception_message(match="429 Client Error: Limit Exceeded for url: .+"),
-    before_sleep=lambda state: rich_print(f"[yellow]Tumblr rate limit exceeded. Waiting for {locale_str(state.upcoming_sleep)} seconds..."),
+    before_sleep=lambda state: warning_console.print(f"Tumblr rate limit exceeded. Waiting for {localize_number(state.upcoming_sleep)} seconds..."),
 )
 
 

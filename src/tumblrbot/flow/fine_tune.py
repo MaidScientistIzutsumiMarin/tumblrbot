@@ -6,12 +6,12 @@ from typing import TYPE_CHECKING, override
 
 from currency_converter import CurrencyConverter
 from rich import print as rich_print
-from rich.console import Console
 from rich.progress import open as progress_open
 from rich.prompt import Confirm
 from tiktoken import encoding_for_model, get_encoding
 
-from tumblrbot.utils.common import FlowClass, PreviewLive, localize_number
+from tumblrbot.utils import localize_number, warning_console
+from tumblrbot.utils.common import FlowClass, PreviewLive
 from tumblrbot.utils.models import Example
 
 if TYPE_CHECKING:
@@ -126,7 +126,7 @@ class FineTuner(FlowClass):
             encoding = encoding_for_model(self.config.base_model)
         except KeyError as error:
             encoding = get_encoding("o200k_base")
-            Console(stderr=True, style="logging.level.warning").print(f"[Warning] Using encoding '{encoding.name}': {''.join(error.args)}\n")
+            warning_console.print(f"[Warning] Using encoding '{encoding.name}': {''.join(error.args)}\n")
 
         with self.config.training_data_file.open(encoding="utf_8") as fp:
             for line in fp:

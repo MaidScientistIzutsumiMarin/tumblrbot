@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING, override
 
 from rich import print as rich_print
 
-from tumblrbot.utils.common import FlowClass, PreviewLive, localize_number
+from tumblrbot.utils import localize_number
+from tumblrbot.utils.common import FlowClass, PreviewLive
 from tumblrbot.utils.models import Block, Post
 
 if TYPE_CHECKING:

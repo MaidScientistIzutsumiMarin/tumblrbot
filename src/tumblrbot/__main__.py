@@ -9,13 +9,13 @@ from typing import TYPE_CHECKING
 from openai import OpenAI
 from questionary import Choice, checkbox, select
 from rich import print as rich_print
-from rich.console import Console
 from rich.traceback import install
 
 from tumblrbot.flow.download import PostDownloader
 from tumblrbot.flow.examples import ExamplesWriter
 from tumblrbot.flow.fine_tune import FineTuner
 from tumblrbot.flow.generate import DraftGenerator
+from tumblrbot.utils import console
 from tumblrbot.utils.common import FlowClass
 from tumblrbot.utils.models import Config, Tokens
 from tumblrbot.utils.tumblr import TumblrSession
@@ -31,7 +31,6 @@ def main() -> None:
     install()
     setlocale(LC_ALL, "")
 
-    console = Console()
     tokens = Tokens.load()
 
     with OpenAI(api_key=tokens.openai_api_key, max_retries=maxsize) as openai, TumblrSession(tokens) as tumblr:

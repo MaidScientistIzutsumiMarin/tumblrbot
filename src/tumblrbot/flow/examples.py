@@ -7,9 +7,9 @@ from re import compile as re_compile
 from typing import TYPE_CHECKING, override
 
 from rich import print as rich_print
-from rich.console import Console
 
-from tumblrbot.utils.common import FlowClass, PreviewLive, localize_number
+from tumblrbot.utils import localize_number, warning_console
+from tumblrbot.utils.common import FlowClass, PreviewLive
 from tumblrbot.utils.models import Example, Message, Post
 
 if TYPE_CHECKING:
@@ -29,11 +29,9 @@ class ExamplesWriter(FlowClass):
 
         examples = [self.create_example(*prompt) for prompt in self.get_custom_prompts()]
         examples.extend(self.create_example(self.config.user_message, str(post)) for post in self.get_valid_posts())
-        if examples:
-            self.write_examples(examples)
-            rich_print(f"[bold]The training data can be found at: '{self.config.training_data_file}'\n")
-        else:
-            rich_print("[bold red]No valid posts found! No training data has been written! [italic]Try downloading your latest posts...")
+
+        self.write_examples(examples)
+        rich_print(f"[bold]The training data can be found at: '{self.config.training_data_file}'\n")
 
     def create_example(self, user_message: str, assistant_message: str) -> Example:
         return Example(
@@ -67,7 +65,7 @@ class ExamplesWriter(FlowClass):
                 posts = list(self.get_valid_posts_from_path(path))
                 yield from posts[-self.config.post_limit :]
             else:
-                Console(stderr=True, style="logging.level.warning").print(f"{path} does not exist!")
+                warning_console.print(f"{path} does not exist!")
 
     def get_valid_posts_from_path(self, path: Path) -> Generator[Post]:
         pattern = re_compile("|".join(self.config.filtered_words), IGNORECASE)

@@ -10,6 +10,7 @@ from questionary import Choice, checkbox, select
 from requests_oauthlib import OAuth1Session
 from rich import print as rich_print
 from rich.panel import Panel
+from rich.prompt import Prompt
 from tomlkit import comment, document, dumps  # pyright: ignore[reportUnknownVariableType]
 
 if TYPE_CHECKING:
@@ -94,10 +95,13 @@ class Config(FileSyncSettings):
 
         if not self.download_blog_identifiers:
             self.download_blog_identifiers = checkbox(
-                "Select blogs to download from and then press <enter>",
+                "Select blogs to download from and then press <enter> or select nothing to manually enter blog names",
                 choices,
-                validate=lambda response: bool(response) or "Please select at least one blog...",
             ).unsafe_ask()
+
+            if not self.download_blog_identifiers:
+                rich_print("Enter the [cyan]identifiers of your blogs[/] that data should be [bold purple]downloaded[/] from, separated by commas.")
+                self.download_blog_identifiers = list(map(str.strip, Prompt.ask("[bold][Example] [dim]staff.tumblr.com,changes").split(",")))
 
         if not self.upload_blog_identifier:
             self.upload_blog_identifier = select(

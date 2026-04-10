@@ -44,6 +44,8 @@ class FineTuner(FlowClass):
 
             while job.status in {"validating_files", "queued", "running"}:
                 job = self.poll_job_status()
+                if job.status == "running":
+                    self.openai.fine_tuning.jobs.cancel(job.id)
 
                 live.progress.update(
                     task_id,
@@ -105,10 +107,13 @@ class FineTuner(FlowClass):
                 self.openai.files.delete(job.training_file)
                 rich_print()
 
-            message = "Fine-tuning failed!" if job.error is None else job.error.message
-            if message:
-                message += "[italic]Hint: Try filtering training data if validation failed..."
-            raise TumblrBotError(message or "Fine-tuning cancelled!")
+            if job.error is None:
+                message = "Fine-tuning failed!"
+            elif job.error.code == "unsafe_file":
+                message = f"{job.error.message} [italic]Hint: Try filtering training data or fine-tuning again..."
+            else:
+                message = "Fine-tuning cancelled!"
+            raise TumblrBotError(message)
 
         if job.fine_tuned_model is not None:
             self.config.fine_tuned_model = job.fine_tuned_model

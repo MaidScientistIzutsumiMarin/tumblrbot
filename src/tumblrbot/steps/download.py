@@ -2,7 +2,7 @@ from json import dump
 from typing import TYPE_CHECKING, override
 
 from tumblrbot.steps.base import BaseStep
-from tumblrbot.utils.common import PreviewLive
+from tumblrbot.utils.common import PreviewLive, config
 from tumblrbot.utils.models import Post
 
 if TYPE_CHECKING:
@@ -12,10 +12,10 @@ if TYPE_CHECKING:
 class PostDownloader(BaseStep):
     @override
     def main(self) -> None:
-        self.config.data_directory.mkdir(parents=True, exist_ok=True)
+        config.data_directory.mkdir(parents=True, exist_ok=True)
 
         with PreviewLive() as live:
-            for blog_identifier in self.config.download_blog_identifiers:
+            for blog_identifier in config.download_blog_identifiers:
                 data_path = self.get_data_path(blog_identifier)
 
                 completed = 0

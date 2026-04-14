@@ -12,7 +12,7 @@ from rich.prompt import Confirm
 from tiktoken import encoding_for_model, get_encoding
 
 from tumblrbot.steps.base import BaseStep
-from tumblrbot.utils.common import PreviewLive, TumblrBotError, localize_number, warning_console
+from tumblrbot.utils.common import PreviewLive, TumblrBotError, config, localize_number, warning_console
 from tumblrbot.utils.models import Example
 
 if TYPE_CHECKING:
@@ -57,10 +57,10 @@ class FineTuner(BaseStep):
         self.process_completed_job(job)
 
     def create_job(self) -> FineTuningJob:
-        if self.config.job_id:
+        if config.job_id:
             return self.poll_job_status()
 
-        with progress_open(self.config.training_data_file, "rb", description=f"Uploading [purple]{self.config.training_data_file}[/]...") as fp:
+        with progress_open(config.training_data_file, "rb", description=f"Uploading [purple]{config.training_data_file}[/]...") as fp:
             file = self.openai.files.create(
                 file=fp,
                 purpose="fine-tune",
@@ -69,21 +69,21 @@ class FineTuner(BaseStep):
 
         try:
             job = self.openai.fine_tuning.jobs.create(
-                model=self.config.base_model,
+                model=config.base_model,
                 training_file=file.id,
             )
         except BadRequestError as e:
             e.add_note("[italic]Hint: Try changing the base model value in the config...")
             raise
 
-        self.config.job_id = job.id
+        config.job_id = job.id
         return job
 
     def poll_job_status(self) -> FineTuningJob:
-        job = self.openai.fine_tuning.jobs.retrieve(self.config.job_id)
+        job = self.openai.fine_tuning.jobs.retrieve(config.job_id)
 
-        if self.config.expected_epochs != job.hyperparameters.n_epochs and isinstance(job.hyperparameters.n_epochs, int):
-            self.config.expected_epochs = job.hyperparameters.n_epochs
+        if config.expected_epochs != job.hyperparameters.n_epochs and isinstance(job.hyperparameters.n_epochs, int):
+            config.expected_epochs = job.hyperparameters.n_epochs
 
             self.dedent_print(f"""
                 The number of epochs has been updated to {job.hyperparameters.n_epochs}!
@@ -100,7 +100,7 @@ class FineTuner(BaseStep):
                 Cost: {self.get_cost_string(job.trained_tokens)}
             """)
 
-        self.config.job_id = ""
+        config.job_id = ""
 
         if job.status != "succeeded":
             if Confirm.ask("[gray62]Delete uploaded examples file?", default=False):
@@ -116,17 +116,17 @@ class FineTuner(BaseStep):
             raise TumblrBotError(message)
 
         if job.fine_tuned_model is not None:
-            self.config.fine_tuned_model = job.fine_tuned_model
+            config.fine_tuned_model = job.fine_tuned_model
 
     def print_estimates(self) -> None:
         estimated_tokens = sum(self.count_tokens())
-        total_tokens = self.config.expected_epochs * estimated_tokens
+        total_tokens = config.expected_epochs * estimated_tokens
         cost_string = self.get_cost_string(total_tokens)
 
         self.dedent_print(f"""
             Tokens: {localize_number(estimated_tokens)}:
-            Total tokens for [bold orange1]{self.config.expected_epochs}[/] epoch(s): {localize_number(total_tokens)}
-            Expected cost when trained with [bold purple]{self.config.base_model}[/]: {cost_string}
+            Total tokens for [bold orange1]{config.expected_epochs}[/] epoch(s): {localize_number(total_tokens)}
+            Expected cost when trained with [bold purple]{config.base_model}[/]: {cost_string}
             NOTE: Token values are approximate and may not be 100% accurate, please be aware of this when using the data.
                     [italic red]Amelia, Mutsumi, and Marin are not responsible for any inaccuracies in the token count or estimated price.[/]
         """)
@@ -135,12 +135,12 @@ class FineTuner(BaseStep):
         # Based on https://cookbook.openai.com/examples/how_to_count_tokens_with_tiktoken
         # and https://cookbook.openai.com/examples/chat_finetuning_data_prep
         try:
-            encoding = encoding_for_model(self.config.base_model)
+            encoding = encoding_for_model(config.base_model)
         except KeyError as error:
             encoding = get_encoding("o200k_base")
             warning_console.print(f"Using encoding '{encoding.name}': {''.join(error.args)}\n")
 
-        with self.config.training_data_file.open(encoding="utf_8") as fp:
+        with config.training_data_file.open(encoding="utf_8") as fp:
             for line in fp:
                 example = Example.model_validate_json(line)
                 yield len(encoding.encode("assistant"))  # every reply is primed with <|start|>assistant<|message|>
@@ -148,6 +148,6 @@ class FineTuner(BaseStep):
                     yield 4 + len(encoding.encode(message.content))
 
     def get_cost_string(self, total_tokens: int) -> str:
-        usd_cost = self.config.token_price / 1000000 * total_tokens
+        usd_cost = config.token_price / 1000000 * total_tokens
         local_cost = currency(CurrencyConverter().convert(usd_cost, "USD", localeconv()["int_curr_symbol"].strip()), grouping=True)
         return f"{usd_cost:.3} USD (~{local_cost})"

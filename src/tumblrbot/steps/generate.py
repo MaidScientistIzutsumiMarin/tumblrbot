@@ -7,7 +7,7 @@ from openai import BadRequestError
 from rich import print as rich_print
 
 from tumblrbot.steps.base import BaseStep
-from tumblrbot.utils.common import PreviewLive, localize_number
+from tumblrbot.utils.common import PreviewLive, config, localize_number
 from tumblrbot.utils.models import Block, Post
 
 if TYPE_CHECKING:
@@ -18,13 +18,13 @@ if TYPE_CHECKING:
 class DraftGenerator(BaseStep):
     @override
     def main(self) -> None:
-        message = f"View drafts here: https://tumblr.com/blog/{self.config.upload_blog_identifier}/drafts"
+        message = f"View drafts here: https://tumblr.com/blog/{config.upload_blog_identifier}/drafts"
 
         with PreviewLive() as live:
-            for i in live.progress.track(range(self.config.draft_count), description="Generating drafts..."):
+            for i in live.progress.track(range(config.draft_count), description="Generating drafts..."):
                 try:
                     post = self.generate_post()
-                    self.tumblr.create_post(self.config.upload_blog_identifier, post)
+                    self.tumblr.create_post(config.upload_blog_identifier, post)
                     live.custom_update(post)
                 except BadRequestError as e:
                     e.add_note("[italic]Hint: Try fine-tuning a model or changing the fine-tuned model value in the config...")
@@ -34,16 +34,16 @@ class DraftGenerator(BaseStep):
                         e.add_note(f"📉 An error occurred! Generated {localize_number(i)} draft(s) before failing. {message}")
                     raise
 
-        rich_print(f":chart_increasing: [bold green]Generated {localize_number(self.config.draft_count)} draft(s).[/] {message}")
+        rich_print(f":chart_increasing: [bold green]Generated {localize_number(config.draft_count)} draft(s).[/] {message}")
 
     def generate_post(self) -> Post:
         if original := self.get_random_post():
-            user_message = self.config.reblog_user_message.format(original)
-            if "{}" not in self.config.reblog_user_message:
+            user_message = config.reblog_user_message.format(original)
+            if "{}" not in config.reblog_user_message:
                 user_message += str(original)
         else:
             original = Post()
-            user_message = self.config.user_message
+            user_message = config.user_message
         text = self.generate_text(user_message)
 
         if tags := self.generate_tags(text):
@@ -60,24 +60,24 @@ class DraftGenerator(BaseStep):
     def generate_text(self, user_message: str) -> str:
         return self.openai.responses.create(
             input=user_message,
-            instructions=self.config.developer_message,
-            model=self.config.fine_tuned_model,
+            instructions=config.developer_message,
+            model=config.fine_tuned_model,
         ).output_text
 
     def generate_tags(self, text: str) -> Post | None:
-        if random() < self.config.tags_chance:  # noqa: S311
+        if random() < config.tags_chance:  # noqa: S311
             return self.openai.responses.parse(
                 text_format=Post,
                 input=text,
-                instructions=self.config.tags_developer_message,
-                model=self.config.base_model,
+                instructions=config.tags_developer_message,
+                model=config.base_model,
             ).output_parsed
 
         return None
 
     def get_random_post(self) -> Post | None:
-        if self.config.reblog_blog_identifiers and random() < self.config.reblog_chance:  # noqa: S311
-            blog_identifier = choice(self.config.reblog_blog_identifiers)  # noqa: S311
+        if config.reblog_blog_identifiers and random() < config.reblog_chance:  # noqa: S311
+            blog_identifier = choice(config.reblog_blog_identifiers)  # noqa: S311
             for offset in self.get_offsets(blog_identifier):
                 for raw_post in self.tumblr.retrieve_published_posts(
                     blog_identifier,
@@ -97,4 +97,4 @@ class DraftGenerator(BaseStep):
 
     def is_trail_valid(self, trail: list[Post]) -> bool:
         # Checks if every post in the reblog trail is valid and that the blog that created the post is in the allowed reblog list.
-        return all(post.valid_text_post() and post.blog.name in self.config.reblog_blog_identifiers for post in trail)
+        return all(post.valid_text_post() and post.blog.name in config.reblog_blog_identifiers for post in trail)

@@ -8,6 +8,8 @@ from rich.live import Live
 from rich.progress import MofNCompleteColumn, Progress, SpinnerColumn, TimeElapsedColumn
 from rich.table import Table
 
+from tumblrbot.utils.models import Config
+
 if TYPE_CHECKING:
     from rich.console import RenderableType
 
@@ -41,6 +43,8 @@ class TumblrBotError(Exception):
 def localize_number(value: object) -> str:
     return localize(str(value), grouping=True)
 
+
+config = Config.load()
 
 console = Console()
 warning_console = Console(stderr=True, style="logging.level.warning")

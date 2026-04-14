@@ -12,12 +12,11 @@ from questionary import Choice, checkbox, select
 from rich import print as rich_print
 from rich.traceback import install
 
-from tumblrbot.steps.base import BaseStep
 from tumblrbot.steps.download import PostDownloader
 from tumblrbot.steps.examples import ExamplesWriter
 from tumblrbot.steps.fine_tune import FineTuner
 from tumblrbot.steps.generate import DraftGenerator
-from tumblrbot.utils.common import TumblrBotError, console, error_console
+from tumblrbot.utils.common import TumblrBotError, config, console, error_console
 from tumblrbot.utils.models import Config, Tokens
 from tumblrbot.utils.tumblr import TumblrSession
 
@@ -35,7 +34,7 @@ def main() -> None:
     tokens = Tokens.load()
 
     with OpenAI(api_key=tokens.openai_api_key, max_retries=maxsize) as openai, TumblrSession(tokens) as tumblr:
-        BaseStep.config.update_fields(tumblr.get_user_information().response.user)
+        config.update_fields(tumblr.get_user_information().response.user)
 
         post_downloader = PostDownloader(openai, tumblr)
         examples_writer = ExamplesWriter(openai, tumblr)
@@ -44,8 +43,8 @@ def main() -> None:
 
         while True:
             delete_choices = [
-                create_delete_choice("Delete downloaded posts", "Delete all downloaded posts.", BaseStep.config.data_directory),
-                create_delete_choice("Delete training data", "Delete generated training data.", BaseStep.config.training_data_file),
+                create_delete_choice("Delete downloaded posts", "Delete all downloaded posts.", config.data_directory),
+                create_delete_choice("Delete training data", "Delete generated training data.", config.training_data_file),
             ]
 
             reset_choices = [
@@ -57,7 +56,7 @@ def main() -> None:
                 Choice("Download latest posts", post_downloader.main, description="Download latest posts from blogs."),
                 Choice("Create training data", examples_writer.main, description="Create training data file that can be used to fine-tune a model."),
                 Choice("Filter training data", examples_writer.filter_examples, description="Remove training data flagged by OpenAI. May fix errors with fine-tuning validation."),
-                Choice("Fine-tune model", fine_tuner.main, description="Resume monitoring the previous fine-tuning process." if BaseStep.config.job_id else "Upload data to OpenAI and start fine-tuning."),
+                Choice("Fine-tune model", fine_tuner.main, description="Resume monitoring the previous fine-tuning process." if config.job_id else "Upload data to OpenAI and start fine-tuning."),
                 Choice("Generate drafts", draft_generator.main, description="Generate and upload posts to the bot's drafts."),
                 create_submenu_choice("Delete saved data", delete_choices),
                 create_submenu_choice("Reset settings", reset_choices, should_exit_on_success=True),
@@ -86,7 +85,7 @@ def maid_error_cleanup(selected: list[Callable[[], Any]]) -> None:
     except TumblrBotError as e:
         error_console.print(*e.args)
     except FileNotFoundError as e:
-        if e.filename == str(BaseStep.config.training_data_file):
+        if e.filename == str(config.training_data_file):
             error_console.print("Training data not found! [italic]Hint: Try creating training data...")
         else:
             raise

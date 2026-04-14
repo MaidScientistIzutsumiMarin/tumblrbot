@@ -86,7 +86,7 @@ In addition, `tumblrbot` will:
 **Known Issues:**
 
 - Fine-tuning can fail after the validation phase due to the training data not passing [OpenAI] moderation checks. There are a few workarounds for this that can also be tried together:
-  - You can retry with the same training data. This has reportedly worked before.
+  - You can retry with the same training data. This works inconsistently with our dataset.
   - You can submit the training data to the [OpenAI] moderation API. This has worked consistently for our dataset, but others have reported it not being thorough enough.
   - You can use regular expressions to filter out training data. This is more of a brute-force solution, but it can work if the other solutions do not.
   - You can try limiting your dataset by configuring fewer blogs to download from or limiting the number of posts taken from each one.
@@ -96,7 +96,6 @@ In addition, `tumblrbot` will:
 **To-Do:**
 
 - Allow limiting the newest posts from each blog with a configurable date.
-- Add a menu to optionally select blogs to download from and upload to from the list of blogs for the current user.
 
 **Please submit an issue or contact us for features you want added/reimplemented.**
 
@@ -163,7 +162,7 @@ A valid post:
 - **`moderation_batch_size`** - This controls the batch size when submitting posts to the OpenAI moderation. There is no limit, but higher numbers will cause you to be rate-limited more, which can overall be slower. Low numbers reduce rate-limiting, but can sometimes take longer due to needing more requests. The best value will depend on your computer, internet connection, and any number of factors on OpenAI's side. The default value is just what worked decently well for our device.
 - **`filtered_words`** - During training data generation, any posts with these configured words will be removed. Word boundaries are not checked by default, so “the” will also filter out posts with “them” or “thematic”. This setting supports regular expressions, so you can explicitly look for word boundaries by surrounding an entry with “\\\b”, i.e., “\\\bthe\\\b”. Regular expressions have to be escaped like so due to how JSON data is read in. If you are familiar with regular expressions, it could be useful for you to know that every entry is joined with a “|” which is then used to search the post content for any matches. If you are not familiar with regular expressions, you just need to know to *escape* certain characters (like periods and asterisks). Escaping, like the example above, requires *three* backslashes to be added before the character. To learn more about regular expressions, and test what you have entered, try out [regex101]. Make sure to select `Python` under `Flavor` on the left of the page.
 - **`developer_message`** - This message is used for fine-tuning the AI as well as generating prompts. If you change this, you will need to run the fine-tuning again with the new value before generating posts.
-- **`user_message`** - This setting is works in the same way as `developer_message`.
+- **`user_message`** - This setting works in the same way as `developer_message`.
 - **`expected_epochs`** - The default value here is the default number of epochs for `base_model`. You may have to change this value if you change `base_model`. After running fine-tuning once, you will see the number of epochs used in the [fine-tuning portal] under *Hyperparameters*. This value will also be updated automatically if you run fine-tuning through `tumblrbot`.
 - **`token_price`** - The default value here is the default token price for `base_model`. You can find the up-to-date value in [OpenAI Pricing], in the *Training* column. This is unlikely to change frequently.
 - **`job_id`** - If there is any value here, this program will resume monitoring the corresponding fine-tuning job, instead of starting a new one. This gets set when starting the fine-tuning and is cleared when it is completed. You can read more in the [Manual Fine-Tuning] section.

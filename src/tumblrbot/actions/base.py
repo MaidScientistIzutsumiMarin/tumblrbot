@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True)
-class BaseStep:
+class BaseAction:
     openai: OpenAI
     tumblr: TumblrSession
 

@@ -12,10 +12,10 @@ from questionary import Choice, checkbox, select
 from rich import print as rich_print
 from rich.traceback import install
 
-from tumblrbot.steps.download import PostDownloader
-from tumblrbot.steps.examples import ExamplesWriter
-from tumblrbot.steps.fine_tune import FineTuner
-from tumblrbot.steps.generate import DraftGenerator
+from tumblrbot.actions.download import PostDownloader
+from tumblrbot.actions.examples import ExamplesWriter
+from tumblrbot.actions.fine_tune import FineTuner
+from tumblrbot.actions.generate import DraftGenerator
 from tumblrbot.utils.common import TumblrBotError, config, console, error_console
 from tumblrbot.utils.models import Config, Tokens
 from tumblrbot.utils.tumblr import TumblrSession

@@ -1,7 +1,7 @@
 from json import dump
 from typing import TYPE_CHECKING, override
 
-from tumblrbot.steps.base import BaseStep
+from tumblrbot.actions.base import BaseAction
 from tumblrbot.utils.common import PreviewLive, config
 from tumblrbot.utils.models import Post
 
@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from io import TextIOBase
 
 
-class PostDownloader(BaseStep):
+class PostDownloader(BaseAction):
     @override
     def main(self) -> None:
         config.data_directory.mkdir(parents=True, exist_ok=True)

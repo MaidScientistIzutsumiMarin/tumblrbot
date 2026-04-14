@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, override
 from openai import BadRequestError
 from rich import print as rich_print
 
-from tumblrbot.steps.base import BaseStep
+from tumblrbot.actions.base import BaseAction
 from tumblrbot.utils.common import PreviewLive, config, localize_number
 from tumblrbot.utils.models import Block, Post
 
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True)
-class DraftGenerator(BaseStep):
+class DraftGenerator(BaseAction):
     @override
     def main(self) -> None:
         message = f"View drafts here: https://tumblr.com/blog/{config.upload_blog_identifier}/drafts"

@@ -11,8 +11,8 @@ from rich.progress import open as progress_open
 from rich.prompt import Confirm
 from tiktoken import encoding_for_model, get_encoding
 
-from tumblrbot.utils import localize_number, warning_console
-from tumblrbot.utils.common import FlowClass, PreviewLive, TumblrBotError
+from tumblrbot.steps.base import BaseStep
+from tumblrbot.utils.common import PreviewLive, TumblrBotError, localize_number, warning_console
 from tumblrbot.utils.models import Example
 
 if TYPE_CHECKING:
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from openai.types.fine_tuning import FineTuningJob
 
 
-class FineTuner(FlowClass):
+class FineTuner(BaseStep):
     @staticmethod
     def dedent_print(text: str) -> None:
         rich_print(dedent(text).lstrip())

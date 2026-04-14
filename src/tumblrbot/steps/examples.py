@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING, override
 
 from rich import print as rich_print
 
-from tumblrbot.utils import localize_number, warning_console
-from tumblrbot.utils.common import FlowClass, PreviewLive, TumblrBotError
+from tumblrbot.steps.base import BaseStep
+from tumblrbot.utils.common import PreviewLive, TumblrBotError, localize_number, warning_console
 from tumblrbot.utils.models import Example, Message, Post
 
 if TYPE_CHECKING:
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from openai.types import ModerationCreateResponse, ModerationMultiModalInputParam
 
 
-class ExamplesWriter(FlowClass):
+class ExamplesWriter(BaseStep):
     @override
     def main(self) -> None:
         rich_print("[bold]Writing training data...")

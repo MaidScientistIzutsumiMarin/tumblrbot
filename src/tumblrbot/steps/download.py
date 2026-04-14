@@ -1,14 +1,15 @@
 from json import dump
 from typing import TYPE_CHECKING, override
 
-from tumblrbot.utils.common import FlowClass, PreviewLive
+from tumblrbot.steps.base import BaseStep
+from tumblrbot.utils.common import PreviewLive
 from tumblrbot.utils.models import Post
 
 if TYPE_CHECKING:
     from io import TextIOBase
 
 
-class PostDownloader(FlowClass):
+class PostDownloader(BaseStep):
     @override
     def main(self) -> None:
         self.config.data_directory.mkdir(parents=True, exist_ok=True)

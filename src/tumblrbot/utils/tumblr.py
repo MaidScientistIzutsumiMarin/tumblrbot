@@ -4,7 +4,7 @@ from rich import print as rich_print
 from rich.pretty import pprint
 from tenacity import RetryCallState, retry, retry_if_exception_message
 
-from tumblrbot.utils import localize_number
+from tumblrbot.utils.common import localize_number
 from tumblrbot.utils.models import Post, ResponseModel, Tokens
 
 

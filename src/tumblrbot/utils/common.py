@@ -1,38 +1,15 @@
-from abc import abstractmethod
-from dataclasses import dataclass
+from locale import localize
 from random import choice
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
-from openai import OpenAI  # noqa: TC002
 from rich._spinners import SPINNERS
+from rich.console import Console
 from rich.live import Live
 from rich.progress import MofNCompleteColumn, Progress, SpinnerColumn, TimeElapsedColumn
 from rich.table import Table
 
-from tumblrbot.utils.models import Config
-from tumblrbot.utils.tumblr import TumblrSession  # noqa: TC001
-
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from rich.console import RenderableType
-
-
-@dataclass(frozen=True)
-class FlowClass:
-    config: ClassVar = Config.load()
-
-    openai: OpenAI
-    tumblr: TumblrSession
-
-    @abstractmethod
-    def main(self) -> None: ...
-
-    def get_data_paths(self) -> list[Path]:
-        return list(map(self.get_data_path, self.config.download_blog_identifiers))
-
-    def get_data_path(self, blog_identifier: str) -> Path:
-        return (self.config.data_directory / blog_identifier).with_suffix(".jsonl")
 
 
 class PreviewLive(Live):
@@ -59,3 +36,12 @@ class PreviewLive(Live):
 
 class TumblrBotError(Exception):
     pass
+
+
+def localize_number(value: object) -> str:
+    return localize(str(value), grouping=True)
+
+
+console = Console()
+warning_console = Console(stderr=True, style="logging.level.warning")
+error_console = Console(stderr=True, style="logging.level.error")

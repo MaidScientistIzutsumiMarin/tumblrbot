@@ -44,8 +44,6 @@ class FineTuner(BaseAction):
 
             while job.status in {"validating_files", "queued", "running"}:
                 job = self.poll_job_status()
-                if job.status == "running":
-                    self.openai.fine_tuning.jobs.cancel(job.id)
 
                 live.progress.update(
                     task_id,

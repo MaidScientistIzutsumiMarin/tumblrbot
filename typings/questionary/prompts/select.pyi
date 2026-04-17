@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from typing import Any
 
 from prompt_toolkit.styles import Style
 from questionary.prompts.common import Choice
@@ -6,8 +7,8 @@ from questionary.question import Question
 
 def select[T](
     message: str,
-    choices: Sequence[str | Choice[T] | dict[str, object]],
-    default: str | Choice[T] | dict[str, object] | None = None,
+    choices: Sequence[str | Choice[T] | dict[str, Any]],
+    default: str | Choice[T] | dict[str, Any] | None = None,
     qmark: str = ...,
     pointer: str | None = ...,
     style: Style | None = None,

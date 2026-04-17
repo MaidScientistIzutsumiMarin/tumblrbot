@@ -1,4 +1,5 @@
 from collections.abc import Callable, Sequence
+from typing import Any
 
 from prompt_toolkit.styles import Style
 from questionary.prompts.common import Choice
@@ -6,13 +7,13 @@ from questionary.question import Question
 
 def checkbox[T](
     message: str,
-    choices: Sequence[str | Choice[T] | dict[str, object]],
+    choices: Sequence[str | Choice[T] | dict[str, Any]],
     default: str | None = None,
     validate: Callable[[list[str]], bool | str] = ...,
     qmark: str = ...,
     pointer: str | None = ...,
     style: Style | None = None,
-    initial_choice: str | Choice[T] | dict[str, object] | None = None,
+    initial_choice: str | Choice[T] | dict[str, Any] | None = None,
     use_arrow_keys: bool = True,
     use_jk_keys: bool = True,
     use_emacs_keys: bool = True,

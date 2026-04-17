@@ -1,13 +1,13 @@
-from collections.abc import Callable, Sequence
+from collections.abc import Callable
 from typing import Any
 
 from prompt_toolkit.styles import Style
-from questionary.prompts.common import Choice
+from questionary.prompts.common import Choice, Choices
 from questionary.question import Question
 
 def checkbox[T](
     message: str,
-    choices: Sequence[str | Choice[T] | dict[str, Any]],
+    choices: Choices[T],
     default: str | None = None,
     validate: Callable[[list[str]], bool | str] = ...,
     qmark: str = ...,

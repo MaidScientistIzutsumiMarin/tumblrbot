@@ -21,10 +21,9 @@ from tumblrbot.utils.models import Config, Tokens
 from tumblrbot.utils.tumblr import TumblrSession
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
     from pathlib import Path
 
-    from questionary.prompts.common import FormattedText
+    from questionary.prompts.common import Choices, FormattedText
 
 
 def main() -> None:
@@ -99,7 +98,7 @@ def maid_error_cleanup(selected: list[Callable[[], Any]]) -> None:
                 error_console.print(note)
 
 
-def create_submenu_choice(verb: str, choices: Sequence[str | Choice[Path] | dict[str, object]], *, should_exit_on_success: bool = False) -> Choice[partial[None]]:
+def create_submenu_choice(verb: str, choices: Choices[Path], *, should_exit_on_success: bool = False) -> Choice[partial[None]]:
     return Choice(
         f"> {verb}...",
         partial(
@@ -111,7 +110,7 @@ def create_submenu_choice(verb: str, choices: Sequence[str | Choice[Path] | dict
     )
 
 
-def create_submenu(choices: Sequence[str | Choice[Path] | dict[str, object]], *, should_exit_on_success: bool) -> None:
+def create_submenu(choices: Choices[Path], *, should_exit_on_success: bool) -> None:
     try:
         if response := checkbox("v Press <enter> without a selection to exit this menu", choices).unsafe_ask():
             for choice in response:

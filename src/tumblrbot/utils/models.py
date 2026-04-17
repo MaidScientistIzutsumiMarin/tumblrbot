@@ -91,7 +91,7 @@ class Config(FileSyncSettings):
     reblog_user_message: str = Field("Please write a comical Tumblr post in response to the following post:\n\n{}", description="The format string for the user message used to reblog posts.")
 
     def update_fields(self, user: User) -> None:
-        choices = [Choice(blog.name, blog.name, description=blog.description) for blog in user.blogs]
+        choices = [Choice(blog.name, description=blog.description) for blog in user.blogs]
 
         if not self.download_blog_identifiers:
             self.download_blog_identifiers = checkbox(

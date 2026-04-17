@@ -1,13 +1,12 @@
-from collections.abc import Sequence
 from typing import Any
 
 from prompt_toolkit.styles import Style
-from questionary.prompts.common import Choice
+from questionary.prompts.common import Choice, Choices
 from questionary.question import Question
 
 def select[T](
     message: str,
-    choices: Sequence[str | Choice[T] | dict[str, Any]],
+    choices: Choices[T],
     default: str | Choice[T] | dict[str, Any] | None = None,
     qmark: str = ...,
     pointer: str | None = ...,

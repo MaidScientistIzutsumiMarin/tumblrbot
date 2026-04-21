@@ -96,6 +96,7 @@ In addition, `tumblrbot` will:
 **To-Do:**
 
 - Allow limiting the newest posts from each blog with a configurable date.
+- Add an option to open the config file.
 
 **Please submit an issue or contact us for features you want added/reimplemented.**
 

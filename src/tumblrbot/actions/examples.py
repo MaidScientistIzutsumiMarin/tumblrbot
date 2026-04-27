@@ -72,11 +72,12 @@ class ExamplesWriter(BaseAction):
                 warning_console.print(f"{path} does not exist!")
 
     def get_valid_posts_from_path(self, path: Path) -> Generator[Post]:
+        earliest_timestamp = config.date_limit.timestamp()
         pattern = re_compile("|".join(config.filtered_words), IGNORECASE)
         with path.open("rb") as fp:
             for line in fp:
                 post = Post.model_validate_json(line)
-                if post.valid_text_post() and not (post.trail and config.filtered_words and pattern.search(str(post))):
+                if post.valid_text_post() and post.timestamp >= earliest_timestamp and not (post.trail and config.filtered_words and pattern.search(str(post))):
                     yield post
 
     def filter_examples(self) -> None:

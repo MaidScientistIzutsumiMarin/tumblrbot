@@ -1,7 +1,6 @@
 from requests import HTTPError, Response, Session
 from requests_oauthlib import OAuth1
 from rich import print as rich_print
-from rich.pretty import pprint
 from tenacity import RetryCallState, retry, retry_if_exception_message
 
 from tumblrbot.utils.common import localize_number
@@ -67,11 +66,7 @@ class TumblrSession(Session):
                 "npf": True,
             },
         )
-        try:
-            return ResponseModel.model_validate_json(response.text)
-        except:
-            pprint(response.headers)
-            raise
+        return ResponseModel.model_validate_json(response.text)
 
     @rate_limit_retry
     def create_post(self, blog_identifier: str, post: Post) -> ResponseModel:

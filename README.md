@@ -9,6 +9,9 @@
 [uv Installation]: https://docs.astral.sh/uv/getting-started/installation
 [uv Tools]: https://docs.astral.sh/uv/guides/tools
 
+[Pydantic Conversions]: https://pydantic.dev/docs/validation/latest/concepts/conversion_table
+[Speedate]: https://docs.rs/speedate/latest/speedate
+
 [OAuth]: https://oauth.net/1
 
 [JSON Lines]: https://jsonlines.org
@@ -93,13 +96,7 @@ In addition, `tumblrbot` will:
   - If all else fails, you can manually remove data from the training data file until it passes. It is unfortunately not a definitive resource, but it can help to read about what the [OpenAI moderation API flags][Flags].
 - Post counts can be incorrect when downloading posts. Our tests suggest this is a [Tumblr] API problem that is giving inaccurate numbers, so treat them as estimates.
 
-**To-Do:**
-
-- Allow limiting the newest posts from each blog with a configurable date.
-
 **Please submit an issue or contact us for features you want added/reimplemented.**
-
----
 
 ## Obtaining Tokens
 
@@ -158,6 +155,7 @@ A valid post:
 
    To be specific, it should follow the [JSON Lines] file format with one collection of name/value pairs (a dictionary) per line. You can validate your file using the [JSON Lines Validator].
 
+- **`date_limit`** - This specifies the oldest date and optionally time (inclusive) allowed for posts that can be included in the training data. The most basic formats for UTC time are `YYYY-MM-DDTHH:MM:SSZ` or `YYYY-MM-DD`. You can change the timezone by replacing the `Z` with plus or minus your UTC offset; i.e., `YYYY-MM-DDTHH:MM:SS+/-HH:MM`. The parser accepts [“most common ISO 8601 formats"][Speedate]; check out [speedate] for more information and examples.
 - **`post_limit`** - At most, this many valid posts will be included in the training data. This effectively is a filter to select the `N` most recent posts from each blog. `0` will use every available valid post. The actual number of posts per blog included in the training data may be less if there are fewer valid posts than this value.
 - **`moderation_batch_size`** - This controls the batch size when submitting posts to the OpenAI moderation. There is no limit, but higher numbers will cause you to be rate-limited more, which can overall be slower. Low numbers reduce rate-limiting, but can sometimes take longer due to needing more requests. The best value will depend on your computer, internet connection, and any number of factors on OpenAI's side. The default value is just what worked decently well for our device.
 - **`filtered_words`** - During training data generation, any posts with these configured words will be removed. Word boundaries are not checked by default, so “the” will also filter out posts with “them” or “thematic”. This setting supports regular expressions, so you can explicitly look for word boundaries by surrounding an entry with “\\\b”, i.e., “\\\bthe\\\b”. Regular expressions have to be escaped like so due to how JSON data is read in. If you are familiar with regular expressions, it could be useful for you to know that every entry is joined with a “|” which is then used to search the post content for any matches. If you are not familiar with regular expressions, you just need to know to *escape* certain characters (like periods and asterisks). Escaping, like the example above, requires *three* backslashes to be added before the character. To learn more about regular expressions, and test what you have entered, try out [regex101]. Make sure to select `Python` under `Flavor` on the left of the page.

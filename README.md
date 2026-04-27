@@ -9,7 +9,6 @@
 [uv Installation]: https://docs.astral.sh/uv/getting-started/installation
 [uv Tools]: https://docs.astral.sh/uv/guides/tools
 
-[Pydantic Conversions]: https://pydantic.dev/docs/validation/latest/concepts/conversion_table
 [Speedate]: https://docs.rs/speedate/latest/speedate
 
 [OAuth]: https://oauth.net/1

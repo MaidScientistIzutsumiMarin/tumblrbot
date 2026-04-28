@@ -62,8 +62,10 @@ This fork is largely a rewrite of the source code with similarities in its struc
 - Create training data to fine-tune a configured model from downloaded posts.
   - Filters out posts that contain more than just text data.
   - Filters out posts that contain configured regular expressions **(disabled by default)**.
+  - Only uses posts after a specific date and time from each blog **(disabled by default)**.
+    - The date and time are configurable.
   - Only uses the most recent posts from each blog **(disabled by default)**.
-    - The number of posts per blog is configurable.
+    - The number of posts is configurable.
   - Adds configured training data to the data set **(disabled by default)**.
 - Filter out any training data flagged by the [OpenAI Moderation API].
 - Upload training data to [OpenAI] and begin the fine-tuning process.

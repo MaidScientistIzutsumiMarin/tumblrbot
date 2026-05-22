@@ -10,7 +10,7 @@ from tumblrbot.utils.models import Post, ResponseModel, Tokens
 def wait_until_ratelimit_reset(retry_state: RetryCallState) -> float:
     if retry_state.outcome is not None:
         exception = retry_state.outcome.exception()
-        if isinstance(exception, HTTPError):
+        if isinstance(exception, HTTPError) and exception.response is not None:
             ratelimit_type = "day" if exception.response.headers["X-Ratelimit-Perday-Remaining"] == "0" else "hour"
             return float(exception.response.headers[f"X-Ratelimit-Per{ratelimit_type}-Reset"])
     return 0

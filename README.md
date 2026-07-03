@@ -99,10 +99,6 @@ In addition, `tumblrbot` will:
 
 **Please submit an issue or contact us for features you want added/reimplemented.**
 
-TODO:
-
-- Add option to re-select blogs.
-
 ## Obtaining Tokens
 
 ### OpenAI

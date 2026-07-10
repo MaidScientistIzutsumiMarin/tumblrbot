@@ -122,7 +122,7 @@ API tokens can be created here: [Tumblr Tokens]
    1. You now have access to your `consumer key` next to `Oauth Consumer Key`.
    1. Press `Show secret key` to see your `Consumer Secret`.
 
-When running this program the first time, you will be prompted to enter all of these tokens. If something goes wrong during this process, you can always reset them through the reset menu or by manually editing the tokens file.
+When running this program the first time, you will be prompted to enter all of these tokens. If something goes wrong during this process, you can always reset them through the reset menu or by manually editing the `tokens.toml` file.
 
 After inputting the [Tumblr] tokens, you will be given a URL that you need to open in your browser. Press `Allow`, then copy and paste the URL of the page you are redirected to into the console.
 
